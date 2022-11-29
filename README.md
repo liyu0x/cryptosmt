@@ -1,6 +1,8 @@
 # KATAN-BOOMERANG
 
-## Modified file:
+Running Command: ```python3 cryptosmt-boomerang.py --input ./examples/boomerang/katan32.yaml```
+
+## Modified files:
 
 1. cipher/katan32.py
 2. cryptanalysis/andbctutil.py

@@ -19,14 +19,30 @@ To change ```AX_BOX_INPUT_SIZE/AX_BOX_OUTPUT_SIZE``` in ```katan32.py``` if one 
 
 ![4 ot 1 AX-BOX](readme/4-1.png)
 
-$L_1 = x_1|x_2|x_3|x_4$
+1. $IN = L1$
 
-$AX-BOX = (x_1&x_2)\xor $
+2. $L_1 = x_1|x_2|x_3|x_4, R_1= x5|x6$
 
-$Y = AX-BOX(L1) = G1'\xor R_1$
+3. $BOX_{AX} = (x_1\\&x_2)\oplus (x_3\\& x_4)$
+
+4. $Y = BOX_{AX}(L1) = G1'\oplus R_1$
+
+5. $OUT = Y$
 
 
+### 6-6 AX-BOX
 
+![6 ot 6 AX-BOX](readme/6-6.png)
+
+1. $IN=L1|R1$
+
+2. $L_1 = x_1|x_2|x_3|x_4, R_1= x5|x6$
+
+3. $BOX_{AX} = (x_1\\&x_2)\oplus (x_3\\& x_4) \oplus x_5 \oplus x_6$
+
+4. $Y = BOX_{AX}(L1)$
+
+5. $OUT = x_1|x_2|x_3|x_4|x_5|y$
 
 
 # CryptoSMT

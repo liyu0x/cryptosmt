@@ -28,9 +28,10 @@ def check_bct(_in: int, _out: int, bct: list, ir_index: int, switch_prob: int, c
     return switch_prob
 
 
-def create_bct(cipher, bct):
+def create_bct(cipher):
     input_size = cipher.AX_BOX_INPUT_SIZE
     output_size = cipher.AX_BOX_OUTPUT_SIZE
+    bct = [[0] * (2 ** output_size) for _ in range(2 ** input_size)]
     for delta_in in range(2 ** input_size):
         for delta_out in range(2 ** output_size):
             for x in range(2 ** input_size):
@@ -49,7 +50,7 @@ def create_bct(cipher, bct):
                     r_x_delta_all = x_delta_all | cipher.ax_box(x_delta_all, input_size)
                 if r_x ^ r_x_delta_in ^ r_x_delta_out ^ r_x_delta_all == 0:
                     bct[delta_in][delta_out] += 1
-    return
+    return bct
 
 
 def __4_bits_compute(_ins: list, _outs: list, bct: list, ir: int, switch_prob: int, cipher):
@@ -116,5 +117,20 @@ def __6_bits_compute(_ins: list, _outs: list, bct: list, ir: int, switch_prob: i
     return switch_prob
 
 
-def block_invalid_switches(parameters):
+def block_invalid_switches(beta, parameters, block_func: staticmethod, cipher):
+    # TODO
+    input_bits = num_to_bits(int(beta, 16))
+    ir = parameters["em_ir"]
+    cipher = parameters["cipher"]
+    bct = parameters["bct"]
+    _in = ir  # x0
+    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 3]
+    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 5]
+    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 7]
+    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 8]
+    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 12]
+    if _in != 0:
+        for _out in range(2 ** cipher.AX_BOX_OUTPUT_SIZE):
+            if bct[_in][_out] == 0:
+                a = 1
     return

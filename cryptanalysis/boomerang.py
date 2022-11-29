@@ -375,7 +375,7 @@ def createBCT(parameters, cipher):
     if parameters["design"] == "ax":
         s_box_size_in = cipher.AX_BOX_INPUT_SIZE
         s_box_size_out = cipher.AX_BOX_OUTPUT_SIZE
-        andbctutil.create_bct(cipher, parameters["bct"])
+        parameters["bct"] = andbctutil.create_bct(cipher)
     # print BCT
     print("----")
     for x in range(2 ** s_box_size_in):
@@ -425,7 +425,7 @@ def blockInvalidSwitches(beta, parameters, stp_filename):
                             blockVariableValue(stp_file, a, b)
                 n += 2
         # Lblock
-        if parameters["design"] == "feistel1":
+        if parameters["design"] == "feistel":
             n = 0
             nibbles = int(parameters["wordsize"] / parameters["sboxSize"] / 2)
             for x in range(-1, -nibbles, -1):

@@ -17,6 +17,7 @@ class katan32(AbstractCipher):
 
     name = "katan32"
 
+    # AX-BOX 1.(6-6) 2.(4-1)
     AX_BOX_INPUT_SIZE = 6
     AX_BOX_OUTPUT_SIZE = 6
 

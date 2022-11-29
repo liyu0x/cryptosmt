@@ -13,7 +13,8 @@ from cryptanalysis import search, boomerang
 from ciphers import (simon, speck, simonlinear, keccak, keccakdiff,
                      siphash, simonrk, chaskeymachalf, simonkeyrc,
                      ketje, ascon, salsa, chacha, skinny, skinnyrk, gimli,
-                     present, craft, craftlinear, trifle, trifle, triflerk, twine, warp, warprk, lblocks, lblock)
+                     present, craft, craftlinear, trifle, trifle, triflerk, twine, warp, warprk, lblocks, lblock,
+                     katan32)
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
 
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -27,32 +28,33 @@ def startsearch(tool_parameters):
     Starts the search tool for the given parameters
     """
 
-    cipher_suite = {"simon" : simon.SimonCipher(),
-                    "speck" : speck.SpeckCipher(),
-                    "simonlinear" : simonlinear.SimonLinearCipher(),
-                    "keccak" : keccak.KeccakCipher(),
-                    "keccakdiff" : keccakdiff.KeccakDiffCipher(),
-                    "ketje" : ketje.KetjeCipher(),
-                    "siphash" : siphash.SipHashCipher(),
-                    "simonrk" : simonrk.SimonRkCipher(),
-                    "simonkeyrc" : simonkeyrc.SimonKeyRcCipher(),
-                    "chaskeyhalf" : chaskeymachalf.ChasKeyMacHalf(),
-                    "ascon" : ascon.AsconCipher(),
-                    "salsa" : salsa.SalsaCipher(),
-                    "chacha" : chacha.ChaChaCipher(),
-                    "skinny" : skinny.SkinnyCipher(),
-                    "skinnyrk" : skinnyrk.SkinnyRKCipher(),
-                    "gimli" : gimli.GimliCipher(),
-                    "present" : present.PresentCipher(),
-                    "craft" : craft.CraftCipher(),
-                    "craftlinear" : craftlinear.CraftCipherLinear(),                   
-                    "trifle" : trifle.TrifleCipher(),
-                    "triflerk" : triflerk.TrifleRK(),
-                    "twine" : twine.TwineCipher(),
-                    "warp" : warp.WarpCipher(),
-                    "warprk" : warprk.WarpRKCipher(),
-                    "lblocks" : lblocks.LBlockSCipher(),
-                    "lblock" : lblock.LBlockCipher()}
+    cipher_suite = {"simon": simon.SimonCipher(),
+                    "speck": speck.SpeckCipher(),
+                    "simonlinear": simonlinear.SimonLinearCipher(),
+                    "keccak": keccak.KeccakCipher(),
+                    "keccakdiff": keccakdiff.KeccakDiffCipher(),
+                    "ketje": ketje.KetjeCipher(),
+                    "siphash": siphash.SipHashCipher(),
+                    "simonrk": simonrk.SimonRkCipher(),
+                    "simonkeyrc": simonkeyrc.SimonKeyRcCipher(),
+                    "chaskeyhalf": chaskeymachalf.ChasKeyMacHalf(),
+                    "ascon": ascon.AsconCipher(),
+                    "salsa": salsa.SalsaCipher(),
+                    "chacha": chacha.ChaChaCipher(),
+                    "skinny": skinny.SkinnyCipher(),
+                    "skinnyrk": skinnyrk.SkinnyRKCipher(),
+                    "gimli": gimli.GimliCipher(),
+                    "present": present.PresentCipher(),
+                    "craft": craft.CraftCipher(),
+                    "craftlinear": craftlinear.CraftCipherLinear(),
+                    "trifle": trifle.TrifleCipher(),
+                    "triflerk": triflerk.TrifleRK(),
+                    "twine": twine.TwineCipher(),
+                    "warp": warp.WarpCipher(),
+                    "warprk": warprk.WarpRKCipher(),
+                    "lblocks": lblocks.LBlockSCipher(),
+                    "lblock": lblock.LBlockCipher(),
+                    "katan32": katan32.katan32()}
 
     cipher = None
 
@@ -77,6 +79,7 @@ def startsearch(tool_parameters):
         boomerang.computeFeistelBoomerangDifferential(cipher, tool_parameters)
 
     return
+
 
 def checkenviroment():
     """
@@ -106,40 +109,40 @@ def loadparameters(args):
     Get parameters from the argument list and inputfile.
     """
     # Load default values
-    params = {"cipher" : "simon",
-              "rounds" : 5,
-              "uppertrail" : 5,
-              "uweight" : 0,
-              "upperlimit" : 16,
-              "lowertrail" : 5,
-              "lweight" : 0,
-              "lowerlimit" : 16,
-              "mode" : 0,
-              "wordsize" : 16,
-              "blocksize" : 64,
-              "sweight" : 0,
-              "endweight" : 1000,
-              "iterative" : False,
-              "boolector" : False,
-              "dot" : None,
-              "latex" : None,
-              "nummessages" : 1,
-              "timelimit" : -1,
-              "fixedVariables" : {},
-              "boomerangVariables" : {},
-              "sboxSize" : 4,
-              "design" : "gfn",
-              "sbox" : [],
-              "perm" : [],
-              "bct" : [[0] * 16 for _ in range(16)],
-              "blockedCharacteristics" : [],
-              "blockedUpperCharacteristics" : [],
-              "blockedLowerCharacteristics" : []}
+    params = {"cipher": "simon",
+              "rounds": 5,
+              "uppertrail": 5,
+              "uweight": 0,
+              "upperlimit": 16,
+              "lowertrail": 5,
+              "lweight": 0,
+              "lowerlimit": 16,
+              "mode": 0,
+              "wordsize": 16,
+              "blocksize": 64,
+              "sweight": 0,
+              "endweight": 1000,
+              "iterative": False,
+              "boolector": False,
+              "dot": None,
+              "latex": None,
+              "nummessages": 1,
+              "timelimit": -1,
+              "fixedVariables": {},
+              "boomerangVariables": {},
+              "sboxSize": 4,
+              "design": "gfn",
+              "sbox": [],
+              "perm": [],
+              "bct": [[0] * 16 for _ in range(16)],
+              "blockedCharacteristics": [],
+              "blockedUpperCharacteristics": [],
+              "blockedLowerCharacteristics": []}
 
     # Check if there is an input file specified
     if args.inputfile:
         with open(args.inputfile[0], 'r') as input_file:
-            doc = yaml.load(input_file)
+            doc = yaml.full_load(input_file)
             params.update(doc)
             if "fixedVariables" in doc:
                 fixed_vars = {}
@@ -147,12 +150,12 @@ def loadparameters(args):
                     fixed_vars = dict(list(fixed_vars.items()) +
                                       list(variable.items()))
                 params["fixedVariables"] = fixed_vars
-                
+
             if "boomerangVariables" in doc:
                 boom_vars = {}
                 for variable in doc["boomerangVariables"]:
                     boom_vars = dict(list(boom_vars.items()) +
-                                      list(variable.items()))
+                                     list(variable.items()))
                 params["boomerangVariables"] = boom_vars
 
     # Override parameters if they are set on commandline
@@ -178,7 +181,7 @@ def loadparameters(args):
         params["wordsize"] = args.wordsize[0]
 
     if args.blocksize:
-        params["blocksize"] = args.blocksize[0]        
+        params["blocksize"] = args.blocksize[0]
 
     if args.sweight:
         params["sweight"] = args.sweight[0]
@@ -224,7 +227,7 @@ def main():
     parser.add_argument('--sweight', nargs=1, type=int,
                         help="Starting weight for the trail search.")
     parser.add_argument('--endweight', nargs=1, type=int,
-                        help="Stop search after reaching endweight.")    
+                        help="Stop search after reaching endweight.")
     parser.add_argument('--rounds', nargs=1, type=int,
                         help="The number of rounds for the cipher")
     parser.add_argument('--uppertrail', nargs=1, type=int,
@@ -238,10 +241,10 @@ def main():
     parser.add_argument('--wordsize', nargs=1, type=int,
                         help="Wordsize used for the cipher.")
     parser.add_argument('--blocksize', nargs=1, type=int,
-                        help="Blocksize used for the cipher.")    
+                        help="Blocksize used for the cipher.")
     parser.add_argument('--nummessages', nargs=1, type=int,
                         help="Number of message blocks.")
-    parser.add_argument('--mode', nargs=1, type=int, 
+    parser.add_argument('--mode', nargs=1, type=int,
                         choices=[0, 1, 2, 3, 4, 5], help=
                         "0 = search characteristic for fixed round\n"
                         "1 = search characteristic for all rounds starting at"

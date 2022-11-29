@@ -1,3 +1,34 @@
+# KATAN-BOOMERANG
+
+## Modified file:
+
+1. cipher/katan32.py
+2. cryptanalysis/andbctutil.py
+3. cryptanalysis/boomerang.py
+4. example/boomerang/katan32.yaml
+
+## Detail
+
+There are two AX(AND and XOR)-boxes:
+1. 4-1 AX-BOX
+2. 6-6 AX-BOX
+
+To change ```AX_BOX_INPUT_SIZE/AX_BOX_OUTPUT_SIZE``` in ```katan32.py``` if one wants to change the specification of AX_BOX.
+
+### 4-1 AX-BOX
+
+![4 ot 1 AX-BOX](readme/4-1.png)
+
+$L_1 = x_1|x_2|x_3|x_4$
+
+$AX-BOX = (x_1&x_2)\xor $
+
+$Y = AX-BOX(L1) = G1'\xor R_1$
+
+
+
+
+
 # CryptoSMT
 
 CryptoSMT is an easy to use tool for cryptanalysis of symmetric primitives likes 

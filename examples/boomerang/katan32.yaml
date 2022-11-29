@@ -1,4 +1,4 @@
-cipher: katan
+cipher: katan32
 uppertrail: 1 #Number of rounds for E0
 em_ir: 1 # index of IR in E_m
 lowertrail: 1 #Number of rounds for E1

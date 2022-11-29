@@ -1,7 +1,7 @@
 cipher: katan32
-uppertrail: 1 #Number of rounds for E0
-em_ir: 1 # index of IR in E_m
-lowertrail: 1 #Number of rounds for E1
+uppertrail: 20 #Number of rounds for E0
+em_ir: 20 # index of IR in E_m
+lowertrail: 21 #Number of rounds for E1
 #uweight: 100 #Upper limit of weight for E0
 #lweight: 100 #Upper limit of weight for E1
 #endweight: 201 #set to the higher weight limit + 1 (e.g. if uweight is higher than lweight, set end weight to uweight+1)

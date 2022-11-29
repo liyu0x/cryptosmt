@@ -81,8 +81,8 @@ def __compute_prob(_ins: list, _outs: list, bct: list, ir: int, switch_prob: int
 
 def block_invalid_switches(beta, parameters, block_func, stp_file):
     input_bits = num_to_bits(int(beta, 16))
-    ir = parameters["em_ir"]
     cipher = parameters["cipher_obj"]
+    ir = cipher.IR[parameters["em_ir"]]
     bct = parameters["bct"]
     x_ind = cipher.FOUR_X_INDEXES
     y_ind = cipher.FOUR_Y_INDEXES

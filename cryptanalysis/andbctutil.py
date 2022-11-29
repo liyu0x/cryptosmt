@@ -21,11 +21,7 @@ def check_bct(_in: int, _out: int, bct: list, ir_index: int, switch_prob: int, c
     _ins = num_to_bits(_in)
     _outs = num_to_bits(_out)
     ir = cipher.IR[ir_index]
-    if cipher.AX_BOX_INPUT_SIZE == 4:
-        switch_prob = __4_bits_compute(_ins, _outs, bct, ir, switch_prob, cipher)
-    else:
-        switch_prob = __6_bits_compute(_ins, _outs, bct, ir, switch_prob, cipher)
-    return switch_prob
+    return __compute_prob(_ins, _outs, bct, ir, switch_prob, cipher)
 
 
 def create_bct(cipher):
@@ -53,84 +49,68 @@ def create_bct(cipher):
     return bct
 
 
-def __4_bits_compute(_ins: list, _outs: list, bct: list, ir: int, switch_prob: int, cipher):
-    # small register, length: 13 (3&IR)^(5 & 8)^7 ^ 12
-    _in = ir  # x0
-    _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + 3]  # x1
-    _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + 5]  # x2
-    _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + 8]  # x3
-    _out = _outs[BIG_REGISTER_OFFSET + 13] ^ _ins[SMALL_REGISTER_OFFSET + 7] ^ _ins[SMALL_REGISTER_OFFSET + 12]
+def __compute_prob(_ins: list, _outs: list, bct: list, ir: int, switch_prob: int, cipher):
+    x_ind = cipher.FOUR_X_INDEXES
+    y_ind = cipher.FOUR_Y_INDEXES
+    if cipher.AX_BOX_INPUT_SIZE == 6:
+        x_ind = cipher.SIX_X_INDEXES
+        y_ind = cipher.SIX_Y_INDEXES
+
+    # Small Register
+    _in = 0 if ir is None else ir
+    for x in x_ind:
+        _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + x]
+    _out = 0
+    if cipher.AX_BOX_OUTPUT_SIZE == 1:
+        _out = _outs[BIG_REGISTER_OFFSET + 13] ^ _ins[SMALL_REGISTER_OFFSET + 7] ^ _ins[SMALL_REGISTER_OFFSET + 12]
     ax_res = bct[_in][_out]
-    if ax_res > 0:
-        switch_prob *= ax_res / (cipher.AX_BOX_INPUT_SIZE * cipher.AX_BOX_OUTPUT_SIZE)
+    switch_prob *= ax_res / cipher.TOTAL_NUM
 
-    # big register length: 19 (3&8)^(10&12)^18^7
-    _in = _ins[3]
-    _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + 8]
-    _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + 10]
-    _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + 12]
-
-    _out = _outs[SMALL_REGISTER_OFFSET + 0] ^ _ins[BIG_REGISTER_OFFSET + 18] ^ _ins[BIG_REGISTER_OFFSET + 7]
-
+    # Big Register
+    _in = 0
+    for y in y_ind:
+        _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + y]
+    _out = 0
+    if cipher.AX_BOX_OUTPUT_SIZE == 1:
+        _out = _outs[SMALL_REGISTER_OFFSET + 0] ^ _ins[BIG_REGISTER_OFFSET + 18] ^ _ins[BIG_REGISTER_OFFSET + 7]
     ax_res = bct[_in][_out]
-    if ax_res > 0:
-        switch_prob *= ax_res / (cipher.AX_BOX_INPUT_SIZE * cipher.AX_BOX_OUTPUT_SIZE)
+    switch_prob *= ax_res / cipher.TOTAL_NUM
+
     return switch_prob
 
 
-def __6_bits_compute(_ins: list, _outs: list, bct: list, ir: int, switch_prob: int, cipher):
-    # small register, length: 13 (3&IR)^(5 & 8)^7 ^ 12
-    _in = ir  # x0
-    _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + 3]
-    _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + 5]
-    _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + 7]
-    _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + 8]
-    _in = (_in << 1) | _ins[SMALL_REGISTER_OFFSET + 12]
-
-    _out = _ins[SMALL_REGISTER_OFFSET + 3]
-    _out = (_out << 1) | _ins[SMALL_REGISTER_OFFSET + 5]
-    _out = (_out << 1) | _ins[SMALL_REGISTER_OFFSET + 7]
-    _out = (_out << 1) | _ins[SMALL_REGISTER_OFFSET + 8]
-    _out = (_out << 1) | _ins[SMALL_REGISTER_OFFSET + 12]
-    _out = (_out << 1) | _outs[BIG_REGISTER_OFFSET + 13]
-    ax_res = bct[_in][_out]
-    if ax_res > 0:
-        switch_prob *= ax_res / (cipher.AX_BOX_INPUT_SIZE * cipher.AX_BOX_OUTPUT_SIZE)
-
-    # big register length: 19 (3&8)^(10&12)^18^7
-    _in = _ins[3]
-    _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + 7]
-    _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + 8]
-    _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + 10]
-    _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + 12]
-    _in = (_in << 1) | _ins[BIG_REGISTER_OFFSET + 18]
-
-    _out = _ins[BIG_REGISTER_OFFSET + 7]
-    _out = (_out << 1) | _ins[BIG_REGISTER_OFFSET + 8]
-    _out = (_out << 1) | _ins[BIG_REGISTER_OFFSET + 10]
-    _out = (_out << 1) | _ins[BIG_REGISTER_OFFSET + 12]
-    _out = (_out << 1) | _ins[BIG_REGISTER_OFFSET + 18]
-    _out = (_out << 1) | _outs[SMALL_REGISTER_OFFSET + 0]
-    ax_res = bct[_in][_out]
-    if ax_res > 0:
-        switch_prob *= ax_res / (cipher.AX_BOX_INPUT_SIZE * cipher.AX_BOX_OUTPUT_SIZE)
-    return switch_prob
-
-
-def block_invalid_switches(beta, parameters, block_func: staticmethod, cipher):
-    # TODO
+def block_invalid_switches(beta, parameters, block_func, stp_file):
     input_bits = num_to_bits(int(beta, 16))
     ir = parameters["em_ir"]
-    cipher = parameters["cipher"]
+    cipher = parameters["cipher_obj"]
     bct = parameters["bct"]
-    _in = ir  # x0
-    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 3]
-    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 5]
-    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 7]
-    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 8]
-    _in = (_in << 1) | input_bits[SMALL_REGISTER_OFFSET + 12]
-    if _in != 0:
-        for _out in range(2 ** cipher.AX_BOX_OUTPUT_SIZE):
-            if bct[_in][_out] == 0:
-                a = 1
-    return
+    x_ind = cipher.FOUR_X_INDEXES
+    y_ind = cipher.FOUR_Y_INDEXES
+    if cipher.AX_BOX_INPUT_SIZE == 6:
+        x_ind = cipher.SIX_X_INDEXES
+        y_ind = cipher.SIX_Y_INDEXES
+    # small register
+    __b_f(x_ind, input_bits, cipher, bct, block_func, stp_file, parameters, ir, SMALL_REGISTER_OFFSET)
+
+    # big register
+    __b_f(y_ind, input_bits, cipher, bct, block_func, stp_file, parameters, None, BIG_REGISTER_OFFSET)
+
+
+def __b_f(indexes, input_bits, cipher, bct, block_func, stp_file, parameters, ir, offset):
+    _in = ir if ir is not None else 0
+    for x in indexes:
+        _in = (_in << 1) | input_bits[offset + x]
+    for _out in range(2 ** cipher.AX_BOX_OUTPUT_SIZE):
+        # if prob is zero, block this trail.
+        if bct[_in][_out] == 0:
+            for x in indexes:
+                a = "X0[{0}:{0}]".format(x)
+                b = "{}".format(bin(input_bits[offset + x]))
+                block_func(stp_file, a, b)
+        # the initial trail, prob must be higher
+        if ("X{}".format(parameters["lowertrail"]) not in parameters["boomerangVariables"] and
+                parameters["bct"][_in][_out] != 2 ** cipher.AX_BOX_INPUT_SIZE):
+            for x in indexes:
+                a = "X0[{0}:{0}]".format(x)
+                b = "{}".format(bin(input_bits[offset + x]))
+                block_func(stp_file, a, b)

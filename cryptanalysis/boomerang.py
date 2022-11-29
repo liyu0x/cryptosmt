@@ -37,6 +37,7 @@ def computeFeistelBoomerangDifferential(cipher, parameters):
         print("Please add getSbox, getSboxSize, getDesign in cipher definition")
         quit()
     start_time = time.time()
+    parameters["cipher_obj"] = cipher
     createBCT(parameters, cipher)
     # while not search.reachedTimelimit(start_time, parameters["timelimit"]):
     print("----")
@@ -447,7 +448,7 @@ def blockInvalidSwitches(beta, parameters, stp_filename):
                 n += 1
         if parameters["design"] == "ax":
             # for 32-bit katan
-            input_bits = andbctutil.num_to_bits(int(beta, 16))
+            andbctutil.block_invalid_switches(beta, parameters, blockVariableValue, stp_file)
 
         # Ensure that beta is not equal to gamma
         blockVariableValue(stp_file, "X0", beta)

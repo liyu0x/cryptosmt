@@ -44,7 +44,7 @@ To change ```AX_BOX_INPUT_SIZE/AX_BOX_OUTPUT_SIZE``` in ```katan32.py``` if one 
 
 4. $Y = BOX_{AX}(L1)$
 
-5. $OUT = x_1|x_2|x_3|x_4|x_5|y$
+5. $OUT = x_1|x_2|x_3|x_4|x_5|Y$
 
 
 # CryptoSMT

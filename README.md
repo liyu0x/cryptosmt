@@ -12,24 +12,24 @@ Running Command: ```python3 cryptosmt-boomerang.py --input ./examples/boomerang/
 ## Detail
 
 There are two AX(AND and XOR)-boxes:
-1. 4-1 AX-BOX
+1. ~~4-1 AX-BOX~~
 2. 6-6 AX-BOX
 
-To change ```AX_BOX_INPUT_SIZE/AX_BOX_OUTPUT_SIZE``` in ```katan32.py``` if one wants to change the specification of AX_BOX.
+~~To change ```AX_BOX_INPUT_SIZE/AX_BOX_OUTPUT_SIZE``` in ```katan32.py``` if one wants to change the specification of AX_BOX.~~
 
-### 4-1 AX-BOX
+### ~~4-1 AX-BOX~~
 
 ![4 ot 1 AX-BOX](readme/4-1.png)
 
-1. $IN = L1$
+1. ~~$IN = L1$~~
 
-2. $L_1 = x_1|x_2|x_3|x_4, R_1= x5|x6$
+2. ~~$L_1 = x_1|x_2|x_3|x_4, R_1= x5|x6$~~
 
-3. $BOX_{AX} = (x_1\\&x_2)\oplus (x_3\\& x_4)$
+3. ~~$BOX_{AX} = (x_1\\&x_2)\oplus (x_3\\& x_4)$~~
 
-4. $Y = BOX_{AX}(L1) = G1'\oplus R_1$
+4. ~~$Y = BOX_{AX}(L1) = G1'\oplus R_1$~~
 
-5. $OUT = Y$
+5. ~~$OUT = Y$~~
 
 
 ### 6-6 AX-BOX

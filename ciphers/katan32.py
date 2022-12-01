@@ -18,8 +18,8 @@ class katan32(AbstractCipher):
     name = "katan32"
 
     # AX-BOX 1.(6-6) 2.(4-1)
-    # AX_BOX_INPUT_SIZE, AX_BOX_OUTPUT_SIZE = 4, 1
-    AX_BOX_INPUT_SIZE, AX_BOX_OUTPUT_SIZE = 6, 6
+    AX_BOX_INPUT_SIZE, AX_BOX_OUTPUT_SIZE = 4, 1
+    #AX_BOX_INPUT_SIZE, AX_BOX_OUTPUT_SIZE = 6, 6
 
     TOTAL_NUM = (2 ** AX_BOX_OUTPUT_SIZE) * (2 ** AX_BOX_OUTPUT_SIZE)
 

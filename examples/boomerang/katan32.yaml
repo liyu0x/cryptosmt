@@ -1,6 +1,5 @@
 cipher: katan32
 uppertrail: 1 #Number of rounds for E0
-em_ir: 1 # index of IR in E_m
 lowertrail: 2 #Number of rounds for E1
 #uweight: 100 #Upper limit of weight for E0
 #lweight: 100 #Upper limit of weight for E1
@@ -9,7 +8,6 @@ lowertrail: 2 #Number of rounds for E1
 #upperlimit: 16 #cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
 timelimit: 86400 #24 hours
 wordsize: 32
-mode: 1 #boomerang search mode
+mode: 5 #boomerang search mode
 design: ax
 offset: 0
-rounds: 5

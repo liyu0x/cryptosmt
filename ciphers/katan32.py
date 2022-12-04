@@ -17,17 +17,10 @@ class katan32(AbstractCipher):
 
     name = "katan32"
 
-    # AX-BOX 1.(6-6) 2.(4-1)
-    AX_BOX_INPUT_SIZE, AX_BOX_OUTPUT_SIZE = 4, 1
-    #AX_BOX_INPUT_SIZE, AX_BOX_OUTPUT_SIZE = 6, 6
+    BCT_INPUT_SIZE = 4
 
-    TOTAL_NUM = (2 ** AX_BOX_OUTPUT_SIZE) * (2 ** AX_BOX_OUTPUT_SIZE)
-
-    SIX_X_INDEXES = [12, 7, 8, 5, 3]
-    SIX_Y_INDEXES = [18, 7, 12, 10, 8, 3]
-
-    FOUR_X_INDEXES = [8, 5, 3]
-    FOUR_Y_INDEXES = [12, 10, 8, 3]
+    BIG_REG_INPUT_INDEXES = [3, 8, 10, 12]
+    SMALL_REG_INPUT_INDEXES = [19 + 5, 19 + 8]
 
     IR = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
           1, 1, 0, 1, 0, 1, 0, 1, 0, 1,
@@ -56,22 +49,12 @@ class katan32(AbstractCipher):
           1, 1, 0, 0, 0, 0, 0, 0, 0, 1,
           0, 0, 1, 0]
 
-    def ax_box(self, x, input_size=4):
-        if input_size == 4:
-            x0 = x >> 3 & 0x1
-            x1 = x >> 2 & 0x1
-            x2 = x >> 1 & 0x1
-            x3 = x & 0x1
-            res = (x0 & x1) ^ (x2 & x3)
-        else:
-            x0 = x >> 5 & 0x1
-            x1 = x >> 4 & 0x1
-            x2 = x >> 3 & 0x1
-            x3 = x >> 2 & 0x1
-            x4 = x >> 1 & 0x1
-            x5 = x & 0x1
-            return (x0 & x1) ^ (x2 & x3) ^ x4 ^ x5
-        return res
+    def ax_box(self, x):
+        x0 = x >> 3 & 0x1
+        x1 = x >> 2 & 0x1
+        x2 = x >> 1 & 0x1
+        x3 = x & 0x1
+        return (x0 & x1) ^ (x2 & x3)
 
     def getSbox(self):
         return None

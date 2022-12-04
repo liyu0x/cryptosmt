@@ -374,8 +374,8 @@ def createBCT(parameters, cipher):
                     if diff == 0:
                         parameters["bct"][Di][Do] += 1
     if parameters["design"] == "ax":
-        s_box_size_in = cipher.AX_BOX_INPUT_SIZE
-        s_box_size_out = cipher.AX_BOX_OUTPUT_SIZE
+        s_box_size_in = cipher.BCT_INPUT_SIZE
+        s_box_size_out = cipher.BCT_INPUT_SIZE
         parameters["bct"] = andbctutil.create_bct(cipher)
     # print BCT
     print("----")
@@ -495,7 +495,7 @@ def checkBCT(beta, gamma, parameters, cipher):
     if parameters["design"] == "ax":
         _in = int(beta, 16)
         _out = int(gamma, 16)
-        switchProb = andbctutil.check_bct(_in, _out, parameters["bct"], parameters["em_ir"], switchProb, cipher)
+        switchProb = andbctutil.check_bct(_in, _out, parameters["bct"], switchProb, cipher)
     return switchProb
 
 

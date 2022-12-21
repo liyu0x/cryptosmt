@@ -10,6 +10,8 @@ timelimit: 86400 #24 hours
 wordsize: 32
 mode: 1 #boomerang search mode
 #design: ax
-offset: 0
-#rounds: 40
-#sweight: 10
+offset: 35
+rounds: 48
+#sweight: 14
+fixedVariables:
+- X0: "0x00000042"

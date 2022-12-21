@@ -56,6 +56,11 @@ class katan32(AbstractCipher):
         x3 = x & 0x1
         return (x0 & x1) ^ (x2 & x3)
 
+    def ax_box_2(self, x):
+        x0 = x >> 1 & 0x1
+        x1 = x & 0x1
+        return x0 & x1
+
     def getSbox(self):
         return None
 
@@ -111,6 +116,10 @@ class katan32(AbstractCipher):
             for i in range(rounds):
                 self.setupKatanRound(stp_file, x[i], f[i], a[i], x[i + 1],
                                      w[i], wordsize, i, offset)
+
+            command = stpcommands.and_bct(small_vari(x[rounds - 1], x[rounds]), self.ax_box_2, 2)
+            command += stpcommands.and_bct(big_vari(x[rounds - 1], x[rounds]), self.ax_box, 4)
+            stp_file.write(command)
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, x, wordsize)
@@ -183,3 +192,24 @@ class katan32(AbstractCipher):
 
         stp_file.write(command)
         return
+
+
+def small_vari(x_in, x_out):
+    variables = ["{0}[{1}:{1}]".format(x_in, 19 + 5),
+                 "{0}[{1}:{1}]".format(x_in, 19 + 8),
+                 "{0}[{1}:{1}]".format(x_out, 19 + 5 + 1),
+                 "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1)]
+    return variables
+
+
+def big_vari(x_in, x_out):
+    variables = ["{0}[{1}:{1}]".format(x_in, 3),
+                 "{0}[{1}:{1}]".format(x_in, 8),
+                 "{0}[{1}:{1}]".format(x_in, 10),
+                 "{0}[{1}:{1}]".format(x_in, 12),
+                 "{0}[{1}:{1}]".format(x_out, 3 + 1),
+                 "{0}[{1}:{1}]".format(x_out, 8 + 1),
+                 "{0}[{1}:{1}]".format(x_out, 10 + 1),
+                 "{0}[{1}:{1}]".format(x_out, 12 + 1)]
+
+    return variables

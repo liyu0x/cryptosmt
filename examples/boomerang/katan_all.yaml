@@ -8,8 +8,11 @@ cipher: katan32
 #upperlimit: 16 #cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
 timelimit: 86400 #24 hours
 wordsize: 32
-mode: 1 #boomerang search mode
+mode: 4 #boomerang search mode
 #design: ax
 offset: 0
-#rounds: 40
-#sweight: 10
+rounds: 83
+sweight: 35
+fixedVariables:
+- X0: "0x00000042"
+- X83: "0x88480105"

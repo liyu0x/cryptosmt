@@ -75,19 +75,19 @@ def block_invalid_switches(beta, parameters, block_func, stp_file):
 
 def __b_f(indexes, input_bits, cipher, bct, block_func, stp_file, parameters):
     _in = 0
-    for x in indexes:
-        _in = (_in << 1) | input_bits[x]
-    for _out in range(2 ** len(indexes)):
-        # if prob is zero, block this trail.
-        if bct[_in][_out] == 0:
-            for x in indexes:
-                a = "X0[{0}:{0}]".format(x)
-                b = "{}".format(bin(input_bits[x]))
-                block_func(stp_file, a, b)
-        # the initial trail, prob must be higher
-        if ("X{}".format(parameters["lowertrail"]) not in parameters["boomerangVariables"] and
-                parameters["bct"][_in][_out] != 2 ** cipher.BCT_INPUT_SIZE):
-            for x in indexes:
-                a = "X0[{0}:{0}]".format(x)
-                b = "{}".format(bin(input_bits[x]))
-                block_func(stp_file, a, b)
+    # for x in indexes:
+    #     _in = (_in << 1) | input_bits[x]
+    # for _out in range(2 ** len(indexes)):
+    #     # if prob is zero, block this trail.
+    #     if bct[_in][_out] == 0:
+    #         for x in indexes:
+    #             a = "X0[{0}:{0}]".format(x)
+    #             b = "{}".format(bin(input_bits[x]))
+    #             block_func(stp_file, a, b)
+    #     # the initial trail, prob must be higher
+    #     if ("X{}".format(parameters["lowertrail"]) not in parameters["boomerangVariables"] and
+    #             parameters["bct"][_in][_out] != 2 ** cipher.BCT_INPUT_SIZE):
+    #         for x in indexes:
+    #             a = "X0[{0}:{0}]".format(x)
+    #             b = "{}".format(bin(input_bits[x]))
+    #             block_func(stp_file, a, b)

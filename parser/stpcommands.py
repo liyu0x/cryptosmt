@@ -10,6 +10,7 @@ Added additional state words to blockCharacteristic to support WARP/TWINE
 
 import itertools
 
+
 def blockCharacteristic(stpfile, characteristic, wordsize):
     """
     Excludes this characteristic from being found.
@@ -33,7 +34,7 @@ def blockCharacteristic(stpfile, characteristic, wordsize):
         blockingStatement += "BVXOR({}, {}) | ".format(key, value)
 
     blockingStatement = blockingStatement[:-2]
-    blockingStatement += ") = 0hex{});".format("0"*(wordsize // 4))
+    blockingStatement += ") = 0hex{});".format("0" * (wordsize // 4))
     stpfile.write(blockingStatement)
     return
 
@@ -105,6 +106,7 @@ def limitWeight(stpfile, weight, p, wordsize, ignoreMSBs=0):
     stpfile.write("ASSERT(BVLE(limitWeight, {0:#018b}));\n".format(weight))
     return
 
+
 def setupWeightComputationSum(stpfile, weight, p, wordsize, ignoreMSBs=0):
     """
     Assert that weight is equal to the sum of p.
@@ -120,6 +122,7 @@ def setupWeightComputationSum(stpfile, weight, p, wordsize, ignoreMSBs=0):
 
     stpfile.write("ASSERT(weight = {0:#018b});\n".format(weight))
     return
+
 
 def setupWeightComputation(stpfile, weight, p, wordsize, ignoreMSBs=0):
     """
@@ -174,6 +177,7 @@ def getStringAdd(a, b, c, wordsize):
     command += " = 0bin{})".format("0" * wordsize)
     return command
 
+
 def getStringForAndDifferential(a, b, c):
     """
     AND = valid(x,y,out) = (x and out) or (y and out) or (not out)
@@ -198,6 +202,7 @@ def getStringRightRotate(value, rotation, wordsize):
         value, (rotation % wordsize), wordsize - 1, (wordsize - rotation) % wordsize)
     return command
 
+
 def add4bitSbox(sbox, variables):
     """
     Adds the constraints for the S-box and the weight
@@ -215,11 +220,11 @@ def add4bitSbox(sbox, variables):
 
     w ... hamming weight from the DDT table
     """
-    assert(len(sbox) == 16)
-    assert(len(variables) == 12)
+    assert (len(sbox) == 16)
+    assert (len(variables) == 12)
 
     # First compute the DDT
-    DDT = [[0]*16 for i in range(16)]
+    DDT = [[0] * 16 for i in range(16)]
 
     for a in range(16):
         for b in range(16):
@@ -242,11 +247,11 @@ def add4bitSbox(sbox, variables):
                 tmp.append((output_diff >> 1) & 1)
                 tmp.append((output_diff >> 0) & 1)
                 if DDT[input_diff][output_diff] == 2:
-                    tmp += [0, 1, 1, 1] # 2^-3
+                    tmp += [0, 1, 1, 1]  # 2^-3
                 elif DDT[input_diff][output_diff] == 4:
-                    tmp += [0, 0, 1, 1] # 2^-2
+                    tmp += [0, 0, 1, 1]  # 2^-2
                 elif DDT[input_diff][output_diff] == 8:
-                    tmp += [0, 0, 0, 1] # 2^-1
+                    tmp += [0, 0, 0, 1]  # 2^-1
                 elif DDT[input_diff][output_diff] == 16:
                     tmp += [0, 0, 0, 0]
                 trails.append(tmp)
@@ -264,3 +269,57 @@ def add4bitSbox(sbox, variables):
             cnf += "({}) &".format(clause[:-2])
 
     return "ASSERT({} = 0bin1);\n".format(cnf[:-2])
+
+
+def and_bct(variables, non_part, input_size):
+    bits = input_size
+    size = 2 ** bits
+
+    # create ^bct
+    bct = [[0] * size for i in range(size)]
+    for delta_in in range(size):
+        for delta_out in range(size):
+            for x in range(size):
+                x_delta_in = x ^ delta_in
+                x_delta_out = x ^ delta_out
+                x_delta_in_out = x ^ delta_in ^ delta_out
+                r_x = non_part(x)
+                r_x_delta_in = non_part(x_delta_in)
+                r_x_delta_out = non_part(x_delta_out)
+                r_x_delta_in_out = non_part(x_delta_in_out)
+                if r_x ^ r_x_delta_in ^ r_x_delta_out ^ r_x_delta_in_out == 0:
+                    bct[delta_in][delta_out] += 1
+
+    # Construct DNF of all valid trails
+    trails = []
+    # All zero trail with probability 1
+    for input_diff in range(size):
+        for output_diff in range(size):
+            if bct[input_diff][output_diff] != 0:
+                tmp = []
+                for i in range(bits - 1, -1, -1):
+                    tmp.append((input_diff >> i) & 1)
+                for i in range(bits - 1, -1, -1):
+                    tmp.append((output_diff >> i) & 1)
+                trails.append(tmp)
+
+    # Build CNF from invalid trails
+    cnf = ""
+    for prod in itertools.product([0, 1], repeat=len(trails[0])):
+        # Trail is not valid
+        if list(prod) not in trails:
+            expr = ["~" if x == 1 else "" for x in list(prod)]
+            clause = ""
+            for literal in range(bits):
+                clause += "{0}{1} | ".format(expr[literal], variables[literal])
+
+            cnf += "({}) &".format(clause[:-2])
+    return "ASSERT({} = 0bin1);\n".format(cnf[:-2])
+
+
+def ax_box(x):
+    x0 = x >> 3 & 0x1
+    x1 = x >> 2 & 0x1
+    x2 = x >> 1 & 0x1
+    x3 = x & 0x1
+    return (x0 & x1) ^ (x2 & x3)

@@ -11,5 +11,5 @@ wordsize: 32
 mode: 1 #boomerang search mode
 #design: ax
 offset: 0
-#rounds: 40
+rounds: 36
 #sweight: 10

@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "type": "python",
+            "name": "boomerang-katan32-bct",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan32.yaml"],
+        },
+        {
+            "type": "python",
+            "name": "boomerang-katan32-retangle",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan_all.yaml"],
+        },
+
+    ]
+}

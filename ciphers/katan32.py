@@ -77,7 +77,7 @@ class katan32(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['X', 'A', 'F', 'w']
+        return ['X', 'Y', 'A', 'F', 'w']
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -89,7 +89,12 @@ class katan32(AbstractCipher):
         rounds = parameters["rounds"]
         weight = parameters["sweight"]
         offset = parameters["offset"]
-        bct_round = parameters["bctround"]
+        switch_start_round = parameters["switchStartRound"]
+        switch_rounds = parameters["switchRounds"]
+
+        e0_search_rounds = rounds if switch_start_round == -1 else switch_start_round
+        em_search_rounds = rounds if switch_start_round == -1 else e0_search_rounds + switch_rounds
+        e1_search_rounds = rounds
 
         with open(stp_filename, 'w') as stp_file:
             header = ("% Input File for STP\n% KATAN32 w={}"
@@ -100,6 +105,7 @@ class katan32(AbstractCipher):
             # x = input (32), f = outputs of AND operation (Only 3 bits required, use 3 bits to store)
             # a = active or inactive AND operation (Only 3 bits required, use 3 bits to store)
             x = ["X{}".format(i) for i in range(rounds + 1)]
+            y = ["Y{}".format(i) for i in range(rounds + 1)]
             f = ["F{}".format(i) for i in range(rounds)]
             a = ["A{}".format(i) for i in range(rounds)]
 
@@ -110,38 +116,38 @@ class katan32(AbstractCipher):
             stpcommands.setupVariables(stp_file, f, wordsize)
             stpcommands.setupVariables(stp_file, a, wordsize)
             stpcommands.setupVariables(stp_file, w, wordsize)
+            stpcommands.setupVariables(stp_file, y, wordsize)
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
-            e0_search_rounds = rounds
-            em_search_rounds = -1
-            e1_search_rounds = -1
-            if bct_round == 1:
-                e0_search_rounds = rounds - 4
-                em_search_rounds = rounds
-                if mode == 4:
-                    e0_search_rounds = bct_round - 4
-                    em_search_rounds = bct_round
-                    e1_search_rounds = rounds
-
             # Modify start_round to start from different positions
+
+            # E0
             for i in range(e0_search_rounds):
                 self.setupKatanRound(stp_file, x[i], f[i], a[i], x[i + 1],
                                      w[i], wordsize, i, offset)
-
+            for i in range(e0_search_rounds, em_search_rounds - 1):
+                self.setupKatanRoundWithoutComputingWeight(stp_file, x[i], f[i], a[i], x[i + 1],
+                                                           w[i], wordsize, i, offset)
+            # Em
             for i in range(e0_search_rounds, em_search_rounds):
-                self.setupKatanRoundWithoutAnyOperation(stp_file, x[i], f[i], a[i], x[i + 1],
-                                                        w[i], wordsize, i, offset)
-                command = stpcommands.and_bct(small_vari(x[i], x[i + 1]), self.ax_box_2, 2)
-                command += stpcommands.and_bct(big_vari(x[i], x[i + 1]), self.ax_box, 4)
+                command = stpcommands.and_bct(small_vari(x[i], y[i]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(big_vari(x[i], y[i]), self.ax_box, 4)
                 stp_file.write(command)
-
+            # E1
+            for i in range(e0_search_rounds, em_search_rounds):
+                self.setupKatanRoundWithoutComputingWeight(stp_file, y[i], f[i], a[i], y[i + 1],
+                                                           w[i], wordsize, i, offset)
             for i in range(em_search_rounds, e1_search_rounds):
-                self.setupKatanRound(stp_file, x[i], f[i], a[i], x[i + 1],
+                self.setupKatanRound(stp_file, y[i], f[i], a[i], y[i + 1],
                                      w[i], wordsize, i, offset)
 
-            # No all zero characteristic
-            stpcommands.assertNonZero(stp_file, x, wordsize)
+            if switch_start_round == -1:
+                stpcommands.assertNonZero(stp_file, x, wordsize)
+            else:
+                # use BCT
+                stpcommands.assertNonZero(stp_file, x[0:em_search_rounds - 1], wordsize)
+                stpcommands.assertNonZero(stp_file, y[em_search_rounds:rounds + 1], wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -212,7 +218,7 @@ class katan32(AbstractCipher):
         stp_file.write(command)
         return
 
-    def setupKatanRoundWithoutAnyOperation(self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset):
+    def setupKatanRoundWithoutComputingWeight(self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset):
         """
         Model for differential behaviour of one round KATAN32
         """

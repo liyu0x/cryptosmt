@@ -13,7 +13,8 @@ mode: 4 #boomerang search mode
 offset: 0
 rounds: 83
 #sweight: 35
-bctround: 60
+switchStartRound: 32
+switchRounds: 4
 fixedVariables:
-  - X0: "0x08020040"
-  - X83: "0x00A904A5"
+  - X0: "0x0000C010"
+  - X60: "0x00480840"

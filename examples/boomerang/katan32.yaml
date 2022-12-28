@@ -1,0 +1,8 @@
+cipher: katan32
+timelimit: 86400 #24 hours
+wordsize: 32
+mode: 0
+offset: 0
+rounds: 187
+switchStartRound: 100
+switchRounds: 4

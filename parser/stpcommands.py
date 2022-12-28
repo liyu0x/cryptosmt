@@ -310,7 +310,7 @@ def and_bct(variables, non_part, input_size):
         if list(prod) not in trails:
             expr = ["~" if x == 1 else "" for x in list(prod)]
             clause = ""
-            for literal in range(bits):
+            for literal in range(bits * 2):
                 clause += "{0}{1} | ".format(expr[literal], variables[literal])
 
             cnf += "({}) &".format(clause[:-2])

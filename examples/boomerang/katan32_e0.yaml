@@ -1,0 +1,10 @@
+cipher: katan32
+timelimit: 86400 #24 hours
+wordsize: 32
+mode: 0
+offset: 0
+rounds: 60
+bctround: 1 # 0 turn off AND-BCT or 1 turn on
+#fixedVariables:
+#  - X0: "0x94200000"
+#  - X35: "0x01080108"

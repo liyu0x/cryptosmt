@@ -84,11 +84,12 @@ class katan32(AbstractCipher):
         Creates an STP file to find a characteristic for KATAN32 with
         the given parameters.
         """
-
+        mode = parameters["mode"]
         wordsize = parameters["wordsize"]
         rounds = parameters["rounds"]
         weight = parameters["sweight"]
         offset = parameters["offset"]
+        bct_round = parameters["bctround"]
 
         with open(stp_filename, 'w') as stp_file:
             header = ("% Input File for STP\n% KATAN32 w={}"
@@ -112,14 +113,32 @@ class katan32(AbstractCipher):
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
+            e0_search_rounds = rounds
+            em_search_rounds = -1
+            e1_search_rounds = -1
+            if bct_round == 1:
+                e0_search_rounds = rounds - 4
+                em_search_rounds = rounds
+                if mode == 4:
+                    e0_search_rounds = bct_round - 4
+                    em_search_rounds = bct_round
+                    e1_search_rounds = rounds
+
             # Modify start_round to start from different positions
-            for i in range(rounds):
+            for i in range(e0_search_rounds):
                 self.setupKatanRound(stp_file, x[i], f[i], a[i], x[i + 1],
                                      w[i], wordsize, i, offset)
 
-            command = stpcommands.and_bct(small_vari(x[rounds - 1], x[rounds]), self.ax_box_2, 2)
-            command += stpcommands.and_bct(big_vari(x[rounds - 1], x[rounds]), self.ax_box, 4)
-            stp_file.write(command)
+            for i in range(e0_search_rounds, em_search_rounds):
+                self.setupKatanRoundWithoutAnyOperation(stp_file, x[i], f[i], a[i], x[i + 1],
+                                                        w[i], wordsize, i, offset)
+                command = stpcommands.and_bct(small_vari(x[i], x[i + 1]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(big_vari(x[i], x[i + 1]), self.ax_box, 4)
+                stp_file.write(command)
+
+            for i in range(em_search_rounds, e1_search_rounds):
+                self.setupKatanRound(stp_file, x[i], f[i], a[i], x[i + 1],
+                                     w[i], wordsize, i, offset)
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, x, wordsize)
@@ -176,6 +195,53 @@ class katan32(AbstractCipher):
         # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
         for i in range(19, 31):
             command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, (i))
+
+        # Perform XOR operation for to get bits for position L2_0 and 19 (L1_0)
+        # x_out[0] = x[31]^x[26]^a[2]^(x[22]&IR[r])
+        command += "ASSERT({0}[0:0] = BVXOR({1}[31:31],BVXOR({1}[26:26],BVXOR({2}[2:2],({1}[22:22]&0b{3})))));\n".format(
+            x_out, x_in, f, self.IR[r + offset])
+        # x_out[19] = x[18]^a[1]^x[7]^a[0]
+        command += "ASSERT({0}[19:19] = BVXOR({1}[18:18],BVXOR({2}[1:1],BVXOR({1}[7:7],{2}[0:0]))));\n".format(x_out,
+                                                                                                               x_in, f)
+
+        command += "ASSERT(0b000000000000000000000000000000 = {0}[31:2]);\n".format(
+            w)  # Use 2 bits to store would be sufficient
+        command += "ASSERT(0b00000000000000000000000000000 = {0}[31:3]);\n".format(f)
+        command += "ASSERT(0b00000000000000000000000000000 = {0}[31:3]);\n".format(a)
+
+        stp_file.write(command)
+        return
+
+    def setupKatanRoundWithoutAnyOperation(self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset):
+        """
+        Model for differential behaviour of one round KATAN32
+        """
+        command = ""
+
+        # Check if AND is active
+        # a[0] = x[3] | x[8]
+        command += "ASSERT({0}[0:0] = {1}[3:3]|{2}[8:8]);\n".format(a, x_in, x_in)
+        # a[1] = x[10]| x[12]
+        command += "ASSERT({0}[1:1] = {1}[10:10]|{2}[12:12]);\n".format(a, x_in, x_in)
+        # Locations for L1 = 5 and 8. In full 32-bit register, 5+19 = 24, 8+19 = 27
+        # a[2] = x[24] | x[27]
+        command += "ASSERT({0}[2:2] = {1}[24:24]|{2}[27:27]);\n".format(a, x_in, x_in)
+
+        # w[1]=a[2]
+        command += "ASSERT({0}[1:1] = 0b0);\n".format(w, a)  # AND in the L1 register
+        # As long as either 1 AND operation in L2 register is active, prob is 1
+        # w[0]=a[0]|a[1]
+        command += "ASSERT({0}[0:0] = 0b0);\n".format(w, a)
+
+        for i in range(3):
+            command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
+
+        # Permutation layer (shift left L2 by 1 except for position 18)
+        for i in range(0, 18):
+            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, i)
+        # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
+        for i in range(19, 31):
+            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, i)
 
         # Perform XOR operation for to get bits for position L2_0 and 19 (L1_0)
         # x_out[0] = x[31]^x[26]^a[2]^(x[22]&IR[r])

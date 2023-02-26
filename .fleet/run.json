@@ -10,6 +10,11 @@
             "name": "boomerang-katan32-retangle",
             "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan_all.yaml"],
         },
+        {
+            "type": "python",
+            "name": "sparx64",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/sparxround/sparx64_1activebit/sparx64-1rounds-bit-1.yaml"],
+        },
 
     ]
 }

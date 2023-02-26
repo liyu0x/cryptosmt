@@ -315,11 +315,3 @@ def and_bct(variables, non_part, input_size):
 
             cnf += "({}) &".format(clause[:-2])
     return "ASSERT({} = 0bin1);\n".format(cnf[:-2])
-
-
-def ax_box(x):
-    x0 = x >> 3 & 0x1
-    x1 = x >> 2 & 0x1
-    x2 = x >> 1 & 0x1
-    x3 = x & 0x1
-    return (x0 & x1) ^ (x2 & x3)

@@ -11,10 +11,10 @@ wordsize: 32
 mode: 4 #boomerang search mode
 #design: ax
 offset: 0
-rounds: 83
-#sweight: 35
-switchStartRound: 32
+rounds: 60
+sweight: 13
+switchStartRound: 25
 switchRounds: 4
 fixedVariables:
-  - X0: "0x0000C010"
-  - X60: "0x00480840"
+    - X0: "0x84210000"
+    - X60: "0x00880108"

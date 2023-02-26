@@ -8,7 +8,7 @@ from cryptanalysis import search
 from ciphers import (simon, speck, simonlinear, keccak, keccakdiff,
                      siphash, simonrk, chaskeymachalf, simonkeyrc,
                      ketje, ascon, salsa, chacha, skinny, skinnyrk, gimli,
-                     present, craft, craftlinear, trifle, trifle, triflerk,gift)
+                     present, craft, craftlinear, trifle, trifle, triflerk,gift,sparx)
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
 
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -43,7 +43,8 @@ def startsearch(tool_parameters):
                     "craftlinear" : craftlinear.CraftCipherLinear(),
                     "trifle" : trifle.TrifleCipher(),
                     "triflerk" : triflerk.TrifleRK(),
-                    "gift": gift.GiftCipher()}
+                    "gift": gift.GiftCipher(),
+                    "sparx":sparx.SPARXCipher()}
 
     cipher = None
 

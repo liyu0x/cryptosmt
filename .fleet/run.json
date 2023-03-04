@@ -12,9 +12,8 @@
         },
         {
             "type": "python",
-            "name": "sparx64",
-            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/sparxround/sparx64_1activebit/sparx64-1rounds-bit-1.yaml"],
+            "name": "boomerang-katan-bct",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan.yaml"],
         },
-
     ]
 }

@@ -1,0 +1,9 @@
+cipher: simon
+timelimit: 86400 #24 hours
+wordsize: 16
+mode: 0
+rounds: 12
+switchStartRound: -1 # set -1 means seraching without AND-BCT
+switchRounds: 4
+sweight: 0
+endweight: 26

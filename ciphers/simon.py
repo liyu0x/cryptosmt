@@ -36,6 +36,12 @@ class SimonCipher(AbstractCipher):
         wordsize = parameters["wordsize"]
         rounds = parameters["rounds"]
         weight = parameters["sweight"]
+        switch_start_round = parameters["switchStartRound"]
+        switch_rounds = parameters["switchRounds"]
+
+        e0_search_rounds = rounds if switch_start_round == -1 else switch_start_round
+        em_search_rounds = rounds if switch_start_round == -1 else e0_search_rounds + switch_rounds
+        e1_search_rounds = rounds
 
         # Replace with custom if set in parameters.
         if "rotationconstants" in parameters:
@@ -68,9 +74,29 @@ class SimonCipher(AbstractCipher):
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
-            for i in range(rounds):
-                self.setupSimonRound(stp_file, x[i], y[i], x[i+1], y[i+1],
+            # E0
+            for i in range(e0_search_rounds):
+                self.setupSimonRound(stp_file, x[i], y[i], x[i + 1], y[i + 1],
                                      and_out[i], w[i], wordsize)
+            # for i in range(e0_search_rounds, em_search_rounds - 1):
+            #     self.setupSimonRound(stp_file, x[i], y[i], x[i + 1], y[i + 1],
+            #                          and_out[i], w[i], wordsize)
+            # # Em
+            # for i in range(e0_search_rounds, em_search_rounds):
+            #     command = stpcommands.and_bct(self.small_vari(x[i], y[i]), self.ax_box_2, 2)
+            #     command += stpcommands.and_bct(self.big_vari(x[i], y[i]), self.ax_box, 4)
+            #     stp_file.write(command)
+            # # E1
+            # for i in range(e0_search_rounds, em_search_rounds):
+            #     self.setupSimonRound(stp_file, x[i], y[i], x[i + 1], y[i + 1],
+            #                          and_out[i], w[i], wordsize)
+            # for i in range(em_search_rounds, e1_search_rounds):
+            #     self.setupSimonRound(stp_file, x[i], y[i], x[i + 1], y[i + 1],
+            #                          and_out[i], w[i], wordsize)
+
+            # for i in range(rounds):
+            #     self.setupSimonRound(stp_file, x[i], y[i], x[i+1], y[i+1],
+            #                          and_out[i], w[i], wordsize)
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, x + y, wordsize)

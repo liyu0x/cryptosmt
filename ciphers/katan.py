@@ -63,7 +63,6 @@ class katan(AbstractCipher):
           0, 0, 1, 0]
 
     def prepare(self, worksize):
-        self.name += str(worksize)
         if worksize == 32:
             self.katan_sepecification = self.katan_32_specification
         elif worksize == 48:
@@ -214,10 +213,8 @@ class katan(AbstractCipher):
                                                                             self.katan_sepecification["L2"])
 
         if enable_bct:
-            # w[1]=a[2]
+            # set zero to both weight
             command += "ASSERT({0}[1:1] = 0b0);\n".format(w, a)  # AND in the L1 register
-            # As long as either 1 AND operation in L2 register is active, prob is 1
-            # w[0]=a[0]|a[1]
             command += "ASSERT({0}[0:0] = 0b0);\n".format(w, a)
         else:
             # w[1]=a[2]
@@ -257,14 +254,14 @@ class katan(AbstractCipher):
             f,
             self.katan_sepecification["y2"])
 
-        zeros = "0b"
-        for i in range(wordsize - 3):
-            zeros += "0"
-        command += "ASSERT({0} = {1}[{2}:3]);\n".format(zeros, f, wordsize - 1)
-        command += "ASSERT({0} = {1}[{2}:3]);\n".format(zeros, a, wordsize - 1)
-        zeros += "0"
-        command += "ASSERT({0} = {1}[{2}:2]);\n".format(zeros,
-                                                        w, wordsize - 1)  # Use 2 bits to store would be sufficient
+        # zeros = "0b"
+        # for i in range(wordsize - 3):
+        #     zeros += "0"
+        # command += "ASSERT({0} = {1}[{2}:3]);\n".format(zeros, f, wordsize - 1)
+        # command += "ASSERT({0} = {1}[{2}:3]);\n".format(zeros, a, wordsize - 1)
+        # zeros += "0"
+        # command += "ASSERT({0} = {1}[{2}:2]);\n".format(zeros,
+        #                                                 w, wordsize - 1)  # Use 2 bits to store would be sufficient
 
         stp_file.write(command)
         return

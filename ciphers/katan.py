@@ -159,8 +159,14 @@ class katan(AbstractCipher):
                                      w[i], wordsize, i, offset, True)
             # Em
             for i in range(e0_search_rounds, em_search_rounds):
-                command = stpcommands.and_bct(self.small_vari(x[i], y[i]), self.ax_box_2, 2)
-                command += stpcommands.and_bct(self.big_vari(x[i], y[i]), self.ax_box, 4)
+                command = stpcommands.and_bct(self.small_vari(x[i], y[i], 0), self.ax_box_2, 2)
+                command += stpcommands.and_bct(self.big_vari(x[i], y[i], 0), self.ax_box, 4)
+                if wordsize >= 48:
+                    command += stpcommands.and_bct(self.small_vari(x[i], y[i], 1), self.ax_box_2, 2)
+                    command += stpcommands.and_bct(self.big_vari(x[i], y[i], 1), self.ax_box, 4)
+                if wordsize >= 64:
+                    command += stpcommands.and_bct(self.small_vari(x[i], y[i], 2), self.ax_box_2, 2)
+                    command += stpcommands.and_bct(self.big_vari(x[i], y[i], 2), self.ax_box, 4)
                 stp_file.write(command)
             # E1
             for i in range(e0_search_rounds, em_search_rounds):
@@ -212,6 +218,48 @@ class katan(AbstractCipher):
                                                                             self.katan_sepecification["x4"] +
                                                                             self.katan_sepecification["L2"])
 
+        if wordsize >= 48:
+            # Check if AND is active
+            # a[0]=x[y5]|x[y6]
+            command += "ASSERT({0}[3:3] = {1}[{2}:{2}]|{3}[{4}:{4}]);\n".format(a, x_in,
+                                                                                self.katan_sepecification["y5"] - 1,
+                                                                                x_in,
+                                                                                self.katan_sepecification["y6"] - 1)
+            # a[1] = x[y3]| x[y4]
+            command += "ASSERT({0}[4:4] = {1}[{2}:{2}]|{3}[{4}:{4}]);\n".format(a, x_in,
+                                                                                self.katan_sepecification["y3"] - 1,
+                                                                                x_in,
+                                                                                self.katan_sepecification["y4"] - 1)
+            # Locations for L1 = 5 and 8. In full 32-bit register, 5+19 = 24, 8+19 = 27
+            # a[2] = x[x3+L2] | x[x4+L2]
+            command += "ASSERT({0}[5:5] = {1}[{2}:{2}]|{3}[{4}:{4}]);\n".format(a, x_in,
+                                                                                self.katan_sepecification["x3"] +
+                                                                                self.katan_sepecification["L2"] - 1,
+                                                                                x_in,
+                                                                                self.katan_sepecification["x4"] +
+                                                                                self.katan_sepecification["L2"] - 1)
+
+        if wordsize >= 64:
+            # Check if AND is active
+            # a[0]=x[y5]|x[y6]
+            command += "ASSERT({0}[6:6] = {1}[{2}:{2}]|{3}[{4}:{4}]);\n".format(a, x_in,
+                                                                                self.katan_sepecification["y5"] - 2,
+                                                                                x_in,
+                                                                                self.katan_sepecification["y6"] - 2)
+            # a[1] = x[y3]| x[y4]
+            command += "ASSERT({0}[7:7] = {1}[{2}:{2}]|{3}[{4}:{4}]);\n".format(a, x_in,
+                                                                                self.katan_sepecification["y3"] - 2,
+                                                                                x_in,
+                                                                                self.katan_sepecification["y4"] - 2)
+            # Locations for L1 = 5 and 8. In full 32-bit register, 5+19 = 24, 8+19 = 27
+            # a[2] = x[x3+L2] | x[x4+L2]
+            command += "ASSERT({0}[8:8] = {1}[{2}:{2}]|{3}[{4}:{4}]);\n".format(a, x_in,
+                                                                                self.katan_sepecification["x3"] +
+                                                                                self.katan_sepecification["L2"] - 2,
+                                                                                x_in,
+                                                                                self.katan_sepecification["x4"] +
+                                                                                self.katan_sepecification["L2"] - 2)
+
         if enable_bct:
             # set zero to both weight
             command += "ASSERT({0}[1:1] = 0b0);\n".format(w, a)  # AND in the L1 register
@@ -222,37 +270,50 @@ class katan(AbstractCipher):
             # As long as either 1 AND operation in L2 register is active, prob is 1
             # w[0]=a[0]|a[1]
             command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
+            if wordsize >= 48:
+                command += "ASSERT({0}[3:3] = {1}[5:5]);\n".format(w, a)
+                command += "ASSERT({0}[2:2] = {1}[3:3] | {1}[4:4]);\n".format(w, a)
+            if wordsize >= 64:
+                command += "ASSERT({0}[3:3] = {1}[8:8]);\n".format(w, a)
+                command += "ASSERT({0}[2:2] = {1}[6:6] | {1}[7:7]);\n".format(w, a)
 
         for i in range(3):
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
 
         l2 = self.katan_sepecification["L2"]
-        # Permutation layer (shift left L2 by 1 except for position 18)
-        for i in range(0, l2 - 1):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, i)
-        # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
-        for i in range(l2, wordsize - 1):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, i)
 
-        # Perform XOR operation for to get bits for position L2_0 and 19 (L1_0)
-        # x_out[0] = x[31]^x[26]^a[2]^(x[22]&IR[r])
-        command += "ASSERT({0}[0:0] = BVXOR({1}[{2}:{2}],BVXOR({1}[{3}:{3}],BVXOR({4}[2:2],({1}[{5}:{5}]&0b{6})))));\n".format(
-            x_out,
-            x_in,
-            l2 + self.katan_sepecification["x1"],
-            l2 + self.katan_sepecification["x2"],
-            f,
-            l2 + self.katan_sepecification["x5"],
-            self.IR[r + offset])
-        # x_out[19] = x[18]^a[1]^x[7]^a[0]
+        times = 1
+        if wordsize == 48:
+            times = 2
+        elif wordsize == 64:
+            times = 3
+        for i in range(times):
+            # Permutation layer (shift left L2 by 1 except for position 18)
+            for i in range(0, l2 - 1):
+                command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, i)
+            # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
+            for i in range(l2, wordsize - 1):
+                command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, i)
 
-        command += "ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],BVXOR({4}[1:1],BVXOR({2}[{5}:{5}],{4}[0:0]))));\n".format(
-            x_out,
-            l2,
-            x_in,
-            self.katan_sepecification["y1"],
-            f,
-            self.katan_sepecification["y2"])
+            # Perform XOR operation for to get bits for position L2_0 and 19 (L1_0)
+            # x_out[0] = x[31]^x[26]^a[2]^(x[22]&IR[r])
+            command += "ASSERT({0}[0:0] = BVXOR({1}[{2}:{2}],BVXOR({1}[{3}:{3}],BVXOR({4}[2:2],({1}[{5}:{5}]&0b{6})))));\n".format(
+                x_out,
+                x_in,
+                l2 + self.katan_sepecification["x1"],
+                l2 + self.katan_sepecification["x2"],
+                f,
+                l2 + self.katan_sepecification["x5"],
+                self.IR[r + offset])
+            # x_out[19] = x[18]^a[1]^x[7]^a[0]
+
+            command += "ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],BVXOR({4}[1:1],BVXOR({2}[{5}:{5}],{4}[0:0]))));\n".format(
+                x_out,
+                l2,
+                x_in,
+                self.katan_sepecification["y1"],
+                f,
+                self.katan_sepecification["y2"])
 
         # zeros = "0b"
         # for i in range(wordsize - 3):
@@ -266,22 +327,22 @@ class katan(AbstractCipher):
         stp_file.write(command)
         return
 
-    def small_vari(self, x_in, x_out):
+    def small_vari(self, x_in, x_out, offset):
         l2 = self.katan_sepecification["L2"]
-        variables = ["{0}[{1}:{1}]".format(x_in, l2 + self.katan_sepecification["x3"]),
-                     "{0}[{1}:{1}]".format(x_in, l2 + self.katan_sepecification["x4"]),
-                     "{0}[{1}:{1}]".format(x_out, l2 + self.katan_sepecification["x3"] + 1),
-                     "{0}[{1}:{1}]".format(x_out, l2 + self.katan_sepecification["x4"] + 1)]
+        variables = ["{0}[{1}:{1}]".format(x_in, l2 + self.katan_sepecification["x3"] - offset),
+                     "{0}[{1}:{1}]".format(x_in, l2 + self.katan_sepecification["x4"] - offset),
+                     "{0}[{1}:{1}]".format(x_out, l2 + self.katan_sepecification["x3"] - offset + 1),
+                     "{0}[{1}:{1}]".format(x_out, l2 + self.katan_sepecification["x4"] - offset + 1)]
         return variables
 
-    def big_vari(self, x_in, x_out):
-        variables = ["{0}[{1}:{1}]".format(x_in, self.katan_sepecification["y3"]),
-                     "{0}[{1}:{1}]".format(x_in, self.katan_sepecification["y4"]),
-                     "{0}[{1}:{1}]".format(x_in, self.katan_sepecification["y5"]),
-                     "{0}[{1}:{1}]".format(x_in, self.katan_sepecification["y6"]),
-                     "{0}[{1}:{1}]".format(x_out, self.katan_sepecification["y3"] + 1),
-                     "{0}[{1}:{1}]".format(x_out, self.katan_sepecification["y4"] + 1),
-                     "{0}[{1}:{1}]".format(x_out, self.katan_sepecification["y5"] + 1),
-                     "{0}[{1}:{1}]".format(x_out, self.katan_sepecification["y6"] + 1)]
+    def big_vari(self, x_in, x_out, offset):
+        variables = ["{0}[{1}:{1}]".format(x_in, self.katan_sepecification["y3"] - offset),
+                     "{0}[{1}:{1}]".format(x_in, self.katan_sepecification["y4"] - offset),
+                     "{0}[{1}:{1}]".format(x_in, self.katan_sepecification["y5"] - offset),
+                     "{0}[{1}:{1}]".format(x_in, self.katan_sepecification["y6"] - offset),
+                     "{0}[{1}:{1}]".format(x_out, self.katan_sepecification["y3"] - offset + 1),
+                     "{0}[{1}:{1}]".format(x_out, self.katan_sepecification["y4"] - offset + 1),
+                     "{0}[{1}:{1}]".format(x_out, self.katan_sepecification["y5"] - offset + 1),
+                     "{0}[{1}:{1}]".format(x_out, self.katan_sepecification["y6"] - offset + 1)]
 
         return variables

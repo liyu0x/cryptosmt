@@ -1,9 +1,9 @@
-cipher: katan
+cipher: katan32
 timelimit: 86400 #24 hours
 wordsize: 32
 mode: 0
 offset: 0
-rounds: 120
+rounds: 140
 switchStartRound: 60 # set -1 means seraching without AND-BCT
 switchRounds: 4
 sweight: 0

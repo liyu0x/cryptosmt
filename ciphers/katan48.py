@@ -282,3 +282,6 @@ class katan48(AbstractCipher):
 
         stp_file.write(command)
         return
+
+
+

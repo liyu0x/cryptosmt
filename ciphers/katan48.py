@@ -17,6 +17,18 @@ class katan48(AbstractCipher):
 
     name = "katan48"
 
+    def ax_box(self, x):
+        x0 = x >> 3 & 0x1
+        x1 = x >> 2 & 0x1
+        x2 = x >> 1 & 0x1
+        x3 = x & 0x1
+        return (x0 & x1) ^ (x2 & x3)
+
+    def ax_box_2(self, x):
+        x0 = x >> 1 & 0x1
+        x1 = x & 0x1
+        return x0 & x1
+
     def getFormatString(self):
         """
         Returns the print format.
@@ -81,16 +93,30 @@ class katan48(AbstractCipher):
 
             # Em
             for i in range(e0_search_rounds, em_search_rounds):
+                command = stpcommands.and_bct(small_vari(xa[i], xb[i]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(small_vari(xb[i], ya[i]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(big_vari(xa[i], xb[i]), self.ax_box, 4)
+                command += stpcommands.and_bct(big_vari(xb[i], ya[i]), self.ax_box, 4)
+                stp_file.write(command)
 
             # E1
-
-            # Modify start_round to start from different positions
-            for i in range(rounds):
-                self.setupKatanRound(stp_file, xa[i], xb[i], f[i], a[i], xa[i + 1],
+            for i in range(e0_search_rounds, em_search_rounds):
+                self.setupKatanRoundWithoutComputingWeight(stp_file, ya[i], yb[i], f[i], a[i], ya[i + 1],
+                                                           w[i], wordsize, i, offset)
+            for i in range(em_search_rounds, e1_search_rounds):
+                self.setupKatanRound(stp_file, ya[i], yb[i], f[i], a[i], ya[i + 1],
                                      w[i], wordsize, i, offset)
 
+            # Modify start_round to start from different positions
+
             # No all zero characteristic
-            stpcommands.assertNonZero(stp_file, xa, wordsize)
+            # stpcommands.assertNonZero(stp_file, xa, wordsize)
+            if switch_start_round == -1:
+                stpcommands.assertNonZero(stp_file, xa, wordsize)
+            else:
+                # use BCT
+                stpcommands.assertNonZero(stp_file, xa[0:em_search_rounds - 1], wordsize)
+                stpcommands.assertNonZero(stp_file, ya[em_search_rounds:rounds + 1], wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -295,10 +321,12 @@ class katan48(AbstractCipher):
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
 
         # w[1]=a[2]
-        command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)  # AND in the L1 register
+        command += "ASSERT({0}[1:1] = 0b0);\n".format(w, a)
+        command += "ASSERT({0}[0:0] = 0b0);\n".format(w, a)
+        # command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)  # AND in the L1 register
         # As long as either 1 AND operation in L2 register is active, prob is 1
         # w[0]=a[0]|a[1]
-        command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
+        # command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
 
         # Shift and store into xb
         # Permutation layer (shift left L2 by 1 except for position 28)
@@ -339,10 +367,13 @@ class katan48(AbstractCipher):
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
 
         # w[3]=a[5]
-        command += "ASSERT({0}[3:3] = {1}[5:5]);\n".format(w, a)  # AND in the L1 register
+        # command += "ASSERT({0}[3:3] = {1}[5:5]);\n".format(w, a)  # AND in the L1 register
         # As long as either 1 AND operation in L2 register is active, prob is 1
         # w[2]=a[3]|a[4]
-        command += "ASSERT({0}[2:2] = {1}[3:3] | {1}[4:4]);\n".format(w, a)
+        # command += "ASSERT({0}[2:2] = {1}[3:3] | {1}[4:4]);\n".format(w, a)
+
+        command += "ASSERT({0}[3:3] = 0b0);\n".format(w, a)
+        command += "ASSERT({0}[2:2] = 0b0);\n".format(w, a)
 
         # Shift and store into xa_out
         # Permutation layer (shift left L2 by 1 except for position 28)
@@ -379,21 +410,21 @@ class katan48(AbstractCipher):
 
 
 def small_vari(x_in, x_out):
-    variables = ["{0}[{1}:{1}]".format(x_in, 19 + 5),
-                 "{0}[{1}:{1}]".format(x_in, 19 + 8),
-                 "{0}[{1}:{1}]".format(x_out, 19 + 5 + 1),
-                 "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1)]
+    variables = ["{0}[{1}:{1}]".format(x_in, 29 + 7),
+                 "{0}[{1}:{1}]".format(x_in, 29 + 15),
+                 "{0}[{1}:{1}]".format(x_out, 29 + 7 + 1),
+                 "{0}[{1}:{1}]".format(x_out, 29 + 15 + 1)]
     return variables
 
 
 def big_vari(x_in, x_out):
-    variables = ["{0}[{1}:{1}]".format(x_in, 3),
-                 "{0}[{1}:{1}]".format(x_in, 8),
-                 "{0}[{1}:{1}]".format(x_in, 10),
-                 "{0}[{1}:{1}]".format(x_in, 12),
-                 "{0}[{1}:{1}]".format(x_out, 3 + 1),
-                 "{0}[{1}:{1}]".format(x_out, 8 + 1),
-                 "{0}[{1}:{1}]".format(x_out, 10 + 1),
-                 "{0}[{1}:{1}]".format(x_out, 12 + 1)]
+    variables = ["{0}[{1}:{1}]".format(x_in, 6),
+                 "{0}[{1}:{1}]".format(x_in, 15),
+                 "{0}[{1}:{1}]".format(x_in, 13),
+                 "{0}[{1}:{1}]".format(x_in, 21),
+                 "{0}[{1}:{1}]".format(x_out, 6 + 1),
+                 "{0}[{1}:{1}]".format(x_out, 15 + 1),
+                 "{0}[{1}:{1}]".format(x_out, 13 + 1),
+                 "{0}[{1}:{1}]".format(x_out, 21 + 1)]
 
     return variables

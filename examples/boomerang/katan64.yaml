@@ -5,6 +5,6 @@ mode: 0
 offset: 0
 rounds: 40
 switchStartRound: 20 # set -1 means seraching without AND-BCT
-switchRounds: 10
+switchRounds: 6
 sweight: 0
 endweight: 100

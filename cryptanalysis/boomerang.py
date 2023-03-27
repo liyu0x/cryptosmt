@@ -17,7 +17,6 @@ import math
 import os
 import time
 import sys
-from cryptanalysis import andbctutil
 
 
 def computeFeistelBoomerangDifferential(cipher, parameters):
@@ -373,11 +372,6 @@ def createBCT(parameters, cipher):
                     diff = s[x] ^ s[x ^ Di] ^ s[x ^ Do] ^ s[x ^ Di ^ Do]
                     if diff == 0:
                         parameters["bct"][Di][Do] += 1
-    if parameters["design"] == "ax":
-        s_box_size_in = cipher.BCT_INPUT_SIZE
-        s_box_size_out = cipher.BCT_INPUT_SIZE
-        parameters["bct"] = andbctutil.create_bct(cipher)
-    # print BCT
     print("----")
     for x in range(2 ** s_box_size_in):
         for y in range(2 ** s_box_size_out):
@@ -446,10 +440,6 @@ def blockInvalidSwitches(beta, parameters, stp_filename):
                             b = "{}".format(hex(output))
                             blockVariableValue(stp_file, a, b)
                 n += 1
-        if parameters["design"] == "ax":
-            # for 32-bit katan
-            andbctutil.block_invalid_switches(beta, parameters, blockVariableValue, stp_file)
-
         # Ensure that beta is not equal to gamma
         blockVariableValue(stp_file, "X0", beta)
         stpcommands.setupQuery(stp_file)
@@ -491,11 +481,6 @@ def checkBCT(beta, gamma, parameters, cipher):
                         parameters["sboxSize"] * parameters["sboxSize"])
             else:
                 return 0
-    # For KATAN
-    if parameters["design"] == "ax":
-        _in = int(beta, 16)
-        _out = int(gamma, 16)
-        switchProb = andbctutil.check_bct(_in, _out, parameters["bct"], switchProb, cipher)
     return switchProb
 
 

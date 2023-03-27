@@ -17,6 +17,38 @@ class katan64(AbstractCipher):
 
     name = "katan64"
 
+    def ax_box(self, x):
+        x0 = x >> 3 & 0x1
+        x1 = x >> 2 & 0x1
+        x2 = x >> 1 & 0x1
+        x3 = x & 0x1
+        return (x0 & x1) ^ (x2 & x3)
+
+    def ax_box_2(self, x):
+        x0 = x >> 1 & 0x1
+        x1 = x & 0x1
+        return x0 & x1
+
+    def small_vari(self, x_in, x_out):
+        variables = ["{0}[{1}:{1}]".format(x_in, 39 + 11),
+                     "{0}[{1}:{1}]".format(x_in, 39 + 20),
+                     "{0}[{1}:{1}]".format(x_out, 39 + 11 + 1),
+                     "{0}[{1}:{1}]".format(x_out, 39 + 20 + 1)]
+        return variables
+
+    def big_vari(self, x_in, x_out):
+
+        variables = ["{0}[{1}:{1}]".format(x_in, 9),
+                     "{0}[{1}:{1}]".format(x_in, 14),
+                     "{0}[{1}:{1}]".format(x_in, 21),
+                     "{0}[{1}:{1}]".format(x_in, 33),
+                     "{0}[{1}:{1}]".format(x_out, 9 + 1),
+                     "{0}[{1}:{1}]".format(x_out, 14 + 1),
+                     "{0}[{1}:{1}]".format(x_out, 21 + 1),
+                     "{0}[{1}:{1}]".format(x_out, 33 + 1)]
+
+        return variables
+
     def getFormatString(self):
         """
         Returns the print format.
@@ -38,9 +70,12 @@ class katan64(AbstractCipher):
         switch_start_round = parameters["switchStartRound"]
         switch_rounds = parameters["switchRounds"]
 
-        e0_search_rounds = rounds if switch_start_round == -1 else switch_start_round
-        em_search_rounds = rounds if switch_start_round == -1 else e0_search_rounds + switch_rounds
-        e1_search_rounds = rounds
+        e0_start_search_num = 0
+        e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        em_start_search_num = rounds if switch_start_round == -1 else switch_start_round
+        em_end_search_num = rounds if switch_start_round == -1 else e0_end_search_num
+        e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + 1
+        e1_end_search_num = rounds
 
         with open(stp_filename, 'w') as stp_file:
             header = ("% Input File for STP\n% KATAN64 w={}"
@@ -77,12 +112,31 @@ class katan64(AbstractCipher):
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
-            for i in range(rounds):
+            # E0
+            for i in range(e0_start_search_num, e0_end_search_num):
                 self.setupKatanRound(stp_file, xa[i], xb[i], xc[i], f[i], a[i], xa[i + 1],
+                                     w[i], wordsize, i, offset)
+            # Em
+            for i in range(em_start_search_num, em_end_search_num):
+                command = stpcommands.and_bct(self.small_vari(xa[i], xb[i + 1]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(self.small_vari(xb[i], xc[i + 1]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(self.small_vari(xc[i], ya[i + 1]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(self.big_vari(xa[i], xb[i + 1]), self.ax_box, 4)
+                command += stpcommands.and_bct(self.big_vari(xb[i], xc[i + 1]), self.ax_box, 4)
+                command += stpcommands.and_bct(self.big_vari(xc[i], ya[i + 1]), self.ax_box, 4)
+                stp_file.write(command)
+            # E1
+            for i in range(e1_start_search_num, e1_end_search_num):
+                self.setupKatanRound(stp_file, ya[i], yb[i], yc[i], f[i], a[i], ya[i + 1],
                                      w[i], wordsize, i, offset)
 
             # No all zero characteristic
-            stpcommands.assertNonZero(stp_file, xa, wordsize)
+            if switch_start_round == -1:
+                stpcommands.assertNonZero(stp_file, xa, wordsize)
+            else:
+                # use BCT
+                stpcommands.assertNonZero(stp_file, xa[e0_start_search_num:e0_end_search_num], wordsize)
+                stpcommands.assertNonZero(stp_file, ya[e1_start_search_num:e1_end_search_num], wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference

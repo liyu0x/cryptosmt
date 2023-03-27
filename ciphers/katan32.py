@@ -17,11 +17,6 @@ class katan32(AbstractCipher):
 
     name = "katan32"
 
-    BCT_INPUT_SIZE = 4
-
-    BIG_REG_INPUT_INDEXES = [3, 8, 10, 12]
-    SMALL_REG_INPUT_INDEXES = [19 + 5, 19 + 8]
-
     IR = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
           1, 1, 0, 1, 0, 1, 0, 1, 0, 1,
           1, 1, 1, 0, 1, 1, 0, 0, 1, 1,
@@ -61,6 +56,25 @@ class katan32(AbstractCipher):
         x1 = x & 0x1
         return x0 & x1
 
+    def small_vari(self, x_in, x_out):
+        variables = ["{0}[{1}:{1}]".format(x_in, 19 + 5),
+                     "{0}[{1}:{1}]".format(x_in, 19 + 8),
+                     "{0}[{1}:{1}]".format(x_out, 19 + 5 + 1),
+                     "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1)]
+        return variables
+
+    def big_vari(self, x_in, x_out):
+        variables = ["{0}[{1}:{1}]".format(x_in, 3),
+                     "{0}[{1}:{1}]".format(x_in, 8),
+                     "{0}[{1}:{1}]".format(x_in, 10),
+                     "{0}[{1}:{1}]".format(x_in, 12),
+                     "{0}[{1}:{1}]".format(x_out, 3 + 1),
+                     "{0}[{1}:{1}]".format(x_out, 8 + 1),
+                     "{0}[{1}:{1}]".format(x_out, 10 + 1),
+                     "{0}[{1}:{1}]".format(x_out, 12 + 1)]
+
+        return variables
+
     def getSbox(self):
         return None
 
@@ -92,9 +106,12 @@ class katan32(AbstractCipher):
         switch_start_round = parameters["switchStartRound"]
         switch_rounds = parameters["switchRounds"]
 
-        e0_search_rounds = rounds if switch_start_round == -1 else switch_start_round
-        em_search_rounds = rounds if switch_start_round == -1 else e0_search_rounds + switch_rounds
-        e1_search_rounds = rounds
+        e0_start_search_num = 0
+        e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        em_start_search_num = rounds if switch_start_round == -1 else switch_start_round
+        em_end_search_num = rounds if switch_start_round == -1 else e0_end_search_num
+        e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + 1
+        e1_end_search_num = rounds
 
         with open(stp_filename, 'w') as stp_file:
             header = ("% Input File for STP\n% KATAN32 w={}"
@@ -123,22 +140,16 @@ class katan32(AbstractCipher):
             # Modify start_round to start from different positions
 
             # E0
-            for i in range(e0_search_rounds):
+            for i in range(e0_start_search_num, e0_end_search_num):
                 self.setupKatanRound(stp_file, x[i], f[i], a[i], x[i + 1],
                                      w[i], wordsize, i, offset)
-            for i in range(e0_search_rounds, em_search_rounds - 1):
-                self.setupKatanRoundWithoutComputingWeight(stp_file, x[i], f[i], a[i], x[i + 1],
-                                                           w[i], wordsize, i, offset)
             # Em
-            for i in range(e0_search_rounds, em_search_rounds):
-                command = stpcommands.and_bct(small_vari(x[i], y[i]), self.ax_box_2, 2)
-                command += stpcommands.and_bct(big_vari(x[i], y[i]), self.ax_box, 4)
+            for i in range(em_start_search_num, em_end_search_num):
+                command = stpcommands.and_bct(self.small_vari(x[i], y[i + 1]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(self.big_vari(x[i], y[i + 1]), self.ax_box, 4)
                 stp_file.write(command)
             # E1
-            for i in range(e0_search_rounds, em_search_rounds):
-                self.setupKatanRoundWithoutComputingWeight(stp_file, y[i], f[i], a[i], y[i + 1],
-                                                           w[i], wordsize, i, offset)
-            for i in range(em_search_rounds, e1_search_rounds):
+            for i in range(e1_start_search_num, e1_end_search_num):
                 self.setupKatanRound(stp_file, y[i], f[i], a[i], y[i + 1],
                                      w[i], wordsize, i, offset)
 
@@ -146,8 +157,8 @@ class katan32(AbstractCipher):
                 stpcommands.assertNonZero(stp_file, x, wordsize)
             else:
                 # use BCT
-                stpcommands.assertNonZero(stp_file, x[0:em_search_rounds - 1], wordsize)
-                stpcommands.assertNonZero(stp_file, y[em_search_rounds:rounds + 1], wordsize)
+                stpcommands.assertNonZero(stp_file, x[e0_start_search_num:e0_end_search_num], wordsize)
+                stpcommands.assertNonZero(stp_file, y[e1_start_search_num:e1_end_search_num], wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -217,71 +228,3 @@ class katan32(AbstractCipher):
 
         stp_file.write(command)
         return
-
-    def setupKatanRoundWithoutComputingWeight(self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset):
-        """
-        Model for differential behaviour of one round KATAN32
-        """
-        command = ""
-
-        # Check if AND is active
-        # a[0] = x[3] | x[8]
-        command += "ASSERT({0}[0:0] = {1}[3:3]|{2}[8:8]);\n".format(a, x_in, x_in)
-        # a[1] = x[10]| x[12]
-        command += "ASSERT({0}[1:1] = {1}[10:10]|{2}[12:12]);\n".format(a, x_in, x_in)
-        # Locations for L1 = 5 and 8. In full 32-bit register, 5+19 = 24, 8+19 = 27
-        # a[2] = x[24] | x[27]
-        command += "ASSERT({0}[2:2] = {1}[24:24]|{2}[27:27]);\n".format(a, x_in, x_in)
-
-        # w[1]=a[2]
-        command += "ASSERT({0}[1:1] = 0b0);\n".format(w, a)  # AND in the L1 register
-        # As long as either 1 AND operation in L2 register is active, prob is 1
-        # w[0]=a[0]|a[1]
-        command += "ASSERT({0}[0:0] = 0b0);\n".format(w, a)
-
-        for i in range(3):
-            command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
-
-        # Permutation layer (shift left L2 by 1 except for position 18)
-        for i in range(0, 18):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, i)
-        # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
-        for i in range(19, 31):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, i)
-
-        # Perform XOR operation for to get bits for position L2_0 and 19 (L1_0)
-        # x_out[0] = x[31]^x[26]^a[2]^(x[22]&IR[r])
-        command += "ASSERT({0}[0:0] = BVXOR({1}[31:31],BVXOR({1}[26:26],BVXOR({2}[2:2],({1}[22:22]&0b{3})))));\n".format(
-            x_out, x_in, f, self.IR[r + offset])
-        # x_out[19] = x[18]^a[1]^x[7]^a[0]
-        command += "ASSERT({0}[19:19] = BVXOR({1}[18:18],BVXOR({2}[1:1],BVXOR({1}[7:7],{2}[0:0]))));\n".format(x_out,
-                                                                                                               x_in, f)
-
-        command += "ASSERT(0b000000000000000000000000000000 = {0}[31:2]);\n".format(
-            w)  # Use 2 bits to store would be sufficient
-        command += "ASSERT(0b00000000000000000000000000000 = {0}[31:3]);\n".format(f)
-        command += "ASSERT(0b00000000000000000000000000000 = {0}[31:3]);\n".format(a)
-
-        stp_file.write(command)
-        return
-
-
-def small_vari(x_in, x_out):
-    variables = ["{0}[{1}:{1}]".format(x_in, 19 + 5),
-                 "{0}[{1}:{1}]".format(x_in, 19 + 8),
-                 "{0}[{1}:{1}]".format(x_out, 19 + 5 + 1),
-                 "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1)]
-    return variables
-
-
-def big_vari(x_in, x_out):
-    variables = ["{0}[{1}:{1}]".format(x_in, 3),
-                 "{0}[{1}:{1}]".format(x_in, 8),
-                 "{0}[{1}:{1}]".format(x_in, 10),
-                 "{0}[{1}:{1}]".format(x_in, 12),
-                 "{0}[{1}:{1}]".format(x_out, 3 + 1),
-                 "{0}[{1}:{1}]".format(x_out, 8 + 1),
-                 "{0}[{1}:{1}]".format(x_out, 10 + 1),
-                 "{0}[{1}:{1}]".format(x_out, 12 + 1)]
-
-    return variables

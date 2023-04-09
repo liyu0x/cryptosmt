@@ -7,6 +7,6 @@ sweight: 0
 rounds: 10
 wordsize: 16
 mode: 0
-switchStartRound: 8  # set -1 means seraching without AND-BCT
+switchStartRound: 5  # set -1 means seraching without AND-BCT
 switchRounds: 1
 ...

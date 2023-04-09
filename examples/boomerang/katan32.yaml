@@ -3,8 +3,8 @@ timelimit: 86400 #24 hours
 wordsize: 32
 mode: 0
 offset: 0
-rounds: 40
-switchStartRound: 20 # set -1 means seraching without AND-BCT
-switchRounds: 3
+rounds: 100
+switchStartRound: 50 # set -1 means seraching without AND-BCT
+switchRounds: 4
 sweight: 0
 endweight: 100

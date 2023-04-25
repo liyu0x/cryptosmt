@@ -8,12 +8,39 @@
         {
             "type": "python",
             "name": "boomerang-katan32-retangle",
-            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan_all.yaml"],
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan32_4.yaml"],
         },
         {
             "type": "python",
-            "name": "boomerang-katan-bct",
-            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan.yaml"],
+            "name": "boomerang-katan48-bct",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan48.yaml"],
         },
+        {
+            "type": "python",
+            "name": "boomerang-katan48-retangle",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan48_4.yaml"],
+        },
+        {
+            "type": "python",
+            "name": "boomerang-katan64-bct",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan64.yaml"],
+        },
+        {
+            "type": "python",
+            "name": "boomerang-katan64-retangle",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/katan64_4.yaml"],
+        },
+        {
+            "type": "python",
+            "name": "boomerang-simon-bct",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/simon.yaml"],
+        },
+        {
+            "type": "python",
+            "name": "boomerang-simon-retangle",
+            "arguments": ["cryptosmt-boomerang.py","--input", "./examples/boomerang/simon_4.yaml"],
+        },
+
+
     ]
 }

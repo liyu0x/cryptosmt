@@ -107,10 +107,10 @@ class katan32(AbstractCipher):
         switch_rounds = parameters["switchRounds"]
 
         e0_start_search_num = 0
-        e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round
         em_start_search_num = rounds if switch_start_round == -1 else switch_start_round
-        em_end_search_num = rounds if switch_start_round == -1 else e0_end_search_num
-        e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + 1
+        em_end_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
         e1_end_search_num = rounds
 
         with open(stp_filename, 'w') as stp_file:
@@ -145,9 +145,13 @@ class katan32(AbstractCipher):
                                      w[i], wordsize, i, offset)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                command = stpcommands.and_bct(self.small_vari(x[i], y[i + 1]), self.ax_box_2, 2)
-                command += stpcommands.and_bct(self.big_vari(x[i], y[i + 1]), self.ax_box, 4)
+                command = stpcommands.and_bct(self.small_vari(x[i], y[i]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(self.big_vari(x[i], y[i]), self.ax_box, 4)
                 stp_file.write(command)
+                self.setupKatanRound(stp_file, x[i], f[i], a[i], x[i + 1],
+                                     w[i], wordsize, i, offset, True)
+                self.setupKatanRound(stp_file, y[i], f[i], a[i], y[i + 1],
+                                     w[i], wordsize, i, offset, True)
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
                 self.setupKatanRound(stp_file, y[i], f[i], a[i], y[i + 1],
@@ -175,7 +179,7 @@ class katan32(AbstractCipher):
 
         return
 
-    def setupKatanRound(self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset):
+    def setupKatanRound(self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset, switch=False):
         """
         Model for differential behaviour of one round KATAN32
         """
@@ -197,14 +201,15 @@ class katan32(AbstractCipher):
         #     command += "ASSERT({0}[{2}:{2}] = {1}[{2}:{2}]);\n".format(w,a,i)
         #     command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f,a,i)
 
-        # w[1]=a[2]
-        command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)  # AND in the L1 register
-        # As long as either 1 AND operation in L2 register is active, prob is 1
-        # w[0]=a[0]|a[1]
-        command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
+        if not switch:
+            # w[1]=a[2]
+            command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)  # AND in the L1 register
+            # As long as either 1 AND operation in L2 register is active, prob is 1
+            # w[0]=a[0]|a[1]
+            command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
 
-        for i in range(3):
-            command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
+            for i in range(3):
+                command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
 
         # Permutation layer (shift left L2 by 1 except for position 18)
         for i in range(0, 18):

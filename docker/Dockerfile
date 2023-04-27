@@ -1,4 +1,4 @@
-FROM debian:latest
+FROM ubuntu:latest
 
 # Install all packages
 RUN apt-get update && apt-get install -y git build-essential cmake wget curl

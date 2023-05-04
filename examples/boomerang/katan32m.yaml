@@ -3,6 +3,6 @@ timelimit: 86400 #24 hours
 wordsize: 32
 mode: 0
 offset: 0
-rounds: 175
-sweight: 500
-endweight: 0 
+rounds: 10
+sweight: 0
+endweight: 2

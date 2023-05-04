@@ -1,9 +1,3 @@
-'''
-Created on May 10, 2022
-
-@author: jesenteh
-'''
-
 from parser import stpcommands
 from ciphers.cipher import AbstractCipher
 
@@ -91,7 +85,7 @@ class katan32(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['P', 'PA', 'PF', 'C', 'CA', 'CF', 'w']
+        return ['X', 'A', 'E', 'D', 'w']
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -112,53 +106,46 @@ class katan32(AbstractCipher):
             # Setup variables
             # x = input (32), f = outputs of AND operation (Only 3 bits required, use 3 bits to store)
             # a = active or inactive AND operation (Only 3 bits required, use 3 bits to store)
-            p = ["P{}".format(i) for i in range(rounds + 1)]
-            c = ["C{}".format(i) for i in range(rounds + 1)]
-            pf = ["PF{}".format(i) for i in range(rounds)]
-            pa = ["PA{}".format(i) for i in range(rounds)]
-            cf = ["CF{}".format(i) for i in range(rounds)]
-            ca = ["CA{}".format(i) for i in range(rounds)]
+            x = ["X{}".format(i) for i in range(rounds + 1)]
+            e = ["E{}".format(i) for i in range(rounds + 1)]
+            d = ["D{}".format(i) for i in range(rounds + 1)]
+            f = ["F{}".format(i) for i in range(rounds + 1)]
+            a = ["A{}".format(i) for i in range(rounds + 1)]
 
             # w = weight
-            w = ["w{}".format(i) for i in range(rounds)]
+            w = ["w{}".format(i) for i in range(rounds + 1)]
 
-            stpcommands.setupVariables(stp_file, p, wordsize)
-            stpcommands.setupVariables(stp_file, pf, wordsize)
-            stpcommands.setupVariables(stp_file, pa, wordsize)
-            stpcommands.setupVariables(stp_file, cf, wordsize)
-            stpcommands.setupVariables(stp_file, ca, wordsize)
+            stpcommands.setupVariables(stp_file, x, wordsize)
+            stpcommands.setupVariables(stp_file, f, wordsize)
+            stpcommands.setupVariables(stp_file, a, wordsize)
             stpcommands.setupVariables(stp_file, w, wordsize)
-            stpcommands.setupVariables(stp_file, c, wordsize)
+            stpcommands.setupVariables(stp_file, e, wordsize)
+            stpcommands.setupVariables(stp_file, d, wordsize)
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
             # ENCYRPTION PROCESS
             for i in range(rounds):
-                self.setupKatanRound(stp_file, p[i], pf[i], pa[i], p[i + 1],
+                self.setupKatanRound(stp_file, x[i], f[i], a[i], x[i + 1],
                                      w[i], i, offset)
-
-            # stp_file.write("ASSERT({0} = {1});\n".format(p[rounds], c[rounds]))
-
-            # DECRYPTION PROCESS
-            for i in range(rounds - 1, 0, -1):
-                self.setupKatanRound_dec(stp_file, c[i + 1], cf[i], ca[i], c[i], w[i], i, offset)
-
-            self.setupKatanRound_dec(stp_file, c[1], cf[1], ca[1], c[0], w[1], 1, offset)
-
-            command = stpcommands.and_bct(self.small_vari(p[rounds], c[rounds]), self.ax_box_2, 2)
-            command += stpcommands.and_bct(self.big_vari(p[rounds], c[rounds]), self.ax_box, 4)
 
             # COMPUTE OVERLAPPING
             for i in range(rounds):
-                self.compute_weight(stp_file, p[i], pa[i], pf[i], c[i], ca[i], cf[i], w[i], i)
+                trace_bits_enc(stp_file, e, a, f, i)
+            for i in range(rounds, -1, -1):
+                trace_bits_dec(stp_file, d, a, f, i)
 
-            stpcommands.assertNonZero(stp_file, p, wordsize)
-            stpcommands.assertNonZero(stp_file, c, wordsize)
+            for i in range(rounds):
+                compute_weight(stp_file, w, e, d, i)
+
+            stpcommands.assertNonZero(stp_file, x, wordsize)
+            stpcommands.assertNonZero(stp_file, e, wordsize)
+            stpcommands.assertNonZero(stp_file, d, wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
             if parameters["iterative"]:
-                stpcommands.assertVariableValue(stp_file, p[0], p[rounds])
+                stpcommands.assertVariableValue(stp_file, x[0], x[rounds])
 
             for key, value in parameters["fixedVariables"].items():
                 stpcommands.assertVariableValue(stp_file, key, value)
@@ -211,51 +198,55 @@ class katan32(AbstractCipher):
         stp_file.write(command)
         return
 
-    def setupKatanRound_dec(self, stp_file, x_in, f, a, x_out, w, r, offset):
-        """
-            Model for differential behaviour of one round KATAN32
-            """
-        command = ""
 
-        # Check if AND is active
-        # a[0] = x[3] | x[8]
-        command += "ASSERT({0}[0:0] = {1}[4:4]|{2}[9:9]);\n".format(a, x_in, x_in)
-        # a[1] = x[10]| x[12]
-        command += "ASSERT({0}[1:1] = {1}[11:11]|{2}[13:13]);\n".format(a, x_in, x_in)
-        # Locations for L1 = 5 and 8. In full 32-bit register, 5+19 = 24, 8+19 = 27
-        # a[2] = x[24] | x[27]
-        command += "ASSERT({0}[2:2] = {1}[25:25]|{2}[28:28]);\n".format(a, x_in, x_in)
+def trace_bits_enc(stp_file, e, a, f, index):
+    command = ""
 
-        for i in range(3):
-            command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
+    # ---------------- Tracing the encryption process
+    # a[0] = x[3] | x[8]
+    # a[1] = x[10]| x[12]
+    # a[2] = x[24]| x[27]
 
-        # Permutation layer (shift left L2 by 1 except for position 18)
-        for i in range(0, 18):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i, x_in, i + 1)
-        # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
-        for i in range(19, 31):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i, x_in, i + 1)
+    # Permutation layer (shift left L2 by 1 except for position 18)
+    for i in range(0, 18):
+        command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(e[index + 1], i + 1, e[index], i)
+    # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
+    for i in range(19, 31):
+        command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(e[index + 1], i + 1, e[index], i)
 
-        # Perform XOR operation for to get bits for position L2_0 and 19 (L1_0)
-        # x_out[0] = x[31]^x[26]^a[2]^(x[22]&IR[r])
-        command += "ASSERT({0}[31:31] = BVXOR({1}[0:0],BVXOR({1}[27:27],BVXOR({2}[2:2],({1}[23:23]&0b{3})))));\n".format(
-            x_out, x_in, f, self.IR[r + offset])
-        # x_out[19] = x[18]^a[1]^x[7]^a[0]
-        command += "ASSERT({0}[18:18] = BVXOR({1}[19:19],BVXOR({2}[1:1],BVXOR({1}[8:8],{2}[0:0]))));\n".format(x_out,
-                                                                                                               x_in, f)
+    command += "ASSERT({0}[0:0]={1}[2:2]&BVXOR({2}[3:3],{2}[8:8]));\n".format(e[index + 1], a[index], e[index])
+    command += "ASSERT({0}[19:19]=BVXOR({1}[0:0], {1}[1:1])\
+    &BVXOR(BVXOR({2}[10:10],{2}[12:12]),BVXOR({2}[24:24],{2}[27:27])));\n".format(
+        e[index + 1], a[index], e[index])
+    stp_file.write(command)
+    return
 
-        stp_file.write(command)
-        return
 
-    def compute_weight(self, stp_file, p, pa, pf, c, ca, cf, w, i):
+def trace_bits_dec(stp_file, d, a, f, index):
+    command = ""
+    # ----------------- Tracing the decryption process
+    # Permutation layer (shift left L2 by 1 except for position 18)
+    for i in range(0, 18):
+        command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(d[index - 1], i, d[index], i + 1)
+    # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
+    for i in range(19, 31):
+        command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(d[index - 1], i, d[index], i + 1)
 
-        command = ""
+    # x_out[0] = x[31]^x[26]^a[2]^(x[22]&IR[r])
 
-        command += "ASSERT({0}[0:0]=BVXOR({1}[0:0],{2}[0:0]));\n".format(w, pa, ca)
-        command += "ASSERT({0}[1:1]=BVXOR({1}[1:1],{2}[1:1]));\n".format(w, pa, ca)
-        command += "ASSERT({0}[2:2]=BVXOR({1}[2:2],{2}[2:2]));\n".format(w, pa, ca)
+    command += "ASSERT({0}[31:31]={1}[0:0]&BVXOR({2}[4:4],{2}[9:9]));\n".format(d[index - 1], a[index - 1], d[index])
+    command += "ASSERT({0}[18:18]=BVXOR({1}[0:0], {1}[1:1])\
+    &BVXOR({2}[11:11],{2}[13:13])&BVXOR({2}[25:25],{2}[28:28]));\n".format(
+        d[index - 1], a[index - 1], d[index])
 
-        # command += "ASSERT(NOT({0}[0:2]=0bin000));\n".format(w)
-        command += "ASSERT({0}=0bin00000000000000000000000000000111);\n".format(w)
-        stp_file.write(command)
-        return
+    stp_file.write(command)
+    return
+
+
+def compute_weight(stp_file, w, e, d, index):
+    command = ""
+    # Small Register
+    command += "ASSERT({0}[0:0]=~BVXOR({1}[0:0],{2}[31:31]));\n".format(w[index], e[index + 1], d[index])
+    # Big Register
+    command += "ASSERT({0}[1:1]=~BVXOR({1}[19:19],{2}[18:18]));\n".format(w[index], e[index + 1], d[index])
+    stp_file.write(command)

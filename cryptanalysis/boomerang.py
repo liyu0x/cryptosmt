@@ -25,10 +25,11 @@ def computeFeistelBoomerangDifferential(cipher, parameters):
     """
     # Check if required boomerang functions exist
     try:
-        parameters["sbox"] = cipher.getSbox()
-        parameters["sboxSize"] = cipher.getSboxSize()
         parameters["design"] = cipher.getDesign()
-        parameters["perm"] = cipher.getPerm()
+        if not parameters["design"] == "ax":
+            parameters["sbox"] = cipher.getSbox()
+            parameters["sboxSize"] = cipher.getSboxSize()
+            parameters["perm"] = cipher.getPerm()
     except:
         print("----")
         print(sys.exc_info()[0], "occurred")
@@ -191,6 +192,7 @@ def boomerangTrail(cipher, parameters, timestamp, boomerangFace="upper", switchI
         trail = "lowertrail"
         block = "blockedLowerCharacteristics"
         beta = switchInput
+        parameters["offset"] = parameters[trail]
 
     print(("Starting search for characteristic with minimal weight for {} trail\n"
            "{} - Rounds: {} Wordsize: {}".format(boomerangFace,
@@ -372,6 +374,9 @@ def createBCT(parameters, cipher):
                     diff = s[x] ^ s[x ^ Di] ^ s[x ^ Do] ^ s[x ^ Di ^ Do]
                     if diff == 0:
                         parameters["bct"][Di][Do] += 1
+    elif parameters["design"] == "ax":
+        print("Creating AND-BCT for {}".format(parameters["cipher"]))
+
     print("----")
     for x in range(2 ** s_box_size_in):
         for y in range(2 ** s_box_size_out):
@@ -481,6 +486,9 @@ def checkBCT(beta, gamma, parameters, cipher):
                         parameters["sboxSize"] * parameters["sboxSize"])
             else:
                 return 0
+
+    if parameters["design"] == "ax":
+        switchProb = 1
     return switchProb
 
 

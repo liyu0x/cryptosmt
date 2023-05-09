@@ -380,8 +380,45 @@ def createBCT(parameters, cipher):
                     if diff == 0:
                         parameters["bct"][Di][Do] += 1
     elif parameters["design"] == "ax":
-        return
-        # for AND-based ciphers, there is no need to create bct
+        x_len = 4
+        y_len = 4
+        size = 4
+        # create ^bct
+        non_part = lambda param: (param >> 1 & 0b1) & (param & 0b1)
+        bct = [[0] * size for i in range(size)]
+        for delta_in in range(size):
+            for delta_out in range(size):
+                for x in range(size):
+                    x_delta_in = x ^ delta_in
+                    x_delta_out = x ^ delta_out
+                    x_delta_in_out = x ^ delta_in ^ delta_out
+                    r_x = non_part(x)
+                    r_x_delta_in = non_part(x_delta_in)
+                    r_x_delta_out = non_part(x_delta_out)
+                    r_x_delta_in_out = non_part(x_delta_in_out)
+                    if r_x ^ r_x_delta_in ^ r_x_delta_out ^ r_x_delta_in_out == 0:
+                        bct[delta_in][delta_out] += 1
+        parameters["bct"] = bct
+
+        if cipher.name in ["katan32", "katan64", "katan48"]:
+            size = 16
+            # create ^bct
+            non_part = lambda param: (param >> 3 & 0b1) & (param >> 2 & 0b1) ^ (param >> 1 & 0b1) & (param & 0b1)
+            bct = [[0] * size for i in range(size)]
+            for delta_in in range(size):
+                for delta_out in range(size):
+                    for x in range(size):
+                        x_delta_in = x ^ delta_in
+                        x_delta_out = x ^ delta_out
+                        x_delta_in_out = x ^ delta_in ^ delta_out
+                        r_x = non_part(x)
+                        r_x_delta_in = non_part(x_delta_in)
+                        r_x_delta_out = non_part(x_delta_out)
+                        r_x_delta_in_out = non_part(x_delta_in_out)
+                        if r_x ^ r_x_delta_in ^ r_x_delta_out ^ r_x_delta_in_out == 0:
+                            bct[delta_in][delta_out] += 1
+            parameters["xorsbct"] = bct
+
     print("----")
     for x in range(x_len):
         for y in range(y_len):
@@ -493,10 +530,17 @@ def checkBCT(beta, gamma, parameters, cipher):
                 return 0
 
     if parameters["design"] == "ax":
-        trails = verify_switch(parameters, beta, gamma)
-        if trails == "":
+        # trails = verify_switch(parameters, beta, gamma)
+        # if trails == "":
+        #     switchProb = 0
+        beta_bits = num_to_bits(int(beta, 16))
+        gamma_bits = num_to_bits(int(gamma, 16))
+        beta_bits.reverse()
+        gamma_bits.reverse()
+        if beta_bits[5] == gamma_bits[6] and beta_bits[8] == gamma_bits[9]:
+            switchProb = 1
+        else:
             switchProb = 0
-        # switchProb = 1
     return switchProb
 
 
@@ -541,3 +585,12 @@ def verify_switch(parameters, _in, _out):
                 result, cipher, rounds)
         characteristic.printText()
     return characteristic
+
+
+def num_to_bits(num: int, length=32):
+    bits = []
+    for i in range(length):
+        bits.append(num & 0b1)
+        num >>= 1
+    bits.reverse()
+    return bits

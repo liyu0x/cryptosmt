@@ -144,6 +144,11 @@ class katan32(AbstractCipher):
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
 
+            if "extra_command" in parameters:
+                extra = parameters["extra_command"]
+                if extra != "":
+                    stp_file.write(extra)
+
             stpcommands.setupQuery(stp_file)
 
         return
@@ -156,7 +161,7 @@ class katan32(AbstractCipher):
 
         with open(stp_filename, 'w') as stp_file:
             header = ("% Input File for STP\n% KATAN32 w={}"
-                      "rounds={} with IR offset={}\n\n\n".format(wordsize, rounds, offset))
+                      " rounds={} with IR offset={}\n\n\n".format(wordsize, rounds, offset))
             stp_file.write(header)
 
             # Setup variables

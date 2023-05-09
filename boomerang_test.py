@@ -11,7 +11,7 @@ def find_has_many_solutions():
     global max_num
     global char
     katan = katan32.katan32()
-    params = {"rounds": 10,
+    params = {"rounds": 40,
               "uppertrail": 5,
               "uweight": 0,
               "upperlimit": 16,
@@ -39,7 +39,7 @@ def find_has_many_solutions():
               "blockedCharacteristics": [],
               "offset": 0}
 
-    stp_file = "/tmp/test.stp"
+    stp_file = "tmp/test.stp"
     save_file = "result/a.txt"
 
     result_file = open(save_file, 'a')
@@ -54,7 +54,7 @@ def find_has_many_solutions():
             result = search.solveBoolector(stp_file)
         else:
             result = search.solveSTP(stp_file)
-        if result == "Valid.\n":
+        if result.startswith("Valid"):
             print("No trails, weight:{0}".format(weight))
             extra_command = ""
             continue
@@ -96,7 +96,7 @@ def check_solutions(characteristic, parameters, weight, cipher):
     while parameters["sweight"] < weight + 3:
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
-        stp_file = "/Users/yuli/Documents/GitHub/cryptosmt/tmp/{}{}-{}.stp".format(cipher.name, "test", "12342")
+        stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "test", "12342")
         cipher.createSTP(stp_file, parameters)
 
         # Start solver

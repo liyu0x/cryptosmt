@@ -11,7 +11,7 @@ def find_has_many_solutions():
     global max_num
     global char
     katan = katan32.katan32()
-    params = {"rounds": 40,
+    params = {"rounds": 10,
               "uppertrail": 5,
               "uweight": 0,
               "upperlimit": 16,
@@ -42,7 +42,7 @@ def find_has_many_solutions():
     stp_file = "/tmp/test.stp"
     save_file = "result/a.txt"
 
-    result = open(save_file, 'a')
+    result_file = open(save_file, 'a')
 
     extra_command = ""
     while params["sweight"] < 32:
@@ -72,7 +72,7 @@ def find_has_many_solutions():
             if solutions > max_num:
                 max_num = solutions
                 char = characteristic
-                result.write("in:{0},out:{1},weight:{2},solutions:{3}\n".format(characteristic.getInputDiff(),
+                result_file.write("in:{0},out:{1},weight:{2},solutions:{3}\n".format(characteristic.getInputDiff(),
                                                                                 characteristic.getOutputDiff(), max_w,
                                                                                 solutions))
                 params["sweight"] = weight

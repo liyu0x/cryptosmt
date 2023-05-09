@@ -166,7 +166,8 @@ def feistelBoomerangTrailSearch(cipher, parameters, timestamp, boomerangProb=0):
             print("----")
 
     # After searching for all possible optimal lower trails for the given upper trail, block upper trail
-    print("Completed trail search with boomerang probability of {}".format(math.log(boomerangProb, 2)))
+    if boomerangProb > 0:
+        print("Completed trail search with boomerang probability of {}".format(math.log(boomerangProb, 2)))
     # Block upper trail to find another upper trail
     parameters["blockedUpperCharacteristics"].append(upperCharacteristic)
     # Clear lower trails because the same lower trails can be matched to a different upper trail
@@ -365,8 +366,12 @@ def createBCT(parameters, cipher):
     s = parameters["sbox"]
     s_box_size_in = parameters["sboxSize"]
     s_box_size_out = parameters["sboxSize"]
+    x_len = 0
+    y_len = 0
     # Create FBCT
     if parameters["design"] == "gfn" or parameters["design"] == "feistel":
+        x_len = 2 ** s_box_size_in
+        y_len = 2 ** s_box_size_out
         print("Creating FBCT for {}".format(parameters["cipher"]))
         for Di in range(16):
             for Do in range(16):
@@ -375,11 +380,11 @@ def createBCT(parameters, cipher):
                     if diff == 0:
                         parameters["bct"][Di][Do] += 1
     elif parameters["design"] == "ax":
-        print("Creating AND-BCT for {}".format(parameters["cipher"]))
-
+        return
+        # for AND-based ciphers, there is no need to create bct
     print("----")
-    for x in range(2 ** s_box_size_in):
-        for y in range(2 ** s_box_size_out):
+    for x in range(x_len):
+        for y in range(y_len):
             print(parameters["bct"][x][y], end='')
             print(", ", end='')
         print("")
@@ -488,7 +493,10 @@ def checkBCT(beta, gamma, parameters, cipher):
                 return 0
 
     if parameters["design"] == "ax":
-        switchProb = 1
+        trails = verify_switch(parameters, beta, gamma)
+        if trails == "":
+            switchProb = 0
+        # switchProb = 1
     return switchProb
 
 
@@ -499,3 +507,37 @@ def blockVariableValue(stpfile, a, b):
     stpfile.write("\nASSERT(NOT({} = {}));\n".format(a, b))
     # print("ASSERT(NOT({} = {}));".format(a, b))
     return
+
+
+def verify_switch(parameters, _in, _out):
+    characteristic = ""
+    parameters["boomerang_face"] = "middle"
+    rounds = parameters["middletrail"]
+    parameters["fixedVariables"].clear()
+    parameters["fixedVariables"]["X0"] = _in
+    parameters["fixedVariables"]["Y{0}".format(rounds)] = _out
+    cipher = parameters["cipher_obj"]
+    stp_file = "tmp/{}-{}{}-{}-{}.stp".format("verify", cipher.name,
+                                              parameters["wordsize"], rounds, "123")
+
+    # Fix number of rounds
+    parameters["rounds"] = rounds
+
+    cipher.verify_switch(stp_file, parameters)
+
+    if parameters["boolector"]:
+        result = search.solveBoolector(stp_file)
+    else:
+        result = search.solveSTP(stp_file)
+        characteristic = ""
+
+    # Check if a characteristic was found
+    if search.foundSolution(result):
+        if parameters["boolector"]:
+            characteristic = parsesolveroutput.getCharBoolectorOutput(
+                result, cipher, rounds)
+        else:
+            characteristic = parsesolveroutput.getCharSTPOutput(
+                result, cipher, rounds)
+        characteristic.printText()
+    return characteristic

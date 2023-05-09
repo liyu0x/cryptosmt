@@ -42,16 +42,16 @@ class DifferentialCharacteristic(object):
                 try:
                     # Add word to table
                     if word == 'w':
-                        weight = self.characteristic_data[word+str(rnd)]
+                        weight = self.characteristic_data[word + str(rnd)]
                         # Print hw(weight) or weight depending on the cipher
                         if self.cipher.name == "keccakdiff" or \
-                           self.cipher.name == "ketje" or \
-                           self.cipher.name == "ascon":
+                                self.cipher.name == "ketje" or \
+                                self.cipher.name == "ascon":
                             tmp_row.append("-" + str(int(weight, 16)))
                         else:
                             tmp_row.append("-" + str(bin(int(weight, 16)).count('1')))
                     else:
-                        tmp_row.append(self.characteristic_data[word+str(rnd)])
+                        tmp_row.append(self.characteristic_data[word + str(rnd)])
                 except KeyError:
                     tmp_row.append("none")
             if tmp_row:
@@ -85,7 +85,7 @@ class DifferentialCharacteristic(object):
             data_str += '\n'
 
         print(header_str)
-        print("-"*len(header_str))
+        print("-" * len(header_str))
         print(data_str)
         print("Weight: " + str(int(self.weight, 16)))
         return
@@ -101,11 +101,11 @@ class DifferentialCharacteristic(object):
         last_probability = None
         for idx, entry in enumerate(data):
             new_node = "rnd{}".format(idx)
-            for value in entry[:-1]: # Last entry should always be weight
+            for value in entry[:-1]:  # Last entry should always be weight
                 new_node += str(value)
 
             # Add label shortended to first two values
-            result += new_node + " [label=\"{},{}\"];\n".format(entry[0], entry[1]) 
+            result += new_node + " [label=\"{},{}\"];\n".format(entry[0], entry[1])
             if last_node != "":
                 # Add edge
                 result += "{} -> {} [label=\"{}\"];\n".format(last_node, new_node, last_probability)
@@ -117,7 +117,7 @@ class DifferentialCharacteristic(object):
         """
         Print the trail as a graph in .dot format.
         """
-        
+
         print("digraph graphname {")
         print(self.getDOTString())
         print("}")
@@ -144,7 +144,7 @@ class DifferentialCharacteristic(object):
         for label in header:
             header_string += label + " & "
         result += header_string[:-2] + "\\\\\n"
-        
+
         result += "\\midrule\n"
 
         for idx, entry in enumerate(data):
@@ -157,23 +157,20 @@ class DifferentialCharacteristic(object):
         result += "\\end{tabular}\n"
         result += "\\end{document}\n"
 
-
-
-
         return result
 
-    def getOutputDiff(self):
+    def getOutputDiff(self, index=0):
         """
         Get the output difference of a trail
         """
         data = self.getData()
-        
-        return data[self.num_rounds][0]
+
+        return data[self.num_rounds][index]
 
     def getInputDiff(self):
         """
         Get the Input difference of a trail
         """
         data = self.getData()
-        
+
         return data[0][0]

@@ -1,14 +1,14 @@
 cipher: katan32
-uppertrail: 40 #Number of rounds for E0
-lowertrail: 40 #Number of rounds for E1
+uppertrail: 35 #Number of rounds for E0
+middletrail: 10 #Number of rounds for Em
+lowertrail: 48 #Number of rounds for E1
 uweight: 0 #Upper limit of weight for E0
+#mweight: 0 #Upper limit of weight for Em
 lweight: 0 #Upper limit of weight for E1
-endweight: 100 #set to the higher weight limit + 1 (e.g. if uweight is higher than lweight, set end weight to uweight+1)
-lowerlimit: 4 #cluster up to +4 (128/32=4) - Will be clustered often, set to a conservative value
-upperlimit: 4 #cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
+endweight: 99 #set to the higher weight limit + 1 (e.g. if uweight is higher than lweight, set end weight to uweight+1)
+lowerlimit: 8 #cluster up to +4 (128/32=4) - Will be clustered often, set to a conservative value
+upperlimit: 8 #cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
 timelimit: 86400 #24 hours
 wordsize: 32
 mode: 5
-offset: 0
-rounds: 50
-sweight: 0
+offset: 35

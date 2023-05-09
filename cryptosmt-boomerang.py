@@ -79,7 +79,8 @@ def startsearch(tool_parameters):
         search.computeProbabilityOfDifferentials(cipher, tool_parameters)
     elif tool_parameters["mode"] == 5:
         boomerang.computeFeistelBoomerangDifferential(cipher, tool_parameters)
-
+    # elif tool_parameters["mode"] == 6:
+    #     boomerang2.compute_rx_boomerang_differential(cipher, tool_parameters)
     return
 
 
@@ -139,7 +140,12 @@ def loadparameters(args):
               "bct": [[0] * 16 for _ in range(16)],
               "blockedCharacteristics": [],
               "blockedUpperCharacteristics": [],
-              "blockedLowerCharacteristics": []}
+              "blockedLowerCharacteristics": [],
+              "blockedMiddleCharacteristics": [],
+              "boomerang_face": "upper",
+              "extra_command": "",
+              "previous_upper_weight": 0,
+              "previous_lower_weight": 0}
 
     # Check if there is an input file specified
     if args.inputfile:

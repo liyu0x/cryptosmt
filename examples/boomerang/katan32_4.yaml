@@ -3,10 +3,10 @@ timelimit: 86400 #24 hours
 wordsize: 32
 mode: 4 #boomerang search mode
 offset: 0
-rounds: 80
+rounds: 35
 sweight: 0
-switchStartRound: 45
-switchRounds: 5
+switchStartRound: -1
+switchRounds: 4
 #fixedVariables:
-#    - X0: "0x50802004"
-#    - Y80: "0x00000042"
+#    - X0: "0x00008010"
+#    - X35: "0x00801081"

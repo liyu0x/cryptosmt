@@ -54,7 +54,7 @@ def find_has_many_solutions():
             result = search.solveBoolector(stp_file)
         else:
             result = search.solveSTP(stp_file)
-        if result == "Valid.\n":
+        if result.startswith("Valid"):
             print("No trails, weight:{0}".format(weight))
             extra_command = ""
             continue

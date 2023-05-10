@@ -11,7 +11,7 @@ def find_has_many_solutions():
     global max_num
     global char
     katan = katan32.katan32()
-    params = {"rounds": 40,
+    params = {"rounds": 35,
               "uppertrail": 5,
               "uweight": 0,
               "upperlimit": 16,
@@ -44,19 +44,17 @@ def find_has_many_solutions():
 
     result_file = open(save_file, 'a')
 
-    extra_command = ""
     while params["sweight"] < 32:
         weight = params["sweight"]
         katan.createSTP(stp_file, params)
         params["sweight"] = weight + 1
-        result = ""
         if params["boolector"]:
             result = search.solveBoolector(stp_file)
         else:
             result = search.solveSTP(stp_file)
         if result.startswith("Valid"):
             print("No trails, weight:{0}".format(weight))
-            extra_command = ""
+            params["blockedCharacteristics"].clear()
             continue
         characteristic = ""
         if params["boolector"]:

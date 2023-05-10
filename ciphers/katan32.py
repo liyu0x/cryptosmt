@@ -144,11 +144,6 @@ class katan32(AbstractCipher):
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
 
-            if "extra_command" in parameters:
-                extra = parameters["extra_command"]
-                if extra != "":
-                    stp_file.write(extra)
-
             stpcommands.setupQuery(stp_file)
 
         return

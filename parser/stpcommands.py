@@ -34,7 +34,7 @@ def blockCharacteristic(stpfile, characteristic, wordsize):
         blockingStatement += "BVXOR({}, {}) | ".format(key, value)
 
     blockingStatement = blockingStatement[:-2]
-    blockingStatement += ") = 0hex{});".format("0" * (wordsize // 4))
+    blockingStatement += ") = 0hex{});\n".format("0" * (wordsize // 4))
     stpfile.write(blockingStatement)
     return
 

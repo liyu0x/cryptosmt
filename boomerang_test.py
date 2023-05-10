@@ -11,7 +11,7 @@ def find_has_many_solutions():
     global max_num
     global char
     katan = katan32.katan32()
-    params = {"rounds": 10,
+    params = {"rounds": 40,
               "uppertrail": 5,
               "uweight": 0,
               "upperlimit": 16,
@@ -39,7 +39,7 @@ def find_has_many_solutions():
               "blockedCharacteristics": [],
               "offset": 0}
 
-    stp_file = "/tmp/test.stp"
+    stp_file = "tmp/test.stp"
     save_file = "result/a.txt"
 
     result_file = open(save_file, 'a')
@@ -69,17 +69,13 @@ def find_has_many_solutions():
         if characteristic != "":
             characteristic.printText()
             solutions, max_w = check_solutions(characteristic, params, weight, katan)
-            if solutions > max_num:
-                max_num = solutions
-                char = characteristic
-                result_file.write("in:{0},out:{1},weight:{2},solutions:{3}\n".format(characteristic.getInputDiff(),
-                                                                                characteristic.getOutputDiff(), max_w,
-                                                                                solutions))
-                params["sweight"] = weight
-                extra_command += "ASSERT((({0}={1})&({2}={3}))=0);\n".format("X0", char.getInputDiff(),
-                                                                             "X" + params["rounds"],
-                                                                             char.getOutputDiff())
-                params["extra_command"] = extra_command
+            max_num = solutions
+            char = characteristic
+            result_file.write("in:{0},out:{1},weight:{2},solutions:{3}\n".format(characteristic.getInputDiff(),
+                                                                                 characteristic.getOutputDiff(), max_w,
+                                                                                 solutions))
+            params["sweight"] = weight
+            params["blockedCharacteristics"].append(char)
 
 
 def check_solutions(characteristic, parameters, weight, cipher):
@@ -96,7 +92,7 @@ def check_solutions(characteristic, parameters, weight, cipher):
     while parameters["sweight"] < weight + 3:
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
-        stp_file = "/Users/yuli/Documents/GitHub/cryptosmt/tmp/{}{}-{}.stp".format(cipher.name, "test", "12342")
+        stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "test", "12342")
         cipher.createSTP(stp_file, parameters)
 
         # Start solver

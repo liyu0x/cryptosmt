@@ -3,13 +3,8 @@ from cryptanalysis import search
 import os
 from parser import parsesolveroutput, stpcommands
 
-max_num = 0
-char = None
-
 
 def find_has_many_solutions():
-    global max_num
-    global char
     katan = katan32.katan32()
     params = {"rounds": 35,
               "uppertrail": 5,
@@ -65,27 +60,18 @@ def find_has_many_solutions():
                 result, katan, params["rounds"])
 
         if characteristic != "":
-            characteristic.printText()
-            solutions, max_w = check_solutions(characteristic, params, weight, katan)
-            max_num = solutions
-            char = characteristic
-            result_file.write("in:{0},out:{1},weight:{2},solutions:{3}\n".format(characteristic.getInputDiff(),
-                                                                                 characteristic.getOutputDiff(), max_w,
-                                                                                 solutions))
+            check_solutions(characteristic, params, weight, katan, result_file)
             params["sweight"] = weight
-            params["blockedCharacteristics"].append(char)
+            params["blockedCharacteristics"].append(characteristic)
 
 
-def check_solutions(characteristic, parameters, weight, cipher):
-    max_w = 0
-    max_solutions = 0
+def check_solutions(characteristic, parameters, weight, cipher, result_file):
     parameters["fixedVariables"].clear()
     parameters["fixedVariables"]["X0"] = characteristic.getInputDiff()
     parameters["fixedVariables"]["X{}".format(parameters["rounds"])] = characteristic.getOutputDiff()
     parameters["sweight"] = weight
     sat_logfile = "tmp/satlog{}.tmp".format(1234)
     # Search until optimal weight + wordsize/8
-    solutions = 0
 
     while parameters["sweight"] < weight + 3:
         if os.path.isfile(sat_logfile):
@@ -117,11 +103,12 @@ def check_solutions(characteristic, parameters, weight, cipher):
 
         # The encoded CNF contains every solution twice
         solutions //= 2
-        if solutions > max_solutions:
-            max_solutions = solutions
-            max_w = parameters["sweight"]
+        result_file.write(
+            "rounds:{4},in:{0},out:{1},weight:{2},solutions:{3}\n".format(characteristic.getInputDiff(),
+                                                                          characteristic.getOutputDiff(),
+                                                                          parameters["sweight"],
+                                                                          solutions, parameters["rounds"]))
         parameters["sweight"] += 1
-    return max_solutions, max_w
 
 
 find_has_many_solutions()

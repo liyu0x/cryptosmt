@@ -4,9 +4,9 @@ import os
 from parser import parsesolveroutput, stpcommands
 
 
-def find_has_many_solutions():
+def find_has_many_solutions(param):
     katan = katan32.katan32()
-    params = {"rounds": 35,
+    params = {"rounds": param,
               "uppertrail": 5,
               "uweight": 0,
               "upperlimit": 16,
@@ -37,7 +37,7 @@ def find_has_many_solutions():
     stp_file = "tmp/test.stp"
     save_file = "result/a.txt"
 
-    result_file = open(save_file, 'a')
+    result_file = open(save_file, 'a+')
 
     while params["sweight"] < 32:
         weight = params["sweight"]
@@ -49,7 +49,7 @@ def find_has_many_solutions():
             result = search.solveSTP(stp_file)
         if result.startswith("Valid"):
             print("No trails, weight:{0}".format(weight))
-            params["blockedCharacteristics"].clear()
+            # params["blockedCharacteristics"].clear()
             continue
         characteristic = ""
         if params["boolector"]:
@@ -111,4 +111,5 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
         parameters["sweight"] += 1
 
 
-find_has_many_solutions()
+for i in range(35, 55):
+    find_has_many_solutions(i)

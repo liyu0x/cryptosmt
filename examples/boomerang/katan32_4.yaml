@@ -7,6 +7,6 @@ rounds: 35
 sweight: 0
 switchStartRound: -1
 switchRounds: 4
-#fixedVariables:
-#    - X0: "0x00008010"
-#    - X35: "0x00801081"
+fixedVariables:
+   - X0: "0x00008010"
+   - X35: "0x00C01081"

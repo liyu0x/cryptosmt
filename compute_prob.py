@@ -3,33 +3,37 @@ import math
 
 def compute():
     file = open("result/a.txt", "r")
-    res = []
+    data = []
     line = file.readline()
-    res.append(line)
+    data.append(line)
     while line:
         line = file.readline()
-        res.append(line)
-    ress = []
-    for l in res:
-        if l == "":
+        data.append(line)
+
+    results = {}
+    for d in data:
+        if d == "":
             break
-        l = l.replace("\n", "")
-        ls = l.split(",")
+        d = d.replace("\n", "")
+        ls = d.split(",")
         r = []
         r.append(int(ls[0].split(":")[1]))
         r.append(int(ls[3].split(":")[1]))
         r.append(int(ls[4].split(":")[1]))
-        ress.append(r)
+        group_list = []
+        if r[0] not in results:
+            group_list = []
+            results[r[0]] = group_list
+        group_list = results[r[0]]
+        group_list.append(r)
 
     final_res = {}
-    for r in ress:
-        if r[0] not in final_res:
-            final_res[r[0]] = 0
-        diff_prob = final_res[r[0]]
-        diff_prob += math.pow(2, -r[1]) * r[2]
-        final_res[r[0]] = diff_prob
-    for i in range(35, 55):
-        print("{0}:{1}".format(i, str(math.log(final_res[i]*final_res[i], 2))))
+    for rounds in results:
+        diff_prob = 0
+        for result in results[rounds]:
+            diff_prob += math.pow(2, -result[1]) * result[2]
+        final_res[rounds] = diff_prob
+        print("Rounds:{0}, Probability:{1}".format(rounds, str(diff_prob)))
 
 
 compute()

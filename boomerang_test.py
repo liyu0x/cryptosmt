@@ -88,7 +88,7 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
     sat_logfile = "tmp/satlog{}.tmp".format(1234)
     # Search until optimal weight + wordsize/8
 
-    while new_parameter["sweight"] < weight + 3:
+    while new_parameter["sweight"] < 32:
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
         stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "test", "12342")

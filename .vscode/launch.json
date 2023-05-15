@@ -23,10 +23,10 @@
             "justMyCode": true
         },
         {
-            "name": "Katan32_find_all",
+            "name": "Katan32_strategy_2",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/boomerang_test.py",
+            "program": "${workspaceFolder}/boomerang_test2.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

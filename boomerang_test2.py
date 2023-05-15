@@ -135,9 +135,10 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
                     new_parameter["rounds"],
                 )
             )
+            result_file.flush()
         new_parameter["sweight"] += 1
-    result_file.flush()
+   
 
 
-for i in range(36, 55):
+for i in range(50, 55):
     find_has_many_solutions(i)

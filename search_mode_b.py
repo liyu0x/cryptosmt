@@ -39,11 +39,13 @@ def find_has_many_solutions(param):
         "offset": 0,
     }
 
-    save_file = "result/a.txt"
+    save_file = "result/{0}-{1}-B.txt".format(cipher.name, param)
 
-    result_file = open(save_file, "a+")
+    result_file = open(save_file, "w")
 
     rnd_string_tmp = "%030x" % random.randrange(16**30)
+
+    ban_list = []
 
     # find all characteritics with specify weight.
     while params["sweight"] < 32:
@@ -60,7 +62,6 @@ def find_has_many_solutions(param):
                 )
             )
             params["sweight"] += 1
-            params["blockedCharacteristics"].clear()
             continue
         characteristic = ""
         if params["boolector"]:
@@ -72,6 +73,13 @@ def find_has_many_solutions(param):
                 result, cipher, params["rounds"]
             )
         check_solutions(characteristic, params, params["sweight"], cipher, result_file)
+        ttt = "X{}".format(params["rounds"])
+        need_del_keys = []
+        for k,v in characteristic.characteristic_data.items():
+            if k != ttt:
+                need_del_keys.append(k)
+        for k in need_del_keys:
+            del characteristic.characteristic_data[k]
         params["blockedCharacteristics"].append(characteristic)
 
 
@@ -80,7 +88,7 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
     new_parameter = copy.deepcopy(parameters)
     new_parameter["fixedVariables"].clear()
     new_parameter["blockedCharacteristics"].clear()
-    new_parameter["fixedVariables"]["X0"] = characteristic.getInputDiff()
+    #new_parameter["fixedVariables"]["X0"] = characteristic.getInputDiff()
     new_parameter["fixedVariables"][
         "X{}".format(new_parameter["rounds"])
     ] = characteristic.getOutputDiff()
@@ -120,17 +128,17 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
             # The encoded CNF contains every solution twice
             solutions //= 2
             result_file.write(
-                "rounds:{4},in:{0},out:{1},weight:{2},solutions:{3}\n".format(
-                    characteristic.getInputDiff(),
+                "rounds:{3},out:{0},weight:{1},solutions:{2}\n".format(
                     characteristic.getOutputDiff(),
                     new_parameter["sweight"],
                     solutions,
                     new_parameter["rounds"],
                 )
             )
+            result_file.flush()
         new_parameter["sweight"] += 1
-    result_file.flush()
+   
 
 
-for i in range(35, 55):
+for i in range(50, 55):
     find_has_many_solutions(i)

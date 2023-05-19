@@ -5,12 +5,13 @@ from parser import parsesolveroutput, stpcommands
 import random
 import time
 import copy
+import generate_32
 
 
-def find_has_many_solutions(param):
+def find_has_many_solutions(r, offset, cond):
     cipher = katan32.katan32()
     params = {
-        "rounds": param,
+        "rounds": r,
         "uppertrail": 5,
         "uweight": 0,
         "upperlimit": 16,
@@ -28,7 +29,7 @@ def find_has_many_solutions(param):
         "latex": None,
         "nummessages": 1,
         "timelimit": -1,
-        "fixedVariables": {},
+        "fixedVariables": cond,
         "boomerangVariables": {},
         "sboxSize": 4,
         "design": "gfn",
@@ -36,17 +37,17 @@ def find_has_many_solutions(param):
         "perm": [],
         "bct": [[0] * 16 for _ in range(16)],
         "blockedCharacteristics": [],
-        "offset": 0,
+        "offset": offset,
     }
 
-    save_file = "result/{0}-{1}-A.txt".format(cipher.name, param)
+    save_file = "result/{0}-{1}-{2}-A.txt".format(cipher.name, r, offset)
 
     result_file = open(save_file, "w")
 
     rnd_string_tmp = "%030x" % random.randrange(16**30)
 
     # find all characteritics with specify weight.
-    while params["sweight"] < 32:
+    while params["sweight"] < 20:
         stp_file = "tmp/{}{}.stp".format(cipher.name, rnd_string_tmp)
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
@@ -88,7 +89,7 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
     sat_logfile = "tmp/satlog{}.tmp".format(1234)
     # Search until optimal weight + wordsize/8
 
-    while new_parameter["sweight"] < 32:
+    while new_parameter["sweight"] < 23:
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
         stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "test", "12342")
@@ -131,6 +132,15 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
         new_parameter["sweight"] += 1
     result_file.flush()
 
+def padhexa(s):
+    return '0x' + s[2:].zfill(8)
 
-for i in range(50, 55):
-    find_has_many_solutions(i)
+def ta():
+    results = generate_32.generate_and_bct_cvc_conditions(0x00C01080, None, 10000)
+    for i in range(30, 40):
+        for result in results:
+            for r in results[result]:
+                conditions = {"X0": padhexa(hex(r))}
+                find_has_many_solutions(i, 54, conditions)
+
+ta()

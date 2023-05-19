@@ -7,10 +7,10 @@ import time
 import copy
 
 
-def find_has_many_solutions(param):
+def find_has_many_solutions(r, offset=0):
     cipher = katan32.katan32()
     params = {
-        "rounds": param,
+        "rounds": r,
         "uppertrail": 5,
         "uweight": 0,
         "upperlimit": 16,
@@ -36,19 +36,19 @@ def find_has_many_solutions(param):
         "perm": [],
         "bct": [[0] * 16 for _ in range(16)],
         "blockedCharacteristics": [],
-        "offset": 0,
+        "offset": offset,
     }
 
-    save_file = "result/{0}-{1}-B.txt".format(cipher.name, param)
+    save_file = "result/{0}-{1}-{2}-B.txt".format(cipher.name, r, offset)
 
     result_file = open(save_file, "w")
 
-    rnd_string_tmp = "%030x" % random.randrange(16**30)
+    rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
 
     ban_list = []
 
     # find all characteritics with specify weight.
-    while params["sweight"] < 32:
+    while params["sweight"] < 25:
         stp_file = "tmp/{}{}.stp".format(cipher.name, rnd_string_tmp)
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
@@ -75,7 +75,7 @@ def find_has_many_solutions(param):
         check_solutions(characteristic, params, params["sweight"], cipher, result_file)
         ttt = "X{}".format(params["rounds"])
         need_del_keys = []
-        for k,v in characteristic.characteristic_data.items():
+        for k, v in characteristic.characteristic_data.items():
             if k != ttt:
                 need_del_keys.append(k)
         for k in need_del_keys:
@@ -88,7 +88,7 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
     new_parameter = copy.deepcopy(parameters)
     new_parameter["fixedVariables"].clear()
     new_parameter["blockedCharacteristics"].clear()
-    #new_parameter["fixedVariables"]["X0"] = characteristic.getInputDiff()
+    # new_parameter["fixedVariables"]["X0"] = characteristic.getInputDiff()
     new_parameter["fixedVariables"][
         "X{}".format(new_parameter["rounds"])
     ] = characteristic.getOutputDiff()
@@ -96,7 +96,7 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
     sat_logfile = "tmp/satlog{}.tmp".format(1234)
     # Search until optimal weight + wordsize/8
 
-    while new_parameter["sweight"] < 32:
+    while new_parameter["sweight"] < 28:
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
         stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "test", "12342")
@@ -137,8 +137,7 @@ def check_solutions(characteristic, parameters, weight, cipher, result_file):
             )
             result_file.flush()
         new_parameter["sweight"] += 1
-   
 
 
-for i in range(50, 55):
+for i in range(45, 55):
     find_has_many_solutions(i)

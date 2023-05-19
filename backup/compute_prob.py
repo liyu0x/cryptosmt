@@ -36,7 +36,7 @@ def compute_a():
         print("Rounds:{0}, Probability:{1}".format(rounds, str(diff_prob)))
 
 def compute_b():
-    file = open("result/b.txt", "r")
+    file = open("result/katan32-50-B.txt", "r")
     data = []
     line = file.readline()
     data.append(line)
@@ -67,7 +67,7 @@ def compute_b():
         for result in results[rounds]:
             diff_prob += math.pow(2, -result[1]) * result[2]
         final_res[rounds] = diff_prob
-        print("Rounds:{0}, Probability:{1}".format(rounds, str(diff_prob)))
+        print("Rounds:{0}, Probability:{1}".format(rounds, str(math.log(diff_prob**2,2))))
 
 
 compute_b()

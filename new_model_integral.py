@@ -1,15 +1,17 @@
 from ciphers import katan32_bct
-from ciphers import katan32
 import random
 from cryptanalysis import search
 import time
 import copy
 import os
 import math
+import threading
+import multiprocessing
+
+MAX_THREAD = 6
 
 
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
-    start_time = time.time()
     save_file = "result/{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
     result_file = open(save_file, "w")
     params = {
@@ -43,10 +45,9 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
         "switchStartRound": switch_start_round,
         "switchRounds": switch_rounds
     }
-
+    rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
+    stp_file = "tmp/{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
     while params["sweight"] < 32:
-        rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
-        stp_file = "tmp/{}{}.stp".format(cipher.name, rnd_string_tmp)
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
             result = search.solveBoolector(stp_file)
@@ -71,7 +72,8 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
         new_parameters["blockedCharacteristics"].clear()
         new_parameters["fixedVariables"]["X0"] = input_diff
         new_parameters["fixedVariables"]["Y{}".format(r)] = output_diff
-        p = check_solutions(new_parameters, cipher, new_parameters["sweight"] + 4)
+        characteristic.printText()
+        p = check_solutions(new_parameters, cipher,rnd_string_tmp, new_parameters["sweight"] + 4)
         p *= p
         rectangle_weight = math.log2(p)
         save_str = "cipher:{0}, rounds:{1}, inputDiff:{2}, outputDiff:{3}, boomerang weight:{4}, rectangle weight:{5}, switchStartRound:{6}, SwitchRounds:{7}\n".format(
@@ -82,19 +84,14 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
         params["sweight"] += 1
 
 
-def get_different(characteristic, start_round, end_round, index=0):
-    data = characteristic.getData()
-    return data[start_round][index], data[end_round][index]
-
-
 def check_solutions(new_parameter, cipher, start_time, max_weight=32):
     max_weight = 32 if max_weight > 32 else max_weight
     sat_logfile = "tmp/satlog-{0}-{1}.tmp".format(cipher.name, start_time)
     prob = 0
+    stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
     while new_parameter["sweight"] < max_weight:
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
-        stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "test", "12342")
         cipher.createSTP(stp_file, new_parameter)
 
         # Start solver
@@ -127,6 +124,19 @@ def check_solutions(new_parameter, cipher, start_time, max_weight=32):
     return prob
 
 
-for i in range(83, 120):
+def start_search():
     c = katan32_bct.katan32()
-    find_single_trail(c, i, 0, int(i / 2), 4)
+    start_rounds = 89
+    end_ends = 120
+    while start_rounds <= end_ends:
+        task_list = []
+        for _ in range(MAX_THREAD):
+            #task_list.append(threading.Thread(target=find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), 4)))
+            task_list.append(multiprocessing.Process(target=find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), 4)))
+            start_rounds += 1
+        for task in task_list:
+            task.start()
+        for task in task_list:
+            task.join()
+
+start_search()

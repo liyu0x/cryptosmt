@@ -1,0 +1,1 @@
+cipher:katan32, rounds:85, inputDiff:0x08020040, outputDiff:0x00200420, boomerang weight:44, rectangle weight:-13.596977310999709, switchStartRound:42, SwitchRounds:4

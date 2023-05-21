@@ -1,2 +1,12 @@
 cipher:katan48BCT, rounds:81, inputDiff:0x000000904000, outputDiff:0x020100000020, boomerang weight:72, rectangle weight:-39.660149997115376, switchStartRound:40, SwitchRounds:6
 cipher:katan48BCT, rounds:81, inputDiff:0x000000904000, outputDiff:0x02810000003C, boomerang weight:74, rectangle weight:-41.660149997115376, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000000B04000, outputDiff:0x02810000003C, boomerang weight:76, rectangle weight:-43.660149997115376, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000002010000, outputDiff:0x000180010492, boomerang weight:78, rectangle weight:-64.0, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000002010000, outputDiff:0x000180012492, boomerang weight:80, rectangle weight:-66.0, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000002010000, outputDiff:0x000180013492, boomerang weight:82, rectangle weight:-68.0, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000002010000, outputDiff:0x000880402482, boomerang weight:84, rectangle weight:-68.0, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000002010000, outputDiff:0x000000000012, boomerang weight:86, rectangle weight:-70.0, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000008904000, outputDiff:0x904000000C20, boomerang weight:88, rectangle weight:-55.21536515444248, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000002010000, outputDiff:0x000000003012, boomerang weight:90, rectangle weight:-74.0, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x30020A810000, outputDiff:0x080400000002, boomerang weight:92, rectangle weight:-78.83007499855769, switchStartRound:40, SwitchRounds:6
+cipher:katan48BCT, rounds:81, inputDiff:0x000004028100, outputDiff:0x100304000004, boomerang weight:94, rectangle weight:-86.0, switchStartRound:40, SwitchRounds:6

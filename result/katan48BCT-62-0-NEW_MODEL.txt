@@ -1,0 +1,17 @@
+cipher:katan48BCT, rounds:62, inputDiff:0x800005020100, outputDiff:0x001208000000, boomerang weight:50, rectangle weight:-40.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x80000C024100, outputDiff:0x001208000000, boomerang weight:52, rectangle weight:-40.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000002010000, outputDiff:0x804000000020, boomerang weight:54, rectangle weight:-44.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x800004820100, outputDiff:0x441208000071, boomerang weight:56, rectangle weight:-46.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000002010000, outputDiff:0x100100020824, boomerang weight:58, rectangle weight:-48.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000002810000, outputDiff:0x1000000209A4, boomerang weight:60, rectangle weight:-50.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000002810000, outputDiff:0x101100800024, boomerang weight:62, rectangle weight:-52.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000002010000, outputDiff:0x1011008041A4, boomerang weight:64, rectangle weight:-50.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000008904020, outputDiff:0x040200000061, boomerang weight:66, rectangle weight:-42.38529015588479, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000002010000, outputDiff:0x000180C00020, boomerang weight:68, rectangle weight:-58.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000002010000, outputDiff:0x100380034A2C, boomerang weight:70, rectangle weight:-56.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x0000180402C1, outputDiff:0x092C1000008A, boomerang weight:72, rectangle weight:-60.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000002010000, outputDiff:0x180340228A26, boomerang weight:74, rectangle weight:-62.0, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x008014080000, outputDiff:0x000000080000, boomerang weight:76, rectangle weight:-58.830074998557684, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x000000400000, outputDiff:0x000000002024, boomerang weight:78, rectangle weight:-63.82507431749932, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x00608000000A, outputDiff:0x000000000800, boomerang weight:80, rectangle weight:-60.830074998557684, switchStartRound:31, SwitchRounds:6
+cipher:katan48BCT, rounds:62, inputDiff:0x004101208000, outputDiff:0x080400003100, boomerang weight:82, rectangle weight:-64.5170660271977, switchStartRound:31, SwitchRounds:6

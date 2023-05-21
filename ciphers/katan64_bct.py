@@ -15,7 +15,7 @@ class katan64(AbstractCipher):
     It uses an alternative representation of Katan64 in ARX form.
     """
 
-    name = "katan64"
+    name = "katan64BCT"
 
     def ax_box(self, x):
         x0 = x >> 3 & 0x1
@@ -53,7 +53,7 @@ class katan64(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['Xa', 'Xb', 'Xc', 'Ya', 'Yb', 'Yc', 'A', 'F', 'w']
+        return ['Xa', 'Xb', 'Xc', 'Ya', 'Yb', 'Yc', 'XO', 'XG','YO','YG', 'w']
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -94,8 +94,10 @@ class katan64(AbstractCipher):
             ya = ["Ya{}".format(i) for i in range(rounds + 1)]  # Additional one for output difference
             yb = ["Yb{}".format(i) for i in range(rounds)]  # Intermediate x values, no need output difference
             yc = ["Yc{}".format(i) for i in range(rounds)]  # Intermediate x values, no need output difference
-            f = ["F{}".format(i) for i in range(rounds)]
-            a = ["A{}".format(i) for i in range(rounds)]
+            xo = ["XO{}".format(i) for i in range(rounds)]
+            xg = ["XG{}".format(i) for i in range(rounds)]
+            yo = ["YO{}".format(i) for i in range(rounds)]
+            yg = ["YG{}".format(i) for i in range(rounds)]
 
             # w = weight
             w = ["w{}".format(i) for i in range(rounds)]
@@ -106,15 +108,17 @@ class katan64(AbstractCipher):
             stpcommands.setupVariables(stp_file, ya, wordsize)
             stpcommands.setupVariables(stp_file, yb, wordsize)
             stpcommands.setupVariables(stp_file, yc, wordsize)
-            stpcommands.setupVariables(stp_file, f, wordsize)
-            stpcommands.setupVariables(stp_file, a, wordsize)
+            stpcommands.setupVariables(stp_file, xo, wordsize)
+            stpcommands.setupVariables(stp_file, xg, wordsize)
+            stpcommands.setupVariables(stp_file, yo, wordsize)
+            stpcommands.setupVariables(stp_file, yg, wordsize)
             stpcommands.setupVariables(stp_file, w, wordsize)
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
             # E0
             for i in range(e0_start_search_num, e0_end_search_num):
-                self.setupKatanRound(stp_file, xa[i], xb[i], xc[i], f[i], a[i], xa[i + 1],
+                self.setupKatanRound(stp_file, xa[i], xb[i], xc[i], xg[i], xo[i], xa[i + 1],
                                      w[i], wordsize, i, offset)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
@@ -125,9 +129,13 @@ class katan64(AbstractCipher):
                 command += stpcommands.and_bct(self.big_vari(xb[i], xc[i + 1]), self.ax_box, 4)
                 command += stpcommands.and_bct(self.big_vari(xc[i], ya[i + 1]), self.ax_box, 4)
                 stp_file.write(command)
+                self.setupKatanRound(stp_file, xa[i], xb[i], xc[i], xg[i], xo[i], xa[i + 1],
+                                     w[i], wordsize, i, offset)
+                self.setupKatanRound(stp_file, ya[i], yb[i], yc[i], yg[i], yo[i], ya[i + 1],
+                                     w[i], wordsize, i, offset)
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
-                self.setupKatanRound(stp_file, ya[i], yb[i], yc[i], f[i], a[i], ya[i + 1],
+                self.setupKatanRound(stp_file, ya[i], yb[i], yc[i], yg[i], yo[i], ya[i + 1],
                                      w[i], wordsize, i, offset)
 
             # No all zero characteristic
@@ -153,7 +161,7 @@ class katan64(AbstractCipher):
 
         return
 
-    def setupKatanRound(self, stp_file, xa_in, xb, xc, f, a, xa_out, w, wordsize, r, offset):
+    def setupKatanRound(self, stp_file, xa_in, xb, xc, f, a, xa_out, w, wordsize, r, offset, switch=False):
         """
         Model for differential behaviour of one round KATAN48
         """
@@ -205,11 +213,12 @@ class katan64(AbstractCipher):
             # command += "ASSERT({0}[{2}:{2}] = {1}[{2}:{2}]);\n".format(w,a,i)
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
 
-        # w[1]=a[2]
-        command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)  # AND in the L1 register
-        # As long as either 1 AND operation in L2 register is active, prob is 1
-        # w[0]=a[0]|a[1]
-        command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
+        if not switch:
+            # w[1]=a[2]
+            command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)  # AND in the L1 register
+            # As long as either 1 AND operation in L2 register is active, prob is 1
+            # w[0]=a[0]|a[1]
+            command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
 
         # Shift and store into xb
         # Permutation layer (shift left L2 by 1 except for position 38)
@@ -249,11 +258,12 @@ class katan64(AbstractCipher):
             # command += "ASSERT({0}[{2}:{2}] = {1}[{2}:{2}]);\n".format(w,a,i)
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
 
-        # w[3]=a[5]
-        command += "ASSERT({0}[3:3] = {1}[5:5]);\n".format(w, a)  # AND in the L1 register
-        # As long as either 1 AND operation in L2 register is active, prob is 1
-        # w[2]=a[3]|a[4]
-        command += "ASSERT({0}[2:2] = {1}[3:3] | {1}[4:4]);\n".format(w, a)
+        if not switch:
+            # w[3]=a[5]
+            command += "ASSERT({0}[3:3] = {1}[5:5]);\n".format(w, a)  # AND in the L1 register
+            # As long as either 1 AND operation in L2 register is active, prob is 1
+            # w[2]=a[3]|a[4]
+            command += "ASSERT({0}[2:2] = {1}[3:3] | {1}[4:4]);\n".format(w, a)
 
         # Shift and store into xc
         # Permutation layer (shift left L2 by 1 except for position 38)
@@ -292,11 +302,12 @@ class katan64(AbstractCipher):
             # command += "ASSERT({0}[{2}:{2}] = {1}[{2}:{2}]);\n".format(w,a,i)
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
 
-        # w[5]=a[8]
-        command += "ASSERT({0}[5:5] = {1}[8:8]);\n".format(w, a)  # AND in the L1 register
-        # As long as either 1 AND operation in L2 register is active, prob is 1
-        # w[4]=a[6]|a[7]
-        command += "ASSERT({0}[4:4] = {1}[6:6] | {1}[7:7]);\n".format(w, a)
+        if not switch:
+            # w[5]=a[8]
+            command += "ASSERT({0}[5:5] = {1}[8:8]);\n".format(w, a)  # AND in the L1 register
+            # As long as either 1 AND operation in L2 register is active, prob is 1
+            # w[4]=a[6]|a[7]
+            command += "ASSERT({0}[4:4] = {1}[6:6] | {1}[7:7]);\n".format(w, a)
 
         # Shift and store into xa_out
         # Permutation layer (shift left L2 by 1 except for position 38)

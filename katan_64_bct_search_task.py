@@ -1,21 +1,17 @@
-from ciphers import katan64_bct
 import random
 from cryptanalysis import search
-import time
 import copy
 import os
 import math
-import threading
-import multiprocessing
 
-MAX_THREAD = 8
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 4
-SWITCH_ROUNDS = 7
 WORDSIZE = 64
 
-def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
+
+
+def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
     max_weight = WORDSIZE
     max_weight_setting = False
     save_file = "result/{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
@@ -31,7 +27,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
         "mode": 0,
         "wordsize": WORDSIZE,
         "blocksize": 64,
-        "sweight": 0,
+        "sweight": sweight,
         "endweight": 1000,
         "iterative": False,
         "boolector": False,
@@ -53,7 +49,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
     }
     rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
     stp_file = "tmp/{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
-    while params["sweight"] < max_weight:
+    while params["sweight"] < max_weight or params["sweight"] <= WORDSIZE:
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
             result = search.solveBoolector(stp_file)
@@ -61,7 +57,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
             result = search.solveSTP(stp_file)
         if not search.foundSolution(result):
             print(
-                "Rounds:{1}, No trails, weight:{0}".format(
+                "Rounds:{1}, No trails, weight:{0}\n".format(
                     params["sweight"], params["rounds"]
                 )
             )
@@ -76,22 +72,20 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
         new_parameters = copy.deepcopy(params)
         trails_data = characteristic.getData()
         input_diff = trails_data[0][0]
-        output_diff = trails_data[r][2]
+        output_diff = trails_data[r][3]
         new_parameters["fixedVariables"].clear()
         new_parameters["blockedCharacteristics"].clear()
         new_parameters["fixedVariables"]["Xa0"] = input_diff
         new_parameters["fixedVariables"]["Ya{}".format(r)] = output_diff
-        characteristic.printText()
         p = check_solutions(new_parameters, cipher, rnd_string_tmp, new_parameters["sweight"] + MAX_CLUSTER_TRAIL_SERACH_LIMIT)
         p *= p
         rectangle_weight = math.log2(p)
         save_str = "cipher:{0}, rounds:{1}, inputDiff:{2}, outputDiff:{3}, boomerang weight:{4}, rectangle weight:{5}, switchStartRound:{6}, SwitchRounds:{7}\n".format(
-            cipher.name, r, input_diff, output_diff, params["sweight"] * 2, rectangle_weight, switch_start_round,
+            cipher.name, r, input_diff, output_diff, -params["sweight"] * 2, -rectangle_weight, switch_start_round,
             switch_rounds)
         result_file.write(save_str)
         result_file.flush()
         params["sweight"] += 1
-
 
 def check_solutions(new_parameter, cipher, start_time, max_weight=48):
     max_weight = 48 if max_weight > 48 else max_weight
@@ -131,19 +125,3 @@ def check_solutions(new_parameter, cipher, start_time, max_weight=48):
             prob += math.pow(2, -new_parameter["sweight"]) * solutions
         new_parameter["sweight"] += 1
     return prob
-
-
-if __name__ == '__main__':
-    c = katan64_bct.katan64()
-    start_rounds = 56
-    end_ends = 70
-    while start_rounds <= end_ends:
-        task_list = []
-        for _ in range(MAX_THREAD):
-            task_list.append(
-                multiprocessing.Process(target=find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), SWITCH_ROUNDS)))
-            start_rounds += 1
-        for task in task_list:
-            task.start()
-        for task in task_list:
-            task.join()

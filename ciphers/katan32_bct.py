@@ -15,7 +15,7 @@ class katan32(AbstractCipher):
     It uses an alternative representation of Katan32 in ARX form.
     """
 
-    name = "katan32"
+    name = "katan32BCT"
 
     IR = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
           1, 1, 0, 1, 0, 1, 0, 1, 0, 1,

@@ -87,8 +87,8 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         result_file.flush()
         params["sweight"] += 1
 
-def check_solutions(new_parameter, cipher, start_time, max_weight=48):
-    max_weight = 48 if max_weight > 48 else max_weight
+def check_solutions(new_parameter, cipher, start_time, max_weight=WORDSIZE):
+    max_weight = WORDSIZE if max_weight > WORDSIZE else max_weight
     sat_logfile = "tmp/satlog-{0}-{1}.tmp".format(cipher.name, start_time)
     prob = 0
     stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "clutesr", start_time)

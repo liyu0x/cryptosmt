@@ -1,20 +1,15 @@
-from ciphers import katan48_bct
 import random
 from cryptanalysis import search
-import time
 import copy
 import os
 import math
-import threading
-import multiprocessing
-
-MAX_THREAD = 8
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 4
+WORDSIZE = 48
 
-def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
-    max_weight = 48
+def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
+    max_weight = WORDSIZE
     max_weight_setting = False
     save_file = "result/{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
     result_file = open(save_file, "w")
@@ -27,9 +22,9 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
         "lweight": 0,
         "lowerlimit": 16,
         "mode": 0,
-        "wordsize": 48,
+        "wordsize": WORDSIZE,
         "blocksize": 64,
-        "sweight": 0,
+        "sweight": sweight,
         "endweight": 1000,
         "iterative": False,
         "boolector": False,
@@ -91,8 +86,8 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds):
         params["sweight"] += 1
 
 
-def check_solutions(new_parameter, cipher, start_time, max_weight=48):
-    max_weight = 48 if max_weight > 48 else max_weight
+def check_solutions(new_parameter, cipher, start_time, max_weight=WORDSIZE):
+    max_weight = WORDSIZE if max_weight > WORDSIZE else max_weight
     sat_logfile = "tmp/satlog-{0}-{1}.tmp".format(cipher.name, start_time)
     prob = 0
     stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
@@ -129,20 +124,3 @@ def check_solutions(new_parameter, cipher, start_time, max_weight=48):
             prob += math.pow(2, -new_parameter["sweight"]) * solutions
         new_parameter["sweight"] += 1
     return prob
-
-
-if __name__ == '__main__':
-    c = katan48_bct.katan48()
-    start_rounds = 76
-    end_ends = 86
-    while start_rounds <= end_ends:
-        task_list = []
-        for _ in range(MAX_THREAD):
-            # task_list.append(threading.Thread(target=find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), 4)))
-            task_list.append(
-                multiprocessing.Process(target=find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), 6)))
-            start_rounds += 1
-        for task in task_list:
-            task.start()
-        for task in task_list:
-            task.join()

@@ -14,13 +14,13 @@ POOL = multiprocessing.Pool(processes=MAX_THREAD)
 
 if __name__ == '__main__':
     c = katan32_bct.katan32()
-    start_rounds = 90
-    end_ends = 100
+    start_rounds = 83
+    end_ends = 83
     while start_rounds <= end_ends:
         task_list = []
         for _ in range(MAX_THREAD):
             task_list.append(
-                POOL.apply_async(find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), SWITCH_ROUNDS,25)))
+                POOL.apply_async(find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), SWITCH_ROUNDS,10)))
             start_rounds += 1
             if start_rounds > end_ends:
                 break

@@ -7,25 +7,17 @@ import math
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 4
-WORDSIZE = 64
 
 
 
-def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
-    max_weight = WORDSIZE
+def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds,word_size,output_column_index=1, sweight=0):
+    max_weight = word_size
     max_weight_setting = False
     save_file = "result/{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
     result_file = open(save_file, "w")
     params = {
         "rounds": r,
-        "uppertrail": 5,
-        "uweight": 0,
-        "upperlimit": 16,
-        "lowertrail": 5,
-        "lweight": 0,
-        "lowerlimit": 16,
-        "mode": 0,
-        "wordsize": WORDSIZE,
+        "wordsize": word_size,
         "blocksize": 64,
         "sweight": sweight,
         "endweight": 1000,
@@ -36,20 +28,14 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         "nummessages": 1,
         "timelimit": -1,
         "fixedVariables": {},
-        "boomerangVariables": {},
-        "sboxSize": 4,
-        "design": "gfn",
-        "sbox": [],
-        "perm": [],
-        "bct": [[0] * 16 for _ in range(16)],
         "blockedCharacteristics": [],
         "offset": offset,
         "switchStartRound": switch_start_round,
         "switchRounds": switch_rounds
     }
     rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
-    stp_file = "tmp/{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
-    while params["sweight"] < max_weight:
+    stp_file = "tmp/{0}-{1}-{2}.stp".format(cipher.name, r,rnd_string_tmp)
+    while params["sweight"] < max_weight or params["sweight"] <= word_size:
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
             result = search.solveBoolector(stp_file)
@@ -67,17 +53,16 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         
         if not max_weight_setting:
             max_weight = params["sweight"] + MAX_SINGLE_TRAIL_SERACH_LIMIT
-            max_weight_setting = True
 
         # Cluster Search
         new_parameters = copy.deepcopy(params)
         trails_data = characteristic.getData()
         input_diff = trails_data[0][0]
-        output_diff = trails_data[r][3]
+        output_diff = trails_data[r][output_column_index]
         new_parameters["fixedVariables"].clear()
         new_parameters["blockedCharacteristics"].clear()
-        new_parameters["fixedVariables"]["Xa0"] = input_diff
-        new_parameters["fixedVariables"]["Ya{}".format(r)] = output_diff
+        new_parameters["fixedVariables"]["X0"] = input_diff
+        new_parameters["fixedVariables"]["Y{}".format(r)] = output_diff
         p = check_solutions(new_parameters, cipher, rnd_string_tmp, new_parameters["sweight"] + MAX_CLUSTER_TRAIL_SERACH_LIMIT)
         p *= p
         rectangle_weight = math.log2(p)
@@ -88,10 +73,10 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         result_file.flush()
         params["sweight"] += 1
 
-def check_solutions(new_parameter, cipher, start_time, max_weight=WORDSIZE):
+def check_solutions(new_parameter, cipher, start_time, max_weight):
     sat_logfile = "tmp/satlog-{0}-{1}.tmp".format(cipher.name, start_time)
     prob = 0
-    stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
+    stp_file = "tmp/{}-{}-{}.stp".format(cipher.name, "clutesr", start_time)
     while new_parameter["sweight"] < max_weight:
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
@@ -125,3 +110,4 @@ def check_solutions(new_parameter, cipher, start_time, max_weight=WORDSIZE):
             prob += math.pow(2, -new_parameter["sweight"]) * solutions
         new_parameter["sweight"] += 1
     return prob
+

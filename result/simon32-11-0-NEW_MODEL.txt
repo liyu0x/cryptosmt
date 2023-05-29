@@ -1,0 +1,3 @@
+cipher:simon32, rounds:11, inputDiff:0x00400x4110, outputDiff:0x00110x0004, boomerang weight:-40, rectangle weight:17.62889400736361, switchStartRound:5, SwitchRounds:1
+cipher:simon32, rounds:11, inputDiff:0x00050x4414, outputDiff:0x00110x0004, boomerang weight:-42, rectangle weight:26.669994511827547, switchStartRound:5, SwitchRounds:1
+cipher:simon32, rounds:11, inputDiff:0x00100x4044, outputDiff:0x00200x8008, boomerang weight:-44, rectangle weight:30.362036921135115, switchStartRound:5, SwitchRounds:1

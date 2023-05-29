@@ -2,3 +2,4 @@ cipher:simon32, rounds:10, inputDiff:0x40000x1001, outputDiff:0x01100x0040, boom
 cipher:simon32, rounds:10, inputDiff:0x00400x0518, outputDiff:0x40040x0001, boomerang weight:-38, rectangle weight:22.372738194688107, switchStartRound:5, SwitchRounds:1
 cipher:simon32, rounds:10, inputDiff:0x00400x0190, outputDiff:0x00010x4400, boomerang weight:-40, rectangle weight:19.175952060422233, switchStartRound:5, SwitchRounds:1
 cipher:simon32, rounds:10, inputDiff:0x02000x0C00, outputDiff:0x10000x0400, boomerang weight:-42, rectangle weight:14.575839492819311, switchStartRound:5, SwitchRounds:1
+cipher:simon32, rounds:10, inputDiff:0x00800x0220, outputDiff:0x02220x0080, boomerang weight:-44, rectangle weight:19.501993059864255, switchStartRound:5, SwitchRounds:1

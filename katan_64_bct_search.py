@@ -20,7 +20,7 @@ if __name__ == '__main__':
     while start_rounds <= end_ends:
         task_list = []
         for _ in range(MAX_THREAD):
-            sweight = 36
+            sweight = 41
             if start_rounds in S_WEIGHT:
                 sweight = S_WEIGHT[start_rounds]+1
             task_list.append(

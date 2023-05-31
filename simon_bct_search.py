@@ -2,7 +2,7 @@ from ciphers import simon
 import multiprocessing
 from simon_bct_search_task import find_single_trail
 
-MAX_THREAD = 8
+MAX_THREAD = 4
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 4
@@ -15,7 +15,7 @@ POOL = multiprocessing.Pool(processes=MAX_THREAD)
 if __name__ == '__main__':
     c = simon.SimonCipher()
     c.name = "simon32"
-    start_rounds = 10
+    start_rounds = 13
     end_ends = 25
     while start_rounds <= end_ends:
         task_list = []

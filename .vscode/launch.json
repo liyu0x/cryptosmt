@@ -23,6 +23,15 @@
             "justMyCode": true
         },
         {
+            "name": "Katan32bct",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/cryptosmt-boomerang.py",
+            "args": ["--input", "./examples/boomerang/katan32_bct.yaml"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Katan32_strategy_A",
             "type": "python",
             "request": "launch",

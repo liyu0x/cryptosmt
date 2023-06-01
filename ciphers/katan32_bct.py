@@ -91,7 +91,7 @@ class katan32(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['X', 'Y', 'XA', 'XF', 'YA', 'YF' 'w']
+        return ['X', 'Y', 'XA', 'XF', 'YA', 'YF', 'w']
 
     def createSTP(self, stp_filename, parameters):
         """

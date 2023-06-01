@@ -1,12 +1,12 @@
-cipher: katan32
+cipher: katan32bct
 timelimit: 86400 #24 hours
 wordsize: 32
 mode: 4 #boomerang search mode
 offset: 0
-rounds: 35
-sweight: 0
-switchStartRound: -1
+rounds: 83
+sweight: 21
+switchStartRound: 41
 switchRounds: 4
 fixedVariables:
-   - X0: "0x00008010"
-   - X35: "0x00C01081"
+   - X0: "0x10040080"
+   - Y83: "0x00300420"

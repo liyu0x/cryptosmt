@@ -14,7 +14,7 @@ from ciphers import (simon, speck, simonlinear, keccak, keccakdiff,
                      siphash, simonrk, chaskeymachalf, simonkeyrc,
                      ketje, ascon, salsa, chacha, skinny, skinnyrk, gimli,
                      present, craft, craftlinear, trifle, trifle, triflerk, twine, warp, warprk, lblocks, lblock,
-                     katan32, katan48, katan64)
+                     katan32, katan48, katan64, katan32_bct)
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
 
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -56,7 +56,8 @@ def startsearch(tool_parameters):
                     "lblock": lblock.LBlockCipher(),
                     "katan32": katan32.katan32(),
                     "katan48": katan48.katan48(),
-                    "katan64": katan64.katan64()}
+                    "katan64": katan64.katan64(),
+                    "katan32bct":katan32_bct.katan32()}
 
     cipher = None
 

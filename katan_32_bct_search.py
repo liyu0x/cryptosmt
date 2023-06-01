@@ -20,7 +20,7 @@ if __name__ == '__main__':
         task_list = []
         for _ in range(MAX_THREAD):
             task_list.append(
-                POOL.apply_async(find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), SWITCH_ROUNDS,10)))
+                POOL.apply_async(find_single_trail, args=(c, start_rounds, 0, int(start_rounds / 2), SWITCH_ROUNDS,21)))
             start_rounds += 1
             if start_rounds > end_ends:
                 break

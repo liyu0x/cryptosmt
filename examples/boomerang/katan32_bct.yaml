@@ -1,0 +1,11 @@
+cipher: katan32bct
+sweight: 0
+rounds: 35
+wordsize: 32
+mode: 0
+offset: 0
+switchStartRound: 17 
+switchRounds: 4
+# fixedVariables:
+#    - X0: "0x00008010"
+#    - X35: "0x00C01081"

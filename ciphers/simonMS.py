@@ -88,7 +88,7 @@ class SimonCipher(AbstractCipher):
             and_out = ["andout{}".format(i) for i in range(rounds + 1)]
 
             # w = weight
-            w = ["w{}".format(i) for i in range(rounds)]
+            w = ["w{}".format(i) for i in range(rounds+1)]
 
             stpcommands.setupVariables(stp_file, xl, wordsize)
             stpcommands.setupVariables(stp_file, xr, wordsize)
@@ -101,12 +101,18 @@ class SimonCipher(AbstractCipher):
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
-            # E0
             for i in range(rounds):
                 self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
                                      and_out[i], w[i], wordsize, enc)
             
-            
+            command = "ASSERT({0}={1});\n".format(xl[rounds], yl[rounds])
+            command += "ASSERT({0}={1});\n".format(xr[rounds], yr[rounds])
+            stp_file.write(command)
+
+            for i in range(rounds, -1, -1):
+                self.setupSimonRound(stp_file, xl[i+1], xr[i+1], xl[i + 1], xr[i + 1],
+                                     and_out[i], w[i], wordsize, dec)
+
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
@@ -167,11 +173,11 @@ class SimonCipher(AbstractCipher):
         command += "ASSERT({} = BVXOR({}, BVXOR({}, {})));\n".format(
             x_out, rotl(x_in, self.rot_gamma, wordsize), y_in, and_out)
 
-        # Weight computation
-        command += "ASSERT({0} = (IF {1} = 0x{4} THEN BVSUB({5},0x{4},0x{6}1) \
-                    ELSE BVXOR({2}, {3}) ENDIF));\n".format(
-            w, x_in, varibits, doublebits, "f" * (wordsize // 4),
-            wordsize, "0" * ((wordsize // 4) - 1))
+        # # Weight computation
+        # command += "ASSERT({0} = (IF {1} = 0x{4} THEN BVSUB({5},0x{4},0x{6}1) \
+        #             ELSE BVXOR({2}, {3}) ENDIF));\n".format(
+        #     w, x_in, varibits, doublebits, "f" * (wordsize // 4),
+        #     wordsize, "0" * ((wordsize // 4) - 1))
 
         stp_file.write(command)
         return

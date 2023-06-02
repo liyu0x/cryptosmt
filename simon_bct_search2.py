@@ -109,6 +109,6 @@ if __name__ == '__main__':
     c = simon.SimonCipher()
     c.name = "simon32"
     start_rounds = 14
-    find_single_trail(c, start_rounds, start_rounds, 0, 7, 30)
+    find_single_trail(c, start_rounds, 0, 8, 1, 20)
 
 

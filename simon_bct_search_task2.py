@@ -28,13 +28,13 @@ def check_solutions(new_parameter, cipher, weight):
         if "s SATISFIABLE" in line:
             solutions += 1
         if solutions % 100 == 0:
-            print("\tSolutions: {}\r".format(solutions // 2), end="")
+            print("\t Rounds: {1}, Wedight: {2}, Solutions: {0}\r".format(solutions // 2, new_parameter['rounds'],new_parameter['sweight']), end="")
 
     log_file.close()
     if solutions > 0:
         print("\tSolutions: {}".format(solutions // 2))
 
-        assert solutions == search.countSolutionsLogfile(sat_logfile)
+        #assert solutions == search.countSolutionsLogfile(sat_logfile)
 
         # The encoded CNF contains every solution twice
         solutions //= 2

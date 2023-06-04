@@ -10,11 +10,11 @@ To support WARP, the modified stpcommands must be included because the state wor
 '''
 
 from cryptanalysis import search, boomerang
-from ciphers import (simon, speck, simonlinear, keccak, keccakdiff,
+from ciphers import (simonbct, speck, simonlinear, keccak, keccakdiff,
                      siphash, simonrk, chaskeymachalf, simonkeyrc,
                      ketje, ascon, salsa, chacha, skinny, skinnyrk, gimli,
                      present, craft, craftlinear, trifle, trifle, triflerk, twine, warp, warprk, lblocks, lblock,
-                     katan32, katan48, katan64, katan32_bct)
+                     katan32, katan48, katan64, katan32_bct,simon)
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
 
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -28,7 +28,8 @@ def startsearch(tool_parameters):
     Starts the search tool for the given parameters
     """
 
-    cipher_suite = {"simon": simon.SimonCipher(),
+    cipher_suite = {"simonbct": simonbct.SimonCipher(),
+                    "simon": simon.SimonCipher(),
                     "speck": speck.SpeckCipher(),
                     "simonlinear": simonlinear.SimonLinearCipher(),
                     "keccak": keccak.KeccakCipher(),

@@ -57,7 +57,6 @@ class SimonCipher(AbstractCipher):
             x = ["x{}".format(i) for i in range(rounds + 1)]
             y = ["y{}".format(i) for i in range(rounds + 1)]
             and_out = ["andout{}".format(i) for i in range(rounds + 1)]
-            tempv = ["tempv{}".format(i) for i in range(rounds + 1)]
 
             # w = weight
             w = ["w{}".format(i) for i in range(rounds)]
@@ -66,13 +65,12 @@ class SimonCipher(AbstractCipher):
             stpcommands.setupVariables(stp_file, y, wordsize)
             stpcommands.setupVariables(stp_file, and_out, wordsize)
             stpcommands.setupVariables(stp_file, w, wordsize)
-            stpcommands.setupVariables(stp_file, tempv, wordsize)
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
             for i in range(rounds):
                 self.setupSimonRound(stp_file, x[i], y[i], x[i+1], y[i+1],
-                                     tempv[i], and_out[i], w[i], wordsize)
+                                     and_out[i], w[i], wordsize)
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, x + y, wordsize)
@@ -93,7 +91,7 @@ class SimonCipher(AbstractCipher):
 
         return
 
-    def setupSimonRound(self, stp_file, x_in, y_in, x_out, y_out, tempv, and_out, w,
+    def setupSimonRound(self, stp_file, x_in, y_in, x_out, y_out, and_out, w,
                         wordsize):
         """
         Model for differential behaviour of one round SIMON
@@ -113,23 +111,18 @@ class SimonCipher(AbstractCipher):
 
         #Deal with dependent inputs
         varibits = "({0} | {1})".format(x_in_rotalpha, x_in_rotbeta)
-        command += "ASSERT({}={}|{});\n".format(tempv, x_in_rotalpha, x_in_rotbeta)
         doublebits = self.getDoubleBits(x_in, wordsize)
 
-        for i in range(16):
-            command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(and_out, tempv, i)
-
         #Check for valid difference
-        # firstcheck = "({} & ~{})".format(and_out, varibits)
-        # secondcheck = "(BVXOR({}, {}) & {})".format(
-        #     and_out, rotl(and_out, self.rot_alpha - self.rot_beta, wordsize), doublebits)
-        # thirdcheck = "(IF {0} = 0x{1} THEN BVMOD({2}, {3}, 0x{4}2) ELSE 0x{5} ENDIF)".format(
-        #     x_in, "f" * (wordsize // 4), wordsize, and_out, "0" * (wordsize // 4 - 1),
-        #     "0" * (wordsize // 4))
+        firstcheck = "({} & ~{})".format(and_out, varibits)
+        secondcheck = "(BVXOR({}, {}) & {})".format(
+            and_out, rotl(and_out, self.rot_alpha - self.rot_beta, wordsize), doublebits)
+        thirdcheck = "(IF {0} = 0x{1} THEN BVMOD({2}, {3}, 0x{4}2) ELSE 0x{5} ENDIF)".format(
+            x_in, "f" * (wordsize // 4), wordsize, and_out, "0" * (wordsize // 4 - 1),
+            "0" * (wordsize // 4))
 
-        # command += "ASSERT(({} | {} | {}) = 0x{});\n".format(
-        #     firstcheck, secondcheck, thirdcheck, "0" * (wordsize // 4))
-        
+        command += "ASSERT(({} | {} | {}) = 0x{});\n".format(
+            firstcheck, secondcheck, thirdcheck, "0" * (wordsize // 4))
 
         #Assert XORs
         command += "ASSERT({} = BVXOR({}, BVXOR({}, {})));\n".format(

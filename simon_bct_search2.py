@@ -1,4 +1,4 @@
-from ciphers import simon
+from ciphers import simonbct
 import multiprocessing
 from simon_bct_search_task2 import check_solutions
 import random
@@ -10,14 +10,14 @@ import math
 MAX_THREAD = 12
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = 10
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = 6
 SWITCH_ROUNDS = 1
 WORDSIZE = 16
 
 POOL = multiprocessing.Pool(processes=MAX_THREAD)
 
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
-    max_weight = 1000000
+    max_weight = 999
     max_weight_setting = False
     save_file = "result/{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
     result_file = open(save_file, "w")
@@ -67,8 +67,24 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
                 )
             )
             params["sweight"] += 1
+            params["fixedVariables"].clear()
             continue
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
+        params["blockedCharacteristics"].append(characteristic)
+
+        # trails_data = characteristic.getData()
+        # input_diff_l = trails_data[0][0]
+        # input_diff_r = trails_data[0][1]
+        # input_diff_r = input_diff_r.replace("0x","")
+        # output_diff_l = trails_data[r][2]
+        # output_diff_r = trails_data[r][3]
+        # output_diff_r = output_diff_r.replace("0x","")
+        # save_str = "cipher:{0}, rounds:{1}, inputDiff:{2}, outputDiff:{3}, boomerang weight:{4}, rectangle weight:{5}, switchStartRound:{6}, SwitchRounds:{7}\n".format(
+        #     cipher.name, r, input_diff_l+input_diff_r, output_diff_l+output_diff_r, -params["sweight"] * 2, None, switch_start_round,
+        #     switch_rounds)
+        # result_file.write(save_str)
+        # result_file.flush()
+
         
         if not max_weight_setting:
             max_weight = params["sweight"] + MAX_SINGLE_TRAIL_SERACH_LIMIT
@@ -79,36 +95,47 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         trails_data = characteristic.getData()
         input_diff_l = trails_data[0][0]
         input_diff_r = trails_data[0][1]
-        output_diff_l = trails_data[r][2]
-        output_diff_r = trails_data[r][3]
         new_parameters["fixedVariables"].clear()
         new_parameters["blockedCharacteristics"].clear()
         new_parameters["fixedVariables"]["XL0"] = input_diff_l
         new_parameters["fixedVariables"]["XR0"] = input_diff_r
-        new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
-        new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
+        if switch_start_round == -1:
+            output_diff_l = trails_data[r][0]
+            output_diff_r = trails_data[r][1]
+            new_parameters["fixedVariables"]["XL{}".format(r)] = output_diff_l
+            new_parameters["fixedVariables"]["XR{}".format(r)] = output_diff_r
+        else:
+            output_diff_l = trails_data[r][2]
+            output_diff_r = trails_data[r][3]
+            new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
+            new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
         muilt_core = []
         p = 0
-        for w in (0,MAX_CLUSTER_TRAIL_SERACH_LIMIT):
+        for w in range(0,MAX_CLUSTER_TRAIL_SERACH_LIMIT):
             muilt_core.append(
                 POOL.apply_async(check_solutions, args=(new_parameters, cipher, new_parameters["sweight"] + w))
                 )
         for task in muilt_core:
             p += task.get()
-        p *= p
-        rectangle_weight = math.log2(p)
+        #p *= p
+        if p > 0:
+            rectangle_weight = math.log2(p)
+        else:
+            rectangle_weight = 99999
+        input_diff_r = input_diff_r.replace("0x","")
+        output_diff_r = output_diff_r.replace("0x","")
         save_str = "cipher:{0}, rounds:{1}, inputDiff:{2}, outputDiff:{3}, boomerang weight:{4}, rectangle weight:{5}, switchStartRound:{6}, SwitchRounds:{7}\n".format(
-            cipher.name, r, input_diff_l+input_diff_r, output_diff_l+output_diff_r, -params["sweight"] * 2, -rectangle_weight, switch_start_round,
+            cipher.name, r, input_diff_l+input_diff_r, output_diff_l+output_diff_r, -params["sweight"] * 2, rectangle_weight, switch_start_round,
             switch_rounds)
         result_file.write(save_str)
         result_file.flush()
-        params["sweight"] += 1
+        #params["sweight"] += 1
 
 
 if __name__ == '__main__':
-    c = simon.SimonCipher()
+    c = simonbct.SimonCipher()
     c.name = "simon32"
     start_rounds = 14
-    find_single_trail(c, start_rounds, 0, 8, 1, 20)
+    find_single_trail(c, start_rounds, 0, int(start_rounds/2), SWITCH_ROUNDS, 0)
 
 

@@ -1,4 +1,4 @@
-from ciphers import simon,katan32_bct, katan48_bct, katan64_bct
+from ciphers import katan32_bct, katan48_bct, katan64_bct, simonbct
 import multiprocessing
 from parallel_task import find_single_trail
 import sys
@@ -10,7 +10,7 @@ SWITCH_ROUNDS = 1
 KATAN32_SETTINGS = {"cipher": katan32_bct.katan32(), "switch_rounds": 4,"wordsize": 32}
 KATAN48_SETTINGS = {"cipher": katan48_bct.katan48(), "switch_rounds": 6,"wordsize": 48}
 KATAN64_SETTINGS = {"cipher": katan64_bct.katan64(), "switch_rounds": 7,"wordsize": 64}
-SIMON32_SETTINGS = {"cipher": simon.SimonCipher(), "switch_rounds": 1, "wordsize": 16}
+SIMON32_SETTINGS = {"cipher": simonbct.SimonCipher(), "switch_rounds": 1, "wordsize": 16}
 
 POOL = multiprocessing.get_context("fork").Pool(MAX_THREAD)
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     if len(args) == 1:
         print("Please setting a cipher")
         exit(0)
-    c = simon.SimonCipher()
+    c = simonbct.SimonCipher()
     start_rounds = 5
     end_ends = 20
     while start_rounds <= end_ends:

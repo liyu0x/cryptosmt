@@ -2,11 +2,11 @@
 # best differential characteristic. The search starts at 
 # weight 0.
 ---
-cipher: simon
+cipher: simonbct
 sweight: 0
-rounds: 10
+rounds: 5
 wordsize: 16
-mode: 0
-switchStartRound: 5  # set -1 means seraching without AND-BCT
+mode: 1
+switchStartRound: 3  # set -1 means seraching without AND-BCT
 switchRounds: 1
 ...

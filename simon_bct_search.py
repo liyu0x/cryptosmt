@@ -1,4 +1,4 @@
-from ciphers import simon
+from ciphers import simonbct
 import multiprocessing
 from simon_bct_search_task import find_single_trail
 
@@ -13,7 +13,7 @@ POOL = multiprocessing.Pool(processes=MAX_THREAD)
 
 
 if __name__ == '__main__':
-    c = simon.SimonCipher()
+    c = simonbct.SimonCipher()
     c.name = "simon32"
     start_rounds = 13
     end_ends = 25

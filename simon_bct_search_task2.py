@@ -27,8 +27,8 @@ def check_solutions(new_parameter, cipher, weight):
         log_file.write(line)
         if "s SATISFIABLE" in line:
             solutions += 1
-        if solutions % 100 == 0:
-            print("\t Rounds: {1}, Wedight: {2}, Solutions: {0}\r".format(solutions // 2, new_parameter['rounds'],new_parameter['sweight']), end="")
+        #if solutions % 100 == 0:
+            #print("\t Rounds: {1}, Wedight: {2}, Solutions: {0}\r".format(solutions // 2, new_parameter['rounds'],new_parameter['sweight']), end="")
 
     log_file.close()
     if solutions > 0:
@@ -38,6 +38,6 @@ def check_solutions(new_parameter, cipher, weight):
 
         # The encoded CNF contains every solution twice
         solutions //= 2
-        prob += math.pow(2, -new_parameter["sweight"]) * solutions
+        prob += math.pow(2, -new_parameter["sweight"]*2) * solutions
     return prob
 

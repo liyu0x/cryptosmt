@@ -88,7 +88,7 @@ class DifferentialCharacteristic(object):
         print("-" * len(header_str))
         print(data_str)
         print("Weight: " + str(int(self.weight, 16)))
-        return
+        return data_str
 
     def getDOTString(self):
         """

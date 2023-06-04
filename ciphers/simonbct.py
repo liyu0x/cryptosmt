@@ -66,7 +66,7 @@ class SimonCipher(AbstractCipher):
         e0_start_search_num = 0
         e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round
         em_start_search_num = rounds if switch_start_round == -1 else switch_start_round
-        em_end_search_num = rounds if switch_start_round == -1 else e0_end_search_num + switch_rounds
+        em_end_search_num = rounds if switch_start_round == -1 else em_start_search_num + switch_rounds
         e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
         e1_end_search_num = rounds
 
@@ -84,15 +84,18 @@ class SimonCipher(AbstractCipher):
                                                          self.rot_gamma,
                                                          rounds))
             stp_file.write(header)
-
+            command = ""
             # Setup variables
             # x = left, y = right
             xl = ["XL{}".format(i) for i in range(rounds + 1)]
             xr = ["XR{}".format(i) for i in range(rounds + 1)]
             yl = ["YL{}".format(i) for i in range(rounds + 1)]
             yr = ["YR{}".format(i) for i in range(rounds + 1)]
+            store = ["S{}".format(i) for i in range(rounds + 1)]
 
             and_out = ["andout{}".format(i) for i in range(rounds + 1)]
+
+            and_out_t = ["andoutt{}".format(i) for i in range(rounds + 1)]
 
             # w = weight
             w = ["w{}".format(i) for i in range(rounds)]
@@ -102,35 +105,44 @@ class SimonCipher(AbstractCipher):
             stpcommands.setupVariables(stp_file, yl, wordsize)
             stpcommands.setupVariables(stp_file, yr, wordsize)
             stpcommands.setupVariables(stp_file, and_out, wordsize)
+            stpcommands.setupVariables(stp_file, and_out_t, wordsize)
+            stpcommands.setupVariables(stp_file, store, wordsize)
             stpcommands.setupVariables(stp_file, w, wordsize)
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
-
+            
             # E0
             for i in range(e0_start_search_num, e0_end_search_num):
                 self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
-                                     and_out[i], w[i], wordsize)
+                                     and_out[i], w[i],store[i],  wordsize)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                # self.setupSimonRound(stp_file, xl[i], xr[i], yl[i + 1], yr[i + 1],
+                # self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
                 #                      and_out[i], w[i], wordsize, True)
                 variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
-                command = self.and_bct(variable_arr, self.non_linear_part, 2)
-                stp_file.write(command)
-            # E1
-            for i in range(e1_start_search_num, e1_end_search_num):
-                self.setupSimonRound(stp_file, yl[i], yr[i], yl[i + 1], yr[i + 1],
-                                     and_out[i], w[i], wordsize)
+                command += self.and_bct(variable_arr, self.non_linear_part, 2)
+                #variable_arr = self.bct_vari(xl[i-1], yl[i + 1], wordsize)
+                #command += self.and_bct(variable_arr, self.non_linear_part, 2)
+                #command += "ASSERT(NOT({}={}));\n".format(yl[i+1], "0x0000")
+                #command += "ASSERT({}={});\n".format(yl[i+1], x)
 
-            # No all zero characteristic
+            # E1
+            for i in range(em_start_search_num+switch_rounds, e1_end_search_num):
+                self.setupSimonRound(stp_file, yl[i], yr[i], yl[i + 1], yr[i + 1],
+                                     and_out[i], w[i],store[i], wordsize)
+
+            #No all zero characteristic
             if switch_start_round == -1:
                 stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
             else:
+                # for i in range(e0_start_search_num,em_end_search_num+1):
+                #     stpcommands.assertNonZero(stp_file,[xl[i]],wordsize)
+                #     stpcommands.assertNonZero(stp_file,[xr[i]],wordsize)
                 # use BCT
-                stpcommands.assertNonZero(stp_file, xl[e0_start_search_num:e0_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, xr[e0_start_search_num:e0_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, yl[e1_start_search_num:e1_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, yr[e1_start_search_num:e1_end_search_num], wordsize)
+                stpcommands.assertNonZero(stp_file, xl[e0_start_search_num:em_end_search_num], wordsize)
+                stpcommands.assertNonZero(stp_file, xr[e0_start_search_num:em_end_search_num], wordsize)
+                stpcommands.assertNonZero(stp_file, yl[em_start_search_num+1:e1_end_search_num], wordsize)
+                stpcommands.assertNonZero(stp_file, yr[em_start_search_num+1:e1_end_search_num], wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -143,12 +155,12 @@ class SimonCipher(AbstractCipher):
 
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
-
+            stp_file.write(command)
             stpcommands.setupQuery(stp_file)
 
         return
 
-    def setupSimonRound(self, stp_file, x_in, y_in, x_out, y_out, and_out, w,
+    def setupSimonRound(self, stp_file, x_in, y_in, x_out, y_out, and_out, w, store,
                         wordsize, switch=False):
         """
         Model for differential behaviour of one round SIMON
@@ -168,6 +180,13 @@ class SimonCipher(AbstractCipher):
 
         # Deal with dependent inputs
         varibits = "({0} | {1})".format(x_in_rotalpha, x_in_rotbeta)
+
+        # store activity for AND
+        # command += "ASSERT({0}=({1} | {2}));\n".format(store, x_in_rotalpha, x_in_rotbeta)
+
+        # for i in range(wordsize):
+        #     command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(and_out,store,i)
+
         doublebits = self.getDoubleBits(x_in, wordsize)
 
         # Check for valid difference

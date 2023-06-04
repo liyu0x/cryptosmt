@@ -9,7 +9,7 @@ import math
 
 MAX_THREAD = 12
 
-MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
+MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 6
 SWITCH_ROUNDS = 1
 WORDSIZE = 16
@@ -70,7 +70,18 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
             params["fixedVariables"].clear()
             continue
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
-        params["blockedCharacteristics"].append(characteristic)
+
+
+        # trails_data = characteristic.getData()
+        # input_diff_l = trails_data[switch_start_round][0]
+        # input_diff_r = trails_data[switch_start_round][1]
+        # output_diff_l = trails_data[switch_start_round+switch_rounds][2]
+        # output_diff_r = trails_data[switch_start_round+switch_rounds][3]
+        # input_diff_r = input_diff_r.replace("0x","")
+        # output_diff_r = output_diff_r.replace("0x","")
+        # sss = "ROUNDS:{}, SWITCH_INPUT:{}, SWITCH_OUTPUT:{}\n".format(r, input_diff_l+input_diff_r, output_diff_l+output_diff_r)
+        # result_file.write(sss)
+        # result_file.flush()
 
         # trails_data = characteristic.getData()
         # input_diff_l = trails_data[0][0]
@@ -95,10 +106,15 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         trails_data = characteristic.getData()
         input_diff_l = trails_data[0][0]
         input_diff_r = trails_data[0][1]
+        switch_input_diff_l = trails_data[switch_start_round][0]
+        switch_input_diff_r = trails_data[switch_start_round][1]
+        switch_output_diff_l = trails_data[switch_start_round+switch_rounds][2]
+        switch_output_diff_r = trails_data[switch_start_round+switch_rounds][3]
         new_parameters["fixedVariables"].clear()
         new_parameters["blockedCharacteristics"].clear()
         new_parameters["fixedVariables"]["XL0"] = input_diff_l
         new_parameters["fixedVariables"]["XR0"] = input_diff_r
+        
         if switch_start_round == -1:
             output_diff_l = trails_data[r][0]
             output_diff_r = trails_data[r][1]
@@ -109,6 +125,10 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
             output_diff_r = trails_data[r][3]
             new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
             new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
+            new_parameters["fixedVariables"]["XL{}".format(switch_start_round)] = switch_input_diff_l
+            new_parameters["fixedVariables"]["XR{}".format(switch_start_round)] = switch_input_diff_r
+            new_parameters["fixedVariables"]["YL{}".format(switch_start_round+switch_rounds)] = switch_output_diff_l
+            new_parameters["fixedVariables"]["YR{}".format(switch_start_round+switch_rounds)] = switch_output_diff_r
         muilt_core = []
         p = 0
         for w in range(0,MAX_CLUSTER_TRAIL_SERACH_LIMIT):
@@ -124,18 +144,23 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
             rectangle_weight = 99999
         input_diff_r = input_diff_r.replace("0x","")
         output_diff_r = output_diff_r.replace("0x","")
-        save_str = "cipher:{0}, rounds:{1}, inputDiff:{2}, outputDiff:{3}, boomerang weight:{4}, rectangle weight:{5}, switchStartRound:{6}, SwitchRounds:{7}\n".format(
+        save_str = "cipher:{0}, rounds:{1}, inputDiff:{2}, outputDiff:{3}, boomerang weight:{4}, rectangle weight:{5}, switchStartRound:{6}, SwitchRounds:{7}, Prob:{8}\n".format(
             cipher.name, r, input_diff_l+input_diff_r, output_diff_l+output_diff_r, -params["sweight"] * 2, rectangle_weight, switch_start_round,
-            switch_rounds)
+            switch_rounds, p)
+        switch_input_diff_r = switch_input_diff_r.replace("0x","")
+        switch_output_diff_r = switch_output_diff_r.replace("0x","")
+        sss = "\tSWITCH_INPUT:{}, SWITCH_OUTPUT:{}\n".format(switch_input_diff_l+switch_input_diff_r, switch_output_diff_l+switch_output_diff_r)
         result_file.write(save_str)
+        result_file.write(sss)
         result_file.flush()
         #params["sweight"] += 1
+        params["blockedCharacteristics"].append(characteristic)
 
 
 if __name__ == '__main__':
     c = simonbct.SimonCipher()
     c.name = "simon32"
-    start_rounds = 14
-    find_single_trail(c, start_rounds, 0, int(start_rounds/2), SWITCH_ROUNDS, 0)
+    start_rounds = 7
+    find_single_trail(c, start_rounds, 0, int(start_rounds/2)-int(SWITCH_ROUNDS/2), SWITCH_ROUNDS, 0)
 
 

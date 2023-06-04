@@ -49,7 +49,7 @@ class SimonCipher(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['XL', 'XR', 'YL', 'YR', 'w']
+        return ['XL', 'ENC', 'YL', 'DEC', 'w']
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -86,6 +86,7 @@ class SimonCipher(AbstractCipher):
             dec = ["DEC{}".format(i) for i in range(rounds + 1)]
 
             and_out = ["andout{}".format(i) for i in range(rounds + 1)]
+            d_and_out = ["dandout{}".format(i) for i in range(rounds + 1)]
 
             # w = weight
             w = ["w{}".format(i) for i in range(rounds+1)]
@@ -97,25 +98,33 @@ class SimonCipher(AbstractCipher):
             stpcommands.setupVariables(stp_file, enc, wordsize)
             stpcommands.setupVariables(stp_file, dec, wordsize)
             stpcommands.setupVariables(stp_file, and_out, wordsize)
+            stpcommands.setupVariables(stp_file, d_and_out, wordsize)
             stpcommands.setupVariables(stp_file, w, wordsize)
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
             for i in range(rounds):
                 self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
-                                     and_out[i], w[i], wordsize, enc)
+                                     and_out[i], w[i], wordsize, enc[i])
             
             command = "ASSERT({0}={1});\n".format(xl[rounds], yl[rounds])
             command += "ASSERT({0}={1});\n".format(xr[rounds], yr[rounds])
+            variable_arr = self.bct_vari(xl[rounds-1], yr[rounds], wordsize)
+            command += self.and_bct(variable_arr, self.non_linear_part, 2)
+
+            for i in range(rounds, 0, -1):
+                self.setupSimonRound(stp_file, yl[i], yr[i], yl[i - 1], yr[i - 1],
+                                     d_and_out[i], w[i], wordsize, dec[i])
+
+            command += self.compute_weight(w, enc, dec, rounds)
+
             stp_file.write(command)
 
-            for i in range(rounds, -1, -1):
-                self.setupSimonRound(stp_file, xl[i+1], xr[i+1], xl[i + 1], xr[i + 1],
-                                     and_out[i], w[i], wordsize, dec)
-
-
             # No all zero characteristic
-            stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
+            stpcommands.assertNonZero(stp_file, xl, wordsize)
+            stpcommands.assertNonZero(stp_file, xr, wordsize)
+            stpcommands.assertNonZero(stp_file, yl, wordsize)
+            stpcommands.assertNonZero(stp_file, yr, wordsize)
           
             # Iterative characteristics only
             # Input difference = Output difference
@@ -182,6 +191,12 @@ class SimonCipher(AbstractCipher):
         stp_file.write(command)
         return
 
+
+    def compute_weight(self, w, en, de, rounds):
+        command = ""
+        for r in range(rounds):
+            command += "ASSERT({0}={1}&{2});\n".format(w[r], en[r], de[r+1])
+        return command
 
     def getDoubleBits(self, x_in, wordsize):
         command = "({0} & ~{1} & {2})".format(

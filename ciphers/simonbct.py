@@ -91,7 +91,6 @@ class SimonCipher(AbstractCipher):
             xr = ["XR{}".format(i) for i in range(rounds + 1)]
             yl = ["YL{}".format(i) for i in range(rounds + 1)]
             yr = ["YR{}".format(i) for i in range(rounds + 1)]
-            store = ["S{}".format(i) for i in range(rounds + 1)]
 
             and_out = ["andout{}".format(i) for i in range(rounds + 1)]
 
@@ -106,7 +105,6 @@ class SimonCipher(AbstractCipher):
             stpcommands.setupVariables(stp_file, yr, wordsize)
             stpcommands.setupVariables(stp_file, and_out, wordsize)
             stpcommands.setupVariables(stp_file, and_out_t, wordsize)
-            stpcommands.setupVariables(stp_file, store, wordsize)
             stpcommands.setupVariables(stp_file, w, wordsize)
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
@@ -114,22 +112,22 @@ class SimonCipher(AbstractCipher):
             # E0
             for i in range(e0_start_search_num, e0_end_search_num):
                 self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
-                                     and_out[i], w[i],store[i],  wordsize)
+                                     and_out[i], w[i], wordsize)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                # self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
-                #                      and_out[i], w[i], wordsize, True)
                 variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
+                self.setupSimonRound(stp_file, xl[i], xr[i], yl[i + 1], yr[i + 1],
+                                     and_out[i], w[i], wordsize, True)
                 #variable_arr = self.bct_vari(xl[i-1], yl[i + 1], wordsize)
                 #command += self.and_bct(variable_arr, self.non_linear_part, 2)
                 #command += "ASSERT(NOT({}={}));\n".format(yl[i+1], "0x0000")
                 #command += "ASSERT({}={});\n".format(yl[i+1], x)
 
             # E1
-            for i in range(em_start_search_num+switch_rounds, e1_end_search_num):
+            for i in range(e1_start_search_num, e1_end_search_num):
                 self.setupSimonRound(stp_file, yl[i], yr[i], yl[i + 1], yr[i + 1],
-                                     and_out[i], w[i],store[i], wordsize)
+                                     and_out[i], w[i], wordsize)
 
             #No all zero characteristic
             if switch_start_round == -1:
@@ -160,7 +158,7 @@ class SimonCipher(AbstractCipher):
 
         return
 
-    def setupSimonRound(self, stp_file, x_in, y_in, x_out, y_out, and_out, w, store,
+    def setupSimonRound(self, stp_file, x_in, y_in, x_out, y_out, and_out, w,
                         wordsize, switch=False):
         """
         Model for differential behaviour of one round SIMON
@@ -180,12 +178,6 @@ class SimonCipher(AbstractCipher):
 
         # Deal with dependent inputs
         varibits = "({0} | {1})".format(x_in_rotalpha, x_in_rotbeta)
-
-        # store activity for AND
-        # command += "ASSERT({0}=({1} | {2}));\n".format(store, x_in_rotalpha, x_in_rotbeta)
-
-        # for i in range(wordsize):
-        #     command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(and_out,store,i)
 
         doublebits = self.getDoubleBits(x_in, wordsize)
 
@@ -252,7 +244,7 @@ class SimonCipher(AbstractCipher):
                     for i in range(bits - 1, -1, -1):
                         tmp.append((output_diff >> i) & 1)
                     trails.append(tmp)
-
+        # trails = trails[0:int(len(trails)/2)]
         # Build CNF from invalid trails
         cnf = ""
         for variables in variables_arr:

@@ -1,5 +1,0 @@
-cipher:katan48BCT, rounds:83, inputDiff:0x200209008000, outputDiff:0x000900082410, boomerang weight:80, rectangle weight:-74.0, switchStartRound:41, SwitchRounds:6
-cipher:katan48BCT, rounds:83, inputDiff:0x000019648000, outputDiff:0x000D00082410, boomerang weight:82, rectangle weight:-74.0, switchStartRound:41, SwitchRounds:6
-cipher:katan48BCT, rounds:83, inputDiff:0x90010C804000, outputDiff:0x000000041208, boomerang weight:84, rectangle weight:-72.0, switchStartRound:41, SwitchRounds:6
-cipher:katan48BCT, rounds:83, inputDiff:0x400410000000, outputDiff:0x000800002924, boomerang weight:86, rectangle weight:-80.0, switchStartRound:41, SwitchRounds:6
-cipher:katan48BCT, rounds:83, inputDiff:0x200209408000, outputDiff:0x000000000010, boomerang weight:88, rectangle weight:-78.0, switchStartRound:41, SwitchRounds:6

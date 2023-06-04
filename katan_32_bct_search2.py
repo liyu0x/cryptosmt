@@ -9,7 +9,7 @@ import copy
 MAX_THREAD = 12
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = 10
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = 4
 SWITCH_ROUNDS = 4
 WORDSIZE = 32
 
@@ -72,6 +72,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
             continue
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
         
+        characteristic.printText()
         if not max_weight_setting:
             max_weight = params["sweight"] + MAX_SINGLE_TRAIL_SERACH_LIMIT
 
@@ -103,5 +104,5 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
 
 if __name__ == '__main__':
     c = katan32_bct.katan32()
-    start_rounds = 100
-    find_single_trail(c, start_rounds, 0, 50, 4, 0)
+    start_rounds = 35
+    find_single_trail(c, start_rounds, 0, int(start_rounds/2), 4, 0)

@@ -11,9 +11,8 @@ switchStartRound: 3  # set -1 means seraching without AND-BCT
 switchRounds: 1
 fixedVariables:
     - XL0: "0x0000"
-    - XR0: "0x0004"
-    - YL3: "0x0044"
-    - YR3: "0x0010"
-    - YL6: "0x0008"
-    - YR6: "0x0002"
+    - XR0: "0x0200"
+    - XL6: "0x4000"
+    - XR6: "0x0001"
+
 ...

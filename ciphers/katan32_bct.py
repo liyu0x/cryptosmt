@@ -91,13 +91,16 @@ class katan32(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['X', 'Y', 'XA', 'XF', 'YA', 'YF', 'w']
+        #return ['X', 'Y', 'XA', 'XF', 'YA', 'YF', 'w']
+        return ['X', 'Y', 'w']
+
 
     def createSTP(self, stp_filename, parameters):
         """
         Creates an STP file to find a characteristic for KATAN32 with
         the given parameters.
         """
+        command = ""
         mode = parameters["mode"]
         wordsize = parameters["wordsize"]
         rounds = parameters["rounds"]
@@ -109,7 +112,7 @@ class katan32(AbstractCipher):
         e0_start_search_num = 0
         e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round
         em_start_search_num = rounds if switch_start_round == -1 else switch_start_round
-        em_end_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        em_end_search_num = rounds if switch_start_round == -1 else em_start_search_num + switch_rounds
         e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
         e1_end_search_num = rounds
 
@@ -147,11 +150,11 @@ class katan32(AbstractCipher):
                                      w[i], wordsize, i, offset)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                command = stpcommands.and_bct(self.small_vari(x[i], y[i]), self.ax_box_2, 2)
-                command += stpcommands.and_bct(self.big_vari(x[i], y[i]), self.ax_box, 4)
-                stp_file.write(command)
+                command += stpcommands.and_bct(self.small_vari(x[i], y[i+1]), self.ax_box_2, 2)
+                command += stpcommands.and_bct(self.big_vari(x[i], y[i+1]), self.ax_box, 4)
                 self.setupKatanRound(stp_file, x[i], xf[i], xa[i], x[i + 1],
                                      w[i], wordsize, i, offset, True)
+            for i in range(em_start_search_num+1, em_end_search_num):
                 self.setupKatanRound(stp_file, y[i], yf[i], ya[i], y[i + 1],
                                      w[i], wordsize, i, offset, True)
             # E1
@@ -176,7 +179,7 @@ class katan32(AbstractCipher):
 
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
-
+            stp_file.write(command)
             stpcommands.setupQuery(stp_file)
 
         return

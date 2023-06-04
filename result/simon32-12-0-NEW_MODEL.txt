@@ -1,5 +1,0 @@
-cipher:simon32, rounds:12, inputDiff:0x80000x2003, outputDiff:0x80080x0002, boomerang weight:-44, rectangle weight:20.840881963426263, switchStartRound:6, SwitchRounds:1
-cipher:simon32, rounds:12, inputDiff:0x00280x08F2, outputDiff:0x40040x0001, boomerang weight:-46, rectangle weight:30.887706453748333, switchStartRound:6, SwitchRounds:1
-cipher:simon32, rounds:12, inputDiff:0x08000x2228, outputDiff:0x20830x8000, boomerang weight:-48, rectangle weight:26.85957701502916, switchStartRound:6, SwitchRounds:1
-cipher:simon32, rounds:12, inputDiff:0x08000x2220, outputDiff:0x11050x4001, boomerang weight:-50, rectangle weight:33.41765860135628, switchStartRound:6, SwitchRounds:1
-cipher:simon32, rounds:12, inputDiff:0x00080x2822, outputDiff:0x44220x1008, boomerang weight:-52, rectangle weight:30.477183221154736, switchStartRound:6, SwitchRounds:1

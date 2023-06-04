@@ -1,17 +1,12 @@
 cipher: simonbct
 sweight: 0
-rounds: 5
+rounds: 6
 wordsize: 16
 mode: 4
 switchStartRound: 3  # set -1 means seraching without AND-BCT
 switchRounds: 1
 fixedVariables:
-    - XL0: "0x0008"
-    - XR0: "0x0020"
-    - YL5: "0x0224"
-    - YR5: "0x0001"
-# fixedVariables:
-#     - x0: "0x0010"
-#     - y0: "0x0040"
-#     - x3: "0x0040"
-#     - y3: "0x0010"
+    - XL0: "0x0000"
+    - XR0: "0x0200"
+    - XL6: "0x4000"
+    - XR6: "0x0001"

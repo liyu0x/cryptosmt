@@ -101,7 +101,6 @@ class katan32(AbstractCipher):
         the given parameters.
         """
         command = ""
-        mode = parameters["mode"]
         wordsize = parameters["wordsize"]
         rounds = parameters["rounds"]
         weight = parameters["sweight"]
@@ -153,6 +152,8 @@ class katan32(AbstractCipher):
                 command += stpcommands.and_bct(self.small_vari(x[i], y[i+1]), self.ax_box_2, 2)
                 command += stpcommands.and_bct(self.big_vari(x[i], y[i+1]), self.ax_box, 4)
                 self.setupKatanRound(stp_file, x[i], xf[i], xa[i], x[i + 1],
+                                     w[i], wordsize, i, offset, True)
+                self.setupKatanRound(stp_file, x[i], xf[i], xa[i], y[i + 1],
                                      w[i], wordsize, i, offset, True)
             for i in range(em_start_search_num+1, em_end_search_num):
                 self.setupKatanRound(stp_file, y[i], yf[i], ya[i], y[i + 1],

@@ -1,9 +1,0 @@
-cipher: katan32
-sweight: 7
-rounds: 35
-wordsize: 32
-mode: 2
-offset: 0
-# fixedVariables:
-#    - X0: "0x00008010"
-#    - X35: "0x00C01081"

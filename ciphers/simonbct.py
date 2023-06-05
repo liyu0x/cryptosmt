@@ -115,19 +115,22 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
+                self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
+                                     and_out[i], w[i], wordsize, True)
+                # self.setupSimonRound(stp_file, xl[i], xr[i], yl[i + 1], yr[i + 1],
+                #                      and_out_t[i], w[i], wordsize, True)
                 variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
-                self.setupSimonRound(stp_file, xl[i], xr[i], yl[i + 1], yr[i + 1],
-                                     and_out[i], w[i], wordsize, True)
-                #variable_arr = self.bct_vari(xl[i-1], yl[i + 1], wordsize)
-                #command += self.and_bct(variable_arr, self.non_linear_part, 2)
-                #command += "ASSERT(NOT({}={}));\n".format(yl[i+1], "0x0000")
-                #command += "ASSERT({}={});\n".format(yl[i+1], x)
+                # variable_arr = self.bct_vari(xl[i+1], yl[i + 1], wordsize)
+                # command += self.and_bct(variable_arr, self.non_linear_part, 2)
+            for i in range(em_start_search_num+1, em_end_search_num):
+                self.setupSimonRound(stp_file, yl[i], yr[i], yl[i + 1], yr[i + 1],
+                                     and_out[i], w[i], wordsize)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
                 self.setupSimonRound(stp_file, yl[i], yr[i], yl[i + 1], yr[i + 1],
-                                     and_out[i], w[i], wordsize)
+                                     and_out_t[i], w[i], wordsize)
 
             #No all zero characteristic
             if switch_start_round == -1:
@@ -202,6 +205,8 @@ class SimonCipher(AbstractCipher):
                         ELSE BVXOR({2}, {3}) ENDIF));\n".format(
                 w, x_in, varibits, doublebits, "f" * (wordsize // 4),
                 wordsize, "0" * ((wordsize // 4) - 1))
+        else:
+            command += 'ASSERT({}=0x0000);\n'.format(w)
 
         stp_file.write(command)
         return
@@ -212,6 +217,12 @@ class SimonCipher(AbstractCipher):
             rotl(x_in, self.rot_alpha, wordsize),
             rotl(x_in, 2 * self.rot_alpha - self.rot_beta, wordsize))
         return command
+
+    # def and_bct(self, variables_arr, non_part, input_size):
+    #     command = ""
+    #     for varis in variables_arr:
+    #         command += "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(varis[0], varis[3], varis[1], varis[2])
+    #     return command
 
     def and_bct(self, variables_arr, non_part, input_size):
         bits = input_size
@@ -244,10 +255,21 @@ class SimonCipher(AbstractCipher):
                     for i in range(bits - 1, -1, -1):
                         tmp.append((output_diff >> i) & 1)
                     trails.append(tmp)
-        # trails = trails[0:int(len(trails)/2)]
+
+        # command = ""
+        # dnfs = []
+        # for trail in trails:
+        #     for vars in variables_arr:
+        #         dnf =  "({}@{}@{}@{}=0bin{}{}{}{});\n".format(vars[0], vars[1],vars[2],vars[3],
+        #                                                             trail[0], trail[1],trail[2],trail[3])
+        #         dnfs.append(dnf)
+        
+        # return command
+
         # Build CNF from invalid trails
-        cnf = ""
+        command = ""
         for variables in variables_arr:
+            cnf = ""
             for prod in itertools.product([0, 1], repeat=len(trails[0])):
                 # Trail is not valid
                 if list(prod) not in trails:
@@ -257,4 +279,13 @@ class SimonCipher(AbstractCipher):
                         clause += "{0}{1} | ".format(expr[literal], variables[literal])
 
                     cnf += "({}) &".format(clause[:-2])
-        return "ASSERT({} = 0bin1);\n".format(cnf[:-2])
+            command += "ASSERT({} = 0bin1);\n".format(cnf[:-2])
+        return command
+        # cnf = ""
+        # cnfs = []
+        # for variables in variables_arr:
+        #     for prod in itertools.product([0, 1], repeat=len(trails[0])):
+        #         # Trail is not valid
+        #         if list(prod) not in trails:
+        #             cnf 
+        # return "ASSERT({} = 0bin1);\n".format(cnf[:-2])

@@ -1,4 +1,4 @@
-from ciphers import katan32_bct
+from ciphers import katan32bct
 import multiprocessing
 from katan_32_bct_search_task2 import check_solutions
 import random
@@ -103,6 +103,6 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         params["sweight"] += 1
 
 if __name__ == '__main__':
-    c = katan32_bct.katan32()
+    c = katan32bct.katan32()
     start_rounds = 35
     find_single_trail(c, start_rounds, 0, int(start_rounds/2), 4, 0)

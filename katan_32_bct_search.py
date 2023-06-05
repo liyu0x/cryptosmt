@@ -1,4 +1,4 @@
-from ciphers import katan32_bct
+from ciphers import katan32bct
 import multiprocessing
 from katan_32_bct_search_task import find_single_trail
 
@@ -13,7 +13,7 @@ POOL = multiprocessing.Pool(processes=MAX_THREAD)
 
 
 if __name__ == '__main__':
-    c = katan32_bct.katan32()
+    c = katan32bct.katan32()
     start_rounds = 83
     end_ends = 83
     while start_rounds <= end_ends:

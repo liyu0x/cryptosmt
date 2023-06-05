@@ -3,18 +3,23 @@ import copy
 import os
 import math
 import uuid
+import util
 from cryptanalysis import search
 from ciphers import simonbct
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = 8
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = 4
+TOTAL_ROUNDS = 7
 SWITCH_ROUNDS = 1
 WORDSIZE = 16
+
+RESULT_DIC = "simon_result/"
+TEMP_DIC = "tmp/"
 
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
     max_weight = 999
     max_weight_setting = False
-    save_file = "result/{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
+    save_file = RESULT_DIC + "{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
     result_file = open(save_file, "w")
     params = {
         "rounds": r,
@@ -48,7 +53,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         "switchRounds": switch_rounds
     }
     rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
-    stp_file = "tmp/{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
+    stp_file = TEMP_DIC + "{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
     while params["sweight"] <= max_weight:
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
@@ -136,8 +141,8 @@ def check_solutions(new_parameter, cipher, end_weight):
     end_weight += new_parameter['sweight']
     prob = 0
     start_time = str(uuid.uuid4())
-    stp_file = "tmp/{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
-    sat_logfile = "tmp/satlog-{}-{}.tmp".format(cipher.name, start_time)
+    stp_file = TEMP_DIC + "{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
+    sat_logfile = TEMP_DIC + "satlog-{}-{}.tmp".format(cipher.name, start_time)
     while new_parameter['sweight'] <= end_weight:
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
@@ -175,9 +180,10 @@ def check_solutions(new_parameter, cipher, end_weight):
 
 
 if __name__ == '__main__':
+    util.makedirs([RESULT_DIC, TEMP_DIC])
     c = simonbct.SimonCipher()
     c.name = "simon32"
-    start_rounds = 7
+    start_rounds = TOTAL_ROUNDS
     switch_start_round = int(start_rounds/2)-int(SWITCH_ROUNDS/2)
     find_single_trail(c, start_rounds, 0, switch_start_round, SWITCH_ROUNDS, 0)
 

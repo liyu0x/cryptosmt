@@ -218,11 +218,11 @@ class SimonCipher(AbstractCipher):
             rotl(x_in, 2 * self.rot_alpha - self.rot_beta, wordsize))
         return command
 
-    # def and_bct(self, variables_arr, non_part, input_size):
-    #     command = ""
-    #     for varis in variables_arr:
-    #         command += "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(varis[0], varis[3], varis[1], varis[2])
-    #     return command
+    def and_bct1(self, variables_arr, non_part, input_size):
+        command = ""
+        for varis in variables_arr:
+            command += "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(varis[0], varis[3], varis[1], varis[2])
+        return command
 
     def and_bct(self, variables_arr, non_part, input_size):
         bits = input_size
@@ -255,37 +255,14 @@ class SimonCipher(AbstractCipher):
                     for i in range(bits - 1, -1, -1):
                         tmp.append((output_diff >> i) & 1)
                     trails.append(tmp)
-
-        # command = ""
-        # dnfs = []
-        # for trail in trails:
-        #     for vars in variables_arr:
-        #         dnf =  "({}@{}@{}@{}=0bin{}{}{}{});\n".format(vars[0], vars[1],vars[2],vars[3],
-        #                                                             trail[0], trail[1],trail[2],trail[3])
-        #         dnfs.append(dnf)
         
-        # return command
-
-        # Build CNF from invalid trails
-        command = ""
-        for variables in variables_arr:
-            cnf = ""
-            for prod in itertools.product([0, 1], repeat=len(trails[0])):
-                # Trail is not valid
-                if list(prod) not in trails:
-                    expr = ["~" if x == 1 else "" for x in list(prod)]
-                    clause = ""
-                    for literal in range(bits * 2):
-                        clause += "{0}{1} | ".format(expr[literal], variables[literal])
-
-                    cnf += "({}) &".format(clause[:-2])
-            command += "ASSERT({} = 0bin1);\n".format(cnf[:-2])
-        return command
-        # cnf = ""
-        # cnfs = []
-        # for variables in variables_arr:
-        #     for prod in itertools.product([0, 1], repeat=len(trails[0])):
-        #         # Trail is not valid
-        #         if list(prod) not in trails:
-        #             cnf 
-        # return "ASSERT({} = 0bin1);\n".format(cnf[:-2])
+        commands = ""
+        for vars in variables_arr:
+            command = "ASSERT({}@{}@{}@{}@=".format(vars[0], vars[1], vars[2], vars[3])
+            for trail in  trails:
+                command += "0bin{}{}{}{}|".format(trail[0], trail[1], trail[2], trail[3])
+            command = command[:-1]
+            command += ")"
+            commands += commands
+        return commands
+        

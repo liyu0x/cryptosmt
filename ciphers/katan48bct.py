@@ -29,30 +29,42 @@ class katan48(AbstractCipher):
         x1 = x & 0x1
         return x0 & x1
 
-    def small_vari(self, x_in, x_out):
-        variables = ["{0}[{1}:{1}]".format(x_in, 29 + 7),
-                     "{0}[{1}:{1}]".format(x_in, 29 + 15),
-                     "{0}[{1}:{1}]".format(x_out, 29 + 7 + 1),
-                     "{0}[{1}:{1}]".format(x_out, 29 + 15 + 1)]
+    def small_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
+        variables = ["{0}[{1}:{1}]".format(x_in, 29 + 7 + offset),
+                     "{0}[{1}:{1}]".format(x_in, 29 + 15 + offset),
+                     "{0}[{1}:{1}]".format(x_out, 29 + 7 + 1 + offset),
+                     "{0}[{1}:{1}]".format(x_out, 29 + 15 + 1 + offset)]
+        in_index_list.add(29 + 7 + offset)
+        in_index_list.add(29 + 15 + offset)
+        out_index_list.add(29 + 7 + 1 + offset)
+        out_index_list.add(29 + 15 + 1 + offset)
         return variables
 
-    def big_vari(self, x_in, x_out):
-        variables = ["{0}[{1}:{1}]".format(x_in, 6),
-                     "{0}[{1}:{1}]".format(x_in, 15),
-                     "{0}[{1}:{1}]".format(x_in, 13),
-                     "{0}[{1}:{1}]".format(x_in, 21),
-                     "{0}[{1}:{1}]".format(x_out, 6 + 1),
-                     "{0}[{1}:{1}]".format(x_out, 15 + 1),
-                     "{0}[{1}:{1}]".format(x_out, 13 + 1),
-                     "{0}[{1}:{1}]".format(x_out, 21 + 1)]
-
+    def big_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
+        variables = ["{0}[{1}:{1}]".format(x_in, 6+offset),
+                     "{0}[{1}:{1}]".format(x_in, 15+offset),
+                     "{0}[{1}:{1}]".format(x_in, 13+offset),
+                     "{0}[{1}:{1}]".format(x_in, 21+offset),
+                     "{0}[{1}:{1}]".format(x_out, 6 + 1+offset),
+                     "{0}[{1}:{1}]".format(x_out, 15 + 1+offset),
+                     "{0}[{1}:{1}]".format(x_out, 13 + 1+offset),
+                     "{0}[{1}:{1}]".format(x_out, 21 + 1+offset)]
+        in_index_list.add(6 + offset)
+        in_index_list.add(15 + offset)
+        in_index_list.add(13 + offset)
+        in_index_list.add(21 + offset)
+        out_index_list.add(6 + 1 + offset)
+        out_index_list.add(15 + 1 + offset)
+        out_index_list.add(13 + 1 + offset)
+        out_index_list.add(21 + 1 + offset)
         return variables
 
     def getFormatString(self):
         """
         Returns the print format.
         """
-        return ['Xa', 'Xb', 'Ya', 'Yb', 'XO', 'XG', 'YO', 'YG', 'w']
+        #return ['Xa', 'Xb', 'Ya', 'Yb', 'XO', 'XG', 'YO', 'YG', 'w']
+        return ['Xa', 'Ya', 'w']
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -68,8 +80,11 @@ class katan48(AbstractCipher):
         switch_start_round = parameters["switchStartRound"]
         switch_rounds = parameters["switchRounds"]
 
+        command = ""
+
         e0_start_search_num = 0
-        e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        e0_end_search_num = rounds if switch_start_round == - \
+            1 else switch_start_round + switch_rounds
         em_start_search_num = rounds if switch_start_round == -1 else switch_start_round
         em_end_search_num = rounds if switch_start_round == -1 else e0_end_search_num
         e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + 1
@@ -85,8 +100,10 @@ class katan48(AbstractCipher):
             # xb = input (64) after first subround (only 48 bits used)
             # f = outputs of AND operation (Only 6 bits required, use 6 bits to store)
             # a = active or inactive AND operation (Only 6 bits required, use 6 bits to store)
-            xa = ["Xa{}".format(i) for i in range(rounds + 1)]  # Additional one for output difference
-            xb = ["Xb{}".format(i) for i in range(rounds)]  # Intermediate x values, no need output difference
+            # Additional one for output difference
+            xa = ["Xa{}".format(i) for i in range(rounds + 1)]
+            # Intermediate x values, no need output difference
+            xb = ["Xb{}".format(i) for i in range(rounds)]
             ya = ["Ya{}".format(i) for i in range(rounds + 1)]
             yb = ["Yb{}".format(i) for i in range(rounds+1)]
             x_f_out = ["XO{}".format(i) for i in range(rounds)]
@@ -114,16 +131,16 @@ class katan48(AbstractCipher):
                 self.setupKatanRound(stp_file, xa[i], xb[i], x_f_out[i], x_a_out[i], xa[i + 1],
                                      w[i], wordsize, i, offset)
             # Em
-            for i in range(em_start_search_num, em_end_search_num):
-                command = stpcommands.and_bct(self.small_vari(xa[i], xb[i]), self.ax_box_2, 2)
-                command += stpcommands.and_bct(self.small_vari(xb[i], ya[i]), self.ax_box_2, 2)
-                command += stpcommands.and_bct(self.big_vari(xa[i], xb[i]), self.ax_box, 4)
-                command += stpcommands.and_bct(self.big_vari(xb[i], ya[i]), self.ax_box, 4)
-                self.setupKatanRound(stp_file, xa[i], xb[i], x_f_out[i], x_a_out[i], xa[i + 1],
-                                     w[i], wordsize, i, offset)
-                self.setupKatanRound(stp_file, ya[i], yb[i], y_f_out[i], y_a_out[i], ya[i + 1],
-                                     w[i], wordsize, i, offset)
-                stp_file.write(command)
+            in_index_list = set()
+            out_index_list = set()
+            for i in range(switch_rounds):
+                command += and_bct(self.small_vari(xa[em_start_search_num], ya[em_end_search_num], in_index_list, out_index_list, -i), self.ax_box_2, 2)
+                command += and_bct(self.big_vari(xa[em_start_search_num], ya[em_end_search_num], in_index_list, out_index_list, -i), self.ax_box, 4)
+            
+            for i in range(47):
+                if i not in in_index_list:
+                    command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(xa[em_start_search_num], ya[em_end_search_num], i, i+1)
+                
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
@@ -138,8 +155,10 @@ class katan48(AbstractCipher):
                 stpcommands.assertNonZero(stp_file, xa, wordsize)
             else:
                 # use BCT
-                stpcommands.assertNonZero(stp_file, xa[e0_start_search_num:e0_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, ya[e1_start_search_num:e1_end_search_num], wordsize)
+                stpcommands.assertNonZero(
+                    stp_file, xa[e0_start_search_num:e0_end_search_num], wordsize)
+                stpcommands.assertNonZero(
+                    stp_file, ya[e1_start_search_num:e1_end_search_num], wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -152,6 +171,9 @@ class katan48(AbstractCipher):
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
 
+            command += self.pre_handle(parameters)
+
+            stp_file.write(command)
             stpcommands.setupQuery(stp_file)
 
         return
@@ -194,12 +216,15 @@ class katan48(AbstractCipher):
 
         # Check if AND is active
         # a[0] = x[6] | x[15]
-        command += "ASSERT({0}[0:0] = {1}[6:6]|{2}[15:15]);\n".format(a, xa_in, xa_in)
+        command += "ASSERT({0}[0:0] = {1}[6:6]|{2}[15:15]);\n".format(a,
+                                                                      xa_in, xa_in)
         # a[1] = x[13]| x[21]
-        command += "ASSERT({0}[1:1] = {1}[13:13]|{2}[21:21]);\n".format(a, xa_in, xa_in)
+        command += "ASSERT({0}[1:1] = {1}[13:13]|{2}[21:21]);\n".format(a,
+                                                                        xa_in, xa_in)
         # Locations for L1 = 7 and 15. In full 48-bit register, 7+29 = 36, 15+29 = 44
         # a[2] = x[36] | x[44]
-        command += "ASSERT({0}[2:2] = {1}[36:36]|{2}[44:44]);\n".format(a, xa_in, xa_in)
+        command += "ASSERT({0}[2:2] = {1}[36:36]|{2}[44:44]);\n".format(a,
+                                                                        xa_in, xa_in)
 
         # Calculate weights and output of AND operations
         # If a=1, w = 1, otherwise, w = 0
@@ -209,7 +234,8 @@ class katan48(AbstractCipher):
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
         if not switch:
             # w[1]=a[2]
-            command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)  # AND in the L1 register
+            # AND in the L1 register
+            command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)
             # As long as either 1 AND operation in L2 register is active, prob is 1
             # w[0]=a[0]|a[1]
             command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
@@ -217,10 +243,12 @@ class katan48(AbstractCipher):
         # Shift and store into xb
         # Permutation layer (shift left L2 by 1 except for position 28)
         for i in range(0, 28):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(xb, i + 1, xa_in, i)
+            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(xb,
+                                                                       i + 1, xa_in, i)
         # Permutation layer (shift left L1 by 1 except for position 47 (L1_12))
         for i in range(29, 47):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(xb, i + 1, xa_in, i)
+            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(xb,
+                                                                       i + 1, xa_in, i)
 
         # Perform XOR operation for to get bits for position L2_0 and 29 (L1_0)
         # x_out[0] = x[47]^x[41]^a[2]^(x[35]&IR[r])
@@ -253,7 +281,8 @@ class katan48(AbstractCipher):
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
         if not switch:
             # w[3]=a[5]
-            command += "ASSERT({0}[3:3] = {1}[5:5]);\n".format(w, a)  # AND in the L1 register
+            # AND in the L1 register
+            command += "ASSERT({0}[3:3] = {1}[5:5]);\n".format(w, a)
             # As long as either 1 AND operation in L2 register is active, prob is 1
             # w[2]=a[3]|a[4]
             command += "ASSERT({0}[2:2] = {1}[3:3] | {1}[4:4]);\n".format(w, a)
@@ -261,10 +290,12 @@ class katan48(AbstractCipher):
         # Shift and store into xa_out
         # Permutation layer (shift left L2 by 1 except for position 28)
         for i in range(0, 28):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(xa_out, i + 1, xb, i)
+            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(
+                xa_out, i + 1, xb, i)
         # Permutation layer (shift left L1 by 1 except for position 47 (L1_12))
         for i in range(29, 47):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(xa_out, i + 1, xb, i)
+            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(
+                xa_out, i + 1, xb, i)
 
         # Perform XOR operation for to get bits for position L2_0 and 29 (L1_0)
         # x_out[0] = x[47]^x[41]^a[5]^(x[35]&IR[r])
@@ -279,9 +310,12 @@ class katan48(AbstractCipher):
         # command += "ASSERT(0b0000000000000000000000000000000000000000000000000000000000 = {0}[63:6]);\n".format(f)
         # command += "ASSERT(0b0000000000000000000000000000000000000000000000000000000000 = {0}[63:6]);\n".format(a)
 
-        command += "ASSERT(0b00000000000000000000000000000000000000000000 = {0}[47:4]);\n".format(w)
-        command += "ASSERT(0b000000000000000000000000000000000000000000 = {0}[47:6]);\n".format(f)
-        command += "ASSERT(0b000000000000000000000000000000000000000000 = {0}[47:6]);\n".format(a)
+        command += "ASSERT(0b00000000000000000000000000000000000000000000 = {0}[47:4]);\n".format(
+            w)
+        command += "ASSERT(0b000000000000000000000000000000000000000000 = {0}[47:6]);\n".format(
+            f)
+        command += "ASSERT(0b000000000000000000000000000000000000000000 = {0}[47:6]);\n".format(
+            a)
 
         # TODO: Fix the 16 MSBs to zero for all X
         # command += "ASSERT(0b0000000000000000 = {0}[63:48]);\n".format(xa_in)
@@ -290,3 +324,41 @@ class katan48(AbstractCipher):
 
         stp_file.write(command)
         return
+    
+    def pre_handle(self, param):
+        characters = param["bbbb"]
+        if len(characters) == 0:
+            return ""
+        r = param["rounds"]
+        command = "ASSERT(NOT("
+        for characteristic in characters:
+            trails_data = characteristic.getData()
+            # input diff
+            input_diff = trails_data[0][0]
+
+            # output diff
+            output_diff = trails_data[r][1]
+
+            str1 = "(BVXOR(Xa0,{0}) | BVXOR(Ya{1}, {2}))".format(
+                input_diff, r, output_diff
+            )
+            command += str1
+            command += "&"
+        command = command[:-1]
+        command += "=0x000000000000));\n"
+        return command
+
+
+def and_bct(variables, non_part, input_size):
+    if len(variables) == 4:
+        return "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(
+            variables[0], variables[3], variables[1], variables[2]
+        )
+    else:
+        str1 = "BVXOR({0}&{1}, {2}&{3})".format(
+            variables[0], variables[5], variables[1], variables[4]
+        )
+        str2 = "BVXOR({0}&{1}, {2}&{3})".format(
+            variables[2], variables[7], variables[3], variables[6]
+        )
+        return "ASSERT(BVXOR({0}, {1})=0bin0);\n".format(str1, str2)

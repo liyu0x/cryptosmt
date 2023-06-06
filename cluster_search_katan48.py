@@ -5,17 +5,17 @@ import math
 import uuid
 import util
 from cryptanalysis import search
-from ciphers import katan32bct
+from ciphers import katan48bct
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = 0
-TOTAL_ROUNDS = 60
-SWITCH_ROUNDS = 4
-WORDSIZE = 32
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = 3
+TOTAL_ROUNDS = 30
+SWITCH_ROUNDS = 6
+WORDSIZE = 48
 START_WEIGHT = 0
-LIST_MODE = True
+LIST_MODE = False
 
-RESULT_DIC = "katan32_result/"
+RESULT_DIC = "katan48_result/"
 TEMP_DIC = "tmp/"
 
 
@@ -110,10 +110,10 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         for i in range(switch_start_round+switch_rounds, r):
                     lower_weight += int(trails_data[i][2])
 
-        new_parameters["fixedVariables"]["X0"] = input_diff        
-        new_parameters["fixedVariables"]["Y{}".format(r)] = output_diff
+        new_parameters["fixedVariables"]["Xa0"] = input_diff        
+        new_parameters["fixedVariables"]["Ya{}".format(r)] = output_diff
 
-        prob, sols = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
+        prob = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
 
         if prob > 0:
             rectangle_weight = math.log2(prob)
@@ -126,7 +126,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
             save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, switch_input_diff, upper_weight)
             save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output_diff, output_diff, lower_weight)
         else:
-            save_str = "{0},{1},{2},{3},{4}\n".format(input_diff, switch_input_diff, switch_output_diff, output_diff, sols)
+            save_str = "{0},{1},{2},{3}\n".format(input_diff, switch_input_diff, switch_output_diff, output_diff)
 
         result_file.write(save_str)
         result_file.flush()
@@ -137,7 +137,6 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
 def check_solutions(new_parameter, cipher, end_weight):
     end_weight += new_parameter['sweight']
     prob = 0
-    sols = 0
     start_time = str(uuid.uuid4())
     stp_file = TEMP_DIC + "{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
     sat_logfile = TEMP_DIC + "satlog-{}-{}.tmp".format(cipher.name, start_time)
@@ -171,17 +170,16 @@ def check_solutions(new_parameter, cipher, end_weight):
 
             # The encoded CNF contains every solution twice
             solutions //= 2
-            sols += solutions
             prob += math.pow(2, -new_parameter["sweight"]*2) * solutions
         new_parameter['sweight'] += 1
-    return prob, sols
+    return prob
 
 
 
 if __name__ == '__main__':
     util.makedirs([RESULT_DIC, TEMP_DIC])
-    c = katan32bct.katan32()
-    c.name = "katan32"
+    c = katan48bct.katan48()
+    c.name = "katan48"
     start_rounds = TOTAL_ROUNDS
     switch_start_round = int(start_rounds/2)-int(SWITCH_ROUNDS/2)
     find_single_trail(c, start_rounds, 0, switch_start_round, SWITCH_ROUNDS, START_WEIGHT)

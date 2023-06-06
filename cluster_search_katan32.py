@@ -5,16 +5,22 @@ import math
 import uuid
 import util
 from cryptanalysis import search
-from ciphers import simonbct
+from ciphers import katan32bct
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = 4
-TOTAL_ROUNDS = 7
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = 3
+TOTAL_ROUNDS = 60
 SWITCH_ROUNDS = 1
-WORDSIZE = 16
+WORDSIZE = 32
+START_WEIGHT = 0
+LIST_MODE = False
 
-RESULT_DIC = "simon_result/"
+RESULT_DIC = "katan32_result/"
 TEMP_DIC = "tmp/"
+
+
+
+
 
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
     max_weight = 999
@@ -50,7 +56,8 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         "blockedCharacteristics": [],
         "offset": offset,
         "switchStartRound": switch_start_round,
-        "switchRounds": switch_rounds
+        "switchRounds": switch_rounds,
+        "bbbb":[]
     }
     rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
     stp_file = TEMP_DIC + "{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
@@ -84,39 +91,27 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         new_parameters["fixedVariables"].clear()
 
         # input diff
-        input_diff_l = trails_data[0][0]
-        input_diff_r = trails_data[0][1]
-        input_diff = input_diff_l + input_diff_r.replace("0x","")
+        input_diff = trails_data[0][0]
 
         # output diff
-        output_diff_l = trails_data[r][2]
-        output_diff_r = trails_data[r][3]
-        output_diff = output_diff_l + output_diff_r.replace("0x","")
+        output_diff = trails_data[r][1]
 
         # switch diff
-        switch_input_diff_l = trails_data[switch_start_round][0]
-        switch_input_diff_r = trails_data[switch_start_round][1]
-        switch_output_diff_l = trails_data[switch_start_round+switch_rounds][2]
-        switch_output_diff_r = trails_data[switch_start_round+switch_rounds][3]
-        swtich_input = switch_input_diff_l + switch_input_diff_r.replace("0x","")
-        switch_output = switch_output_diff_l + switch_output_diff_r.replace("0x","")
+        switch_input_diff = trails_data[switch_start_round][0]
+        switch_output_diff = trails_data[switch_start_round+switch_rounds][1]
 
         # upper trail
         upper_weight = 0
         for i in range(0, switch_start_round+switch_rounds):
-            upper_weight += int(trails_data[i][4])
+            upper_weight += int(trails_data[i][2])
 
         # lower weight
         lower_weight = 0
         for i in range(switch_start_round+switch_rounds, r):
-                    lower_weight += int(trails_data[i][4])
+                    lower_weight += int(trails_data[i][2])
 
-        new_parameters["fixedVariables"]["XL0"] = input_diff_l
-        new_parameters["fixedVariables"]["XR0"] = input_diff_r
-
-        
-        new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
-        new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
+        new_parameters["fixedVariables"]["X0"] = input_diff        
+        new_parameters["fixedVariables"]["Y{}".format(r)] = output_diff
 
         prob = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
 
@@ -124,18 +119,20 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
             rectangle_weight = math.log2(prob)
         else:
             rectangle_weight = 99999
-        input_diff_r = input_diff_r.replace("0x","")
-        output_diff_r = output_diff_r.replace("0x","")
-        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff, output_diff,
-                                                                                                        -params['sweight']*2,
-                                                                                                        rectangle_weight)
-        save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, swtich_input, upper_weight)
-        save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output, output_diff, lower_weight)
+
+        if not LIST_MODE:
+            save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff, output_diff,-params['sweight']*2,rectangle_weight)
+
+            save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, switch_input_diff, upper_weight)
+            save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output_diff, output_diff, lower_weight)
+        else:
+            save_str = "{0},{1},{2},{3}\n".format(input_diff, switch_input_diff, switch_output_diff, output_diff)
+
         result_file.write(save_str)
         result_file.flush()
-        #params["sweight"] += 1
-        params["blockedCharacteristics"].append(characteristic)
-
+        # params["sweight"] += 1
+        params["bbbb"].append(characteristic)
+        
 
 def check_solutions(new_parameter, cipher, end_weight):
     end_weight += new_parameter['sweight']
@@ -181,10 +178,10 @@ def check_solutions(new_parameter, cipher, end_weight):
 
 if __name__ == '__main__':
     util.makedirs([RESULT_DIC, TEMP_DIC])
-    c = simonbct.SimonCipher()
-    c.name = "simon32"
+    c = katan32bct.katan32()
+    c.name = "katan32"
     start_rounds = TOTAL_ROUNDS
     switch_start_round = int(start_rounds/2)-int(SWITCH_ROUNDS/2)
-    find_single_trail(c, start_rounds, 0, switch_start_round, SWITCH_ROUNDS, 0)
+    find_single_trail(c, start_rounds, 0, switch_start_round, SWITCH_ROUNDS, START_WEIGHT)
 
 

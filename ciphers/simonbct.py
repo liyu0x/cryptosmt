@@ -119,7 +119,7 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize, True)
                 # self.setupSimonRound(stp_file, xl[i], xr[i], yl[i + 1], yr[i + 1],
                 #                      and_out_t[i], w[i], wordsize, True)
-                variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
+                variable_arr = self.bct_vari(xr[i+1], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
                 # variable_arr = self.bct_vari(xl[i+1], yl[i + 1], wordsize)
                 # command += self.and_bct(variable_arr, self.non_linear_part, 2)
@@ -156,6 +156,8 @@ class SimonCipher(AbstractCipher):
 
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
+
+            command += self.pre_handle(parameters)
             stp_file.write(command)
             stpcommands.setupQuery(stp_file)
 
@@ -265,4 +267,26 @@ class SimonCipher(AbstractCipher):
             command += ")"
             commands += commands
         return commands
-        
+
+    def pre_handle(self, param):
+        characters = param["bbbb"]
+        if len(characters) == 0:
+            return ""
+        r = param['rounds']
+        command = "ASSERT(NOT("
+        for characteristic in characters:
+            trails_data = characteristic.getData()
+            # input diff
+            input_diff_l = trails_data[0][0]
+            input_diff_r = trails_data[0][1]
+
+            # output diff
+            output_diff_l = trails_data[r][2]
+            output_diff_r = trails_data[r][3]
+
+            str1 = "(BVXOR(XL0,{0})|BVXOR(XR0, {1}) | BVXOR(YL{2}, {3}) | BVXOR(YR{2}, {4}))".format(input_diff_l, input_diff_r, r, output_diff_l, output_diff_r)
+            command += str1
+            command += "&"
+        command = command[:-1]
+        command += "=0x0000));\n"
+        return command        

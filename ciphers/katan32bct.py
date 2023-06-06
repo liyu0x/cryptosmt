@@ -1,10 +1,10 @@
-'''
+"""
 Created on May 10, 2022
 Modified On June 6, 2023
 
 @author: jesenteh
 @modifier: liyu
-'''
+"""
 
 from parser import stpcommands
 from ciphers.cipher import AbstractCipher
@@ -19,32 +19,22 @@ class katan32(AbstractCipher):
 
     name = "katan32BCT"
 
-    IR = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
-          1, 1, 0, 1, 0, 1, 0, 1, 0, 1,
-          1, 1, 1, 0, 1, 1, 0, 0, 1, 1,
-          0, 0, 1, 0, 1, 0, 0, 1, 0, 0,
-          0, 1, 0, 0, 0, 1, 1, 0, 0, 0,
-          1, 1, 1, 1, 0, 0, 0, 0, 1, 0,
-          0, 0, 0, 1, 0, 1, 0, 0, 0, 0,
-          0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
-          1, 1, 1, 1, 0, 1, 0, 1, 0, 0,
-          0, 1, 0, 1, 0, 1, 0, 0, 1, 1,
-          0, 0, 0, 0, 1, 1, 0, 0, 1, 1,
-          1, 0, 1, 1, 1, 1, 1, 0, 1, 1,
-          1, 0, 1, 0, 0, 1, 0, 1, 0, 1,
-          1, 0, 1, 0, 0, 1, 1, 1, 0, 0,
-          1, 1, 0, 1, 1, 0, 0, 0, 1, 0,
-          1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
-          1, 0, 0, 1, 0, 1, 1, 0, 1, 1,
-          0, 1, 0, 1, 1, 1, 0, 0, 1, 0,
-          0, 1, 0, 0, 1, 1, 0, 1, 0, 0,
-          0, 1, 1, 1, 0, 0, 0, 1, 0, 0,
-          1, 1, 1, 1, 0, 1, 0, 0, 0, 0,
-          1, 1, 1, 0, 1, 0, 1, 1, 0, 0,
-          0, 0, 0, 1, 0, 1, 1, 0, 0, 1,
-          0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
-          1, 1, 0, 0, 0, 0, 0, 0, 0, 1,
-          0, 0, 1, 0]
+    IR = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1,
+    0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+    1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0,
+    0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+    0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+    1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1,
+    0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1,
+    1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
+    1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1,
+    0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
+    1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0,
+    0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1,
+    0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
 
     def ax_box(self, x):
         x0 = x >> 3 & 0x1
@@ -58,23 +48,38 @@ class katan32(AbstractCipher):
         x1 = x & 0x1
         return x0 & x1
 
-    def small_vari(self, x_in, x_out):
-        variables = ["{0}[{1}:{1}]".format(x_in, 19 + 5),
-                     "{0}[{1}:{1}]".format(x_in, 19 + 8),
-                     "{0}[{1}:{1}]".format(x_out, 19 + 5 + 1),
-                     "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1)]
+    def small_vari(self, x_in, x_out, in_index_list:set, out_index_list:set, offset=0):
+        variables = [
+            "{0}[{1}:{1}]".format(x_in, 19 + 5 + offset),
+            "{0}[{1}:{1}]".format(x_in, 19 + 8 + offset),
+            "{0}[{1}:{1}]".format(x_out, 19 + 5 + 1 + offset),
+            "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1 + offset),
+        ]
+        in_index_list.add(19 + 5 + offset)
+        in_index_list.add(19 + 8 + offset)
+        out_index_list.add(19 + 5 + 1 + offset)
+        out_index_list.add(19 + 8 + 1 + offset)
         return variables
 
-    def big_vari(self, x_in, x_out):
-        variables = ["{0}[{1}:{1}]".format(x_in, 3),
-                     "{0}[{1}:{1}]".format(x_in, 8),
-                     "{0}[{1}:{1}]".format(x_in, 10),
-                     "{0}[{1}:{1}]".format(x_in, 12),
-                     "{0}[{1}:{1}]".format(x_out, 3 + 1),
-                     "{0}[{1}:{1}]".format(x_out, 8 + 1),
-                     "{0}[{1}:{1}]".format(x_out, 10 + 1),
-                     "{0}[{1}:{1}]".format(x_out, 12 + 1)]
-
+    def big_vari(self, x_in, x_out, in_index_list:set, out_index_list:set, offset=0):
+        variables = [
+            "{0}[{1}:{1}]".format(x_in, 3 + offset),
+            "{0}[{1}:{1}]".format(x_in, 8 + offset),
+            "{0}[{1}:{1}]".format(x_in, 10 + offset),
+            "{0}[{1}:{1}]".format(x_in, 12 + offset),
+            "{0}[{1}:{1}]".format(x_out, 3 + 1 + offset),
+            "{0}[{1}:{1}]".format(x_out, 8 + 1 + offset),
+            "{0}[{1}:{1}]".format(x_out, 10 + 1 + offset),
+            "{0}[{1}:{1}]".format(x_out, 12 + 1 + offset),
+        ]
+        in_index_list.add(3 + offset)
+        in_index_list.add(8 + offset)
+        in_index_list.add(10 + offset)
+        in_index_list.add(12 + offset)
+        out_index_list.add(3 + 1 + offset)
+        out_index_list.add(8 + 1 + offset)
+        out_index_list.add(10 + 1 + offset)
+        out_index_list.add(12 + 1 + offset)
         return variables
 
     def getSbox(self):
@@ -93,9 +98,8 @@ class katan32(AbstractCipher):
         """
         Returns the print format.
         """
-        #return ['X', 'Y', 'XA', 'XF', 'YA', 'YF', 'w']
-        return ['X', 'Y', 'w']
-
+        # return ['X', 'Y', 'XA', 'XF', 'YA', 'YF', 'w']
+        return ["X", "Y", "w"]
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -113,13 +117,19 @@ class katan32(AbstractCipher):
         e0_start_search_num = 0
         e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round
         em_start_search_num = rounds if switch_start_round == -1 else switch_start_round
-        em_end_search_num = rounds if switch_start_round == -1 else em_start_search_num + switch_rounds
-        e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        em_end_search_num = (
+            rounds if switch_start_round == -1 else em_start_search_num + switch_rounds
+        )
+        e1_start_search_num = (
+            rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        )
         e1_end_search_num = rounds
 
-        with open(stp_filename, 'w') as stp_file:
-            header = ("% Input File for STP\n% KATAN32 w={}"
-                      "rounds={} with IR offset={}\n\n\n".format(wordsize, rounds, offset))
+        with open(stp_filename, "w") as stp_file:
+            header = (
+                "% Input File for STP\n% KATAN32 w={}"
+                "rounds={} with IR offset={}\n\n\n".format(wordsize, rounds, offset)
+            )
             stp_file.write(header)
 
             # Setup variables
@@ -147,30 +157,67 @@ class katan32(AbstractCipher):
 
             # E0
             for i in range(e0_start_search_num, e0_end_search_num):
-                self.setupKatanRound(stp_file, x[i], xf[i], xa[i], x[i + 1],
-                                     w[i], wordsize, i, offset)
+                self.setupKatanRound(
+                    stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset
+                )
+
             # Em
-            for i in range(em_start_search_num, em_end_search_num):
-                command += stpcommands.and_bct(self.small_vari(x[i], y[i+1]), self.ax_box_2, 2)
-                command += stpcommands.and_bct(self.big_vari(x[i], y[i+1]), self.ax_box, 4)
-                self.setupKatanRound(stp_file, x[i], xf[i], xa[i], x[i + 1],
-                                     w[i], wordsize, i, offset, True)
-                self.setupKatanRound(stp_file, x[i], xf[i], xa[i], y[i + 1],
-                                     w[i], wordsize, i, offset, True)
-            for i in range(em_start_search_num+1, em_end_search_num):
-                self.setupKatanRound(stp_file, y[i], yf[i], ya[i], y[i + 1],
-                                     w[i], wordsize, i, offset, True)
+            in_index_list = set()
+            out_index_list = set()
+            for i in range(switch_rounds):
+                command += and_bct(self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i), self.ax_box_2, 2)
+                command += and_bct(self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i), self.ax_box, 4)
+            
+            for i in range(31):
+                if i not in in_index_list:
+                    command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(x[em_start_search_num], y[em_end_search_num], i, i+1)
+            # for i in range(em_start_search_num, em_end_search_num):
+            #     self.setupKatanRound(
+            #         stp_file,
+            #         x[i],
+            #         xf[i],
+            #         xa[i],
+            #         x[i + 1],
+            #         w[i],
+            #         wordsize,
+            #         i,
+            #         offset,
+            #         False,
+            #     )
+            #     command += and_bct(self.small_vari(x[i], y[i + 1]), self.ax_box_2, 2)
+            #     command += and_bct(self.big_vari(x[i], y[i + 1]), self.ax_box, 4)
+            # for i in range(em_start_search_num + 1, em_end_search_num):
+            #     self.setupKatanRound(
+            #         stp_file,
+            #         y[i],
+            #         yf[i],
+            #         ya[i],
+            #         y[i + 1],
+            #         w[i],
+            #         wordsize,
+            #         i,
+            #         offset,
+            #         False,
+            #     )
+
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
-                self.setupKatanRound(stp_file, y[i], yf[i], ya[i], y[i + 1],
-                                     w[i], wordsize, i, offset)
+                self.setupKatanRound(
+                    stp_file, y[i], yf[i], ya[i], y[i + 1], w[i], wordsize, i, offset
+                )
 
             if switch_start_round == -1:
                 stpcommands.assertNonZero(stp_file, x, wordsize)
             else:
                 # use BCT
-                stpcommands.assertNonZero(stp_file, x[e0_start_search_num:e0_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, y[e1_start_search_num:e1_end_search_num], wordsize)
+                stpcommands.assertNonZero(
+                    stp_file, x[e0_start_search_num:e0_end_search_num], wordsize
+                )
+                stpcommands.assertNonZero(
+                    stp_file, y[e1_start_search_num:e1_end_search_num], wordsize
+                )
+                stpcommands.assertNonZero(stp_file, [x[0]], wordsize)
+                stpcommands.assertNonZero(stp_file, [y[rounds]], wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -182,12 +229,16 @@ class katan32(AbstractCipher):
 
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
+
+            command += self.pre_handle(parameters)
             stp_file.write(command)
             stpcommands.setupQuery(stp_file)
 
         return
 
-    def setupKatanRound(self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset, switch=False):
+    def setupKatanRound(
+        self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset, switch=False
+    ):
         """
         Model for differential behaviour of one round KATAN32
         """
@@ -202,42 +253,131 @@ class katan32(AbstractCipher):
         # a[2] = x[24] | x[27]
         command += "ASSERT({0}[2:2] = {1}[24:24]|{2}[27:27]);\n".format(a, x_in, x_in)
 
-        # Calculate weights and output of AND operations
-        # If a=1, w = 1, otherwise, w = 0
-        # If a = 1, f = 0/1, otherwise, f = 0
-        # for i in range (3):
-        #     command += "ASSERT({0}[{2}:{2}] = {1}[{2}:{2}]);\n".format(w,a,i)
-        #     command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f,a,i)
-
         if not switch:
             # w[1]=a[2]
-            command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(w, a)  # AND in the L1 register
+            command += "ASSERT({0}[1:1] = {1}[2:2]);\n".format(
+                w, a
+            )  # AND in the L1 register
+
             # As long as either 1 AND operation in L2 register is active, prob is 1
             # w[0]=a[0]|a[1]
             command += "ASSERT({0}[0:0] = {1}[0:0] | {1}[1:1]);\n".format(w, a)
+        else:
+            command += "ASSERT({0}[0:0]@{0}[1:1] = 0bin00);\n".format(w)
 
-        for i in range(3):
+        for i in range(4):
             command += "ASSERT(BVLE({0}[{2}:{2}],{1}[{2}:{2}]));\n".format(f, a, i)
 
         # Permutation layer (shift left L2 by 1 except for position 18)
         for i in range(0, 18):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, (i))
+            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(
+                x_out, i + 1, x_in, (i)
+            )
         # Permutation layer (shift left L1 by 1 except for position 31 (L1_12))
         for i in range(19, 31):
-            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(x_out, i + 1, x_in, (i))
+            command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(
+                x_out, i + 1, x_in, (i)
+            )
 
         # Perform XOR operation for to get bits for position L2_0 and 19 (L1_0)
         # x_out[0] = x[31]^x[26]^a[2]^(x[22]&IR[r])
         command += "ASSERT({0}[0:0] = BVXOR({1}[31:31],BVXOR({1}[26:26],BVXOR({2}[2:2],({1}[22:22]&0b{3})))));\n".format(
-            x_out, x_in, f, self.IR[r + offset])
+            x_out, x_in, f, self.IR[r + offset]
+        )
+
         # x_out[19] = x[18]^a[1]^x[7]^a[0]
-        command += "ASSERT({0}[19:19] = BVXOR({1}[18:18],BVXOR({2}[1:1],BVXOR({1}[7:7],{2}[0:0]))));\n".format(x_out,
-                                                                                                               x_in, f)
+        command += "ASSERT({0}[19:19] = BVXOR({1}[18:18],BVXOR({2}[1:1],BVXOR({1}[7:7],{2}[0:0]))));\n".format(
+            x_out, x_in, f
+        )
 
         command += "ASSERT(0b000000000000000000000000000000 = {0}[31:2]);\n".format(
-            w)  # Use 2 bits to store would be sufficient
+            w
+        )  # Use 2 bits to store would be sufficient
         command += "ASSERT(0b00000000000000000000000000000 = {0}[31:3]);\n".format(f)
         command += "ASSERT(0b00000000000000000000000000000 = {0}[31:3]);\n".format(a)
 
         stp_file.write(command)
         return
+
+    def pre_handle(self, param):
+        characters = param["bbbb"]
+        if len(characters) == 0:
+            return ""
+        r = param["rounds"]
+        command = "ASSERT(NOT("
+        for characteristic in characters:
+            trails_data = characteristic.getData()
+            # input diff
+            input_diff = trails_data[0][0]
+
+            # output diff
+            output_diff = trails_data[r][1]
+
+            str1 = "(BVXOR(X0,{0}) | BVXOR(Y{1}, {2}))".format(
+                input_diff, r, output_diff
+            )
+            command += str1
+            command += "&"
+        command = command[:-1]
+        command += "=0x00000000));\n"
+        return command
+
+
+def and_bct(variables, non_part, input_size):
+    if len(variables) == 4:
+        return "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(
+            variables[0], variables[3], variables[1], variables[2]
+        )
+    else:
+        str1 = "BVXOR({0}&{1}, {2}&{3})".format(
+            variables[0], variables[5], variables[1], variables[4]
+        )
+        str2 = "BVXOR({0}&{1}, {2}&{3})".format(
+            variables[2], variables[7], variables[3], variables[6]
+        )
+        return "ASSERT(BVXOR({0}, {1})=0bin0);\n".format(str1, str2)
+
+
+def and_bct1(variables, non_part, input_size):
+    bits = input_size
+    size = 2**bits
+
+    # create ^bct
+    bct = [[0] * size for i in range(size)]
+    for delta_in in range(size):
+        for delta_out in range(size):
+            for x in range(size):
+                x_delta_in = x ^ delta_in
+                x_delta_out = x ^ delta_out
+                x_delta_in_out = x ^ delta_in ^ delta_out
+                r_x = non_part(x)
+                r_x_delta_in = non_part(x_delta_in)
+                r_x_delta_out = non_part(x_delta_out)
+                r_x_delta_in_out = non_part(x_delta_in_out)
+                if r_x ^ r_x_delta_in ^ r_x_delta_out ^ r_x_delta_in_out == 0:
+                    bct[delta_in][delta_out] += 1
+
+    # Construct DNF of all valid trails
+    trails = []
+    # All zero trail with probability 1
+    for input_diff in range(size):
+        for output_diff in range(size):
+            if bct[input_diff][output_diff] != 0:
+                tmp = []
+                for i in range(bits - 1, -1, -1):
+                    tmp.append((input_diff >> i) & 1)
+                for i in range(bits - 1, -1, -1):
+                    tmp.append((output_diff >> i) & 1)
+                trails.append(tmp)
+
+    commands = "ASSERT({}@{}@{}@{}=".format(
+        variables[0], variables[1], variables[2], variables[3]
+    )
+    command = ""
+    for trail in trails:
+        command += "0bin{}{}{}{}|".format(trail[0], trail[1], trail[2], trail[3])
+    command = command[:-1]
+    command += ")"
+    commands += command
+    commands += ";\n"
+    return commands

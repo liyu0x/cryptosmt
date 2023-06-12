@@ -9,11 +9,10 @@ from ciphers import simonbct
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 0
-TOTAL_ROUNDS = 8
+TOTAL_ROUNDS = 15
 SWITCH_ROUNDS = 1
 WORDSIZE = 16
 START_WEIGHT = 0
-LIST_MODE = True
 
 RESULT_DIC = "simon_result/"
 TEMP_DIC = "tmp/"
@@ -21,8 +20,10 @@ TEMP_DIC = "tmp/"
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
     max_weight = 999
     max_weight_setting = False
-    save_file = RESULT_DIC + "{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
+    save_file = RESULT_DIC + "{0}-{1}.txt".format(cipher.name, r)
+    save_list_file = RESULT_DIC + "{0}-{1}-LIST.txt".format(cipher.name, r)
     result_file = open(save_file, "w")
+    result_list_file = open(save_list_file, 'w')
     params = {
         "rounds": r,
         "uppertrail": 5,
@@ -101,7 +102,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         switch_input_diff_r = trails_data[switch_start_round][1]
         switch_output_diff_l = trails_data[switch_start_round+switch_rounds][2]
         switch_output_diff_r = trails_data[switch_start_round+switch_rounds][3]
-        swtich_input = switch_input_diff_l + switch_input_diff_r.replace("0x","")
+        switch_input = switch_input_diff_l + switch_input_diff_r.replace("0x","")
         switch_output = switch_output_diff_l + switch_output_diff_r.replace("0x","")
 
         # upper trail
@@ -130,17 +131,19 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         input_diff_r = input_diff_r.replace("0x","")
         output_diff_r = output_diff_r.replace("0x","")
         
-        if not LIST_MODE:
-            save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff, output_diff,
-                                                                                                            -params['sweight']*2,
-                                                                                                            rectangle_weight)
-            save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, swtich_input, upper_weight)
-            save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output, output_diff, lower_weight)
+        
+        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff, output_diff,
+                                                                                                        -params['sweight']*2,
+                                                                                                        rectangle_weight)
+        save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, switch_input, upper_weight)
+        save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output, output_diff, lower_weight)
 
-        else:
-            save_str = "{0},{1},{2},{3},{4}\n".format(input_diff, swtich_input, switch_output, output_diff,sols)
         result_file.write(save_str)
         result_file.flush()
+
+        save_str = "{0},{1},{2},{3},{4},{5}\n".format(input_diff, switch_input, switch_output, output_diff,sols, -params['sweight']*2)
+        result_list_file.write(save_str)
+        result_list_file.flush()
         #params["sweight"] += 1
         params["bbbb"].append(characteristic)
 

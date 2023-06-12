@@ -9,7 +9,7 @@ from ciphers import katan32bct
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 0
-TOTAL_ROUNDS = 60
+TOTAL_ROUNDS = 85
 SWITCH_ROUNDS = 4
 WORDSIZE = 32
 START_WEIGHT = 0
@@ -89,6 +89,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
 
         new_parameters["blockedCharacteristics"].clear()
         new_parameters["fixedVariables"].clear()
+        new_parameters["bbbb"].clear()
 
         # input diff
         input_diff = trails_data[0][0]

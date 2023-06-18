@@ -1,6 +1,0 @@
-inputDiff:0x000002010080, outputDiff:0x001008000001, boomerang weight:-18, rectangle weight:-17.0
-	 upperInDiff:0x000002010080, upperOutDiff:0x000080000000, weight:-5
-	 lowerInDiff:0x000000000008, lowerOutDiff:0x001008000001, weight:-4
-inputDiff:0x000002C10080, outputDiff:0x001408000001, boomerang weight:-18, rectangle weight:-17.0
-	 upperInDiff:0x000002C10080, upperOutDiff:0x000080000000, weight:-5
-	 lowerInDiff:0x000000000008, lowerOutDiff:0x001408000001, weight:-4

@@ -25,8 +25,10 @@ TEMP_DIC = "tmp/"
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
     max_weight = 999
     max_weight_setting = False
-    save_file = RESULT_DIC + "{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
+    save_file = RESULT_DIC + "{0}-{1}.txt".format(cipher.name, r)
+    save_list_file = RESULT_DIC + "{0}-{1}-LIST.txt".format(cipher.name, r)
     result_file = open(save_file, "w")
+    result_list_file = open(save_list_file, 'w')
     params = {
         "rounds": r,
         "uppertrail": 5,
@@ -120,13 +122,18 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         else:
             rectangle_weight = 99999
 
-        if not LIST_MODE:
-            save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff, output_diff,-params['sweight']*2,rectangle_weight)
+        
+        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff, output_diff,-params['sweight']*2,rectangle_weight)
 
-            save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, switch_input_diff, upper_weight)
-            save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output_diff, output_diff, lower_weight)
-        else:
-            save_str = "{0},{1},{2},{3}\n".format(input_diff, switch_input_diff, switch_output_diff, output_diff)
+        save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, switch_input_diff, upper_weight)
+        save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output_diff, output_diff, lower_weight)
+    
+        result_file.write(save_str)
+        result_file.flush()
+
+        save_str = "{0},{1},{2},{3}\n".format(input_diff, switch_input_diff, switch_output_diff, output_diff)
+        result_list_file.write(save_str)
+        result_list_file.flush()
 
         result_file.write(save_str)
         result_file.flush()

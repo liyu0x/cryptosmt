@@ -6,7 +6,7 @@ Created on Apr 3, 2014
 
 from parser import parsesolveroutput
 from config import (PATH_STP, PATH_BOOLECTOR, PATH_CRYPTOMINISAT, MAX_WEIGHT,
-                    MAX_CHARACTERISTICS)
+                    MAX_CHARACTERISTICS, MULTI_THREADS)
 
 import subprocess
 import random
@@ -297,7 +297,7 @@ def startSATsolver(stp_file):
 
     # Find the number of solutions with the SAT solver
     sat_params = [PATH_CRYPTOMINISAT, "--maxsol", str(MAX_CHARACTERISTICS),
-                  "--verb", "0", "-s", "0", "output_0.cnf"]
+                  "--verb", "0", "-s", "0", "--threads", str(MULTI_THREADS), "output_0.cnf"]
 
     sat_process = subprocess.Popen(sat_params, stderr=subprocess.PIPE,
                                    stdout=subprocess.PIPE)
@@ -308,7 +308,7 @@ def solveSTP(stp_file):
     """
     Returns the solution for the given SMT problem using STP.
     """
-    stp_parameters = [PATH_STP, stp_file, "--CVC"]
+    stp_parameters = [PATH_STP, stp_file, "--CVC", "--threads", str(MULTI_THREADS)]
     result = subprocess.check_output(stp_parameters)
 
     return result.decode("utf-8")

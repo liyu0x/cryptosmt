@@ -7,13 +7,12 @@ import util
 from cryptanalysis import search
 from ciphers import katan32bct
 
-MAX_SINGLE_TRAIL_SERACH_LIMIT = 6
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = 6
-TOTAL_ROUNDS = 85
+MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = -1
+TOTAL_ROUNDS = 90
 SWITCH_ROUNDS = 4
 WORDSIZE = 32
 START_WEIGHT = 23
-LIST_MODE = True
 
 RESULT_DIC = "katan32_result/"
 TEMP_DIC = "tmp/"
@@ -25,8 +24,10 @@ TEMP_DIC = "tmp/"
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
     max_weight = 999
     max_weight_setting = False
-    save_file = RESULT_DIC + "{0}-{1}-{2}-NEW_MODEL.txt".format(cipher.name, r, offset)
+    save_file = RESULT_DIC + "{0}-{1}.txt".format(cipher.name, r)
+    save_list_file = RESULT_DIC + "{0}-{1}-LIST.txt".format(cipher.name, r)
     result_file = open(save_file, "w")
+    result_list_file = open(save_list_file, 'w')
     params = {
         "rounds": r,
         "uppertrail": 5,
@@ -76,7 +77,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
             params["sweight"] += 1
             params["fixedVariables"].clear()
             continue
-            
+
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
 
         if not max_weight_setting:
@@ -111,7 +112,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         for i in range(switch_start_round+switch_rounds, r):
                     lower_weight += int(trails_data[i][2])
 
-        new_parameters["fixedVariables"]["X0"] = input_diff        
+        new_parameters["fixedVariables"]["X0"] = input_diff
         new_parameters["fixedVariables"]["Y{}".format(r)] = output_diff
 
         prob, sols = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
@@ -121,19 +122,21 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         else:
             rectangle_weight = 99999
 
-        if not LIST_MODE:
-            save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff, output_diff,-params['sweight']*2,rectangle_weight)
 
-            save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, switch_input_diff, upper_weight)
-            save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output_diff, output_diff, lower_weight)
-        else:
-            save_str = "{0},{1},{2},{3},{4}\n".format(input_diff, switch_input_diff, switch_output_diff, output_diff, sols)
+        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff, output_diff,-params['sweight']*2,rectangle_weight)
 
+        save_str += "\t upperInDiff:{0}, upperOutDiff:{1}, weight:{2}\n".format(input_diff, switch_input_diff, upper_weight)
+        save_str += "\t lowerInDiff:{0}, lowerOutDiff:{1}, weight:{2}\n".format(switch_output_diff, output_diff, lower_weight)
         result_file.write(save_str)
         result_file.flush()
+
+        save_str = "{0},{1},{2},{3},{4}\n".format(input_diff, switch_input_diff, switch_output_diff, output_diff, sols)
+
+        result_list_file.write(save_str)
+        result_list_file.flush()
         # params["sweight"] += 1
         params["bbbb"].append(characteristic)
-        
+
 
 def check_solutions(new_parameter, cipher, end_weight):
     end_weight += new_parameter['sweight']

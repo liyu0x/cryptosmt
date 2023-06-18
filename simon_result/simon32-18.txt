@@ -1,0 +1,30 @@
+inputDiff:0x80002203, outputDiff:0x00800022, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x80002203, upperOutDiff:0x22828000, weight:-20
+	 lowerInDiff:0x00800222, lowerOutDiff:0x00800022, weight:-18
+inputDiff:0x00041019, outputDiff:0x40011100, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x00041019, upperOutDiff:0x10190004, weight:-20
+	 lowerInDiff:0x40001101, lowerOutDiff:0x40011100, weight:-18
+inputDiff:0x04001110, outputDiff:0x02000088, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x04001110, upperOutDiff:0x11140400, weight:-20
+	 lowerInDiff:0x02000888, lowerOutDiff:0x02000088, weight:-18
+inputDiff:0x08002220, outputDiff:0x80880020, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x08002220, upperOutDiff:0x32280800, weight:-20
+	 lowerInDiff:0x80080020, lowerOutDiff:0x80880020, weight:-18
+inputDiff:0x00014404, outputDiff:0x22828000, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x00014404, upperOutDiff:0x45040001, weight:-20
+	 lowerInDiff:0x22008000, lowerOutDiff:0x22828000, weight:-18
+inputDiff:0x00400111, outputDiff:0x32200800, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x00400111, upperOutDiff:0x01110040, weight:-20
+	 lowerInDiff:0x02200800, lowerOutDiff:0x32200800, weight:-18
+inputDiff:0x200088A0, outputDiff:0x88080002, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x200088A0, upperOutDiff:0x88802000, weight:-20
+	 lowerInDiff:0x88000002, lowerOutDiff:0x88080002, weight:-18
+inputDiff:0x00400111, outputDiff:0x88080002, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x00400111, upperOutDiff:0x01910040, weight:-20
+	 lowerInDiff:0x88000002, lowerOutDiff:0x88080002, weight:-18
+inputDiff:0x02000C8A, outputDiff:0x01910040, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x02000C8A, upperOutDiff:0x08880200, weight:-20
+	 lowerInDiff:0x00110040, lowerOutDiff:0x01910040, weight:-18
+inputDiff:0x01000645, outputDiff:0x19140400, boomerang weight:-76, rectangle weight:99999
+	 upperInDiff:0x01000645, upperOutDiff:0x04440100, weight:-20
+	 lowerInDiff:0x01100400, lowerOutDiff:0x19140400, weight:-18

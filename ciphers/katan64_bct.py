@@ -53,7 +53,7 @@ class katan64(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['Xa', 'Xb', 'Xc', 'Ya', 'Yb', 'Yc', 'XO', 'XG','YO','YG', 'w']
+        return ['Xa', 'Xb', 'Xc', 'Ya', 'Yb', 'Yc', 'XO', 'XG', 'YO', 'YG', 'w']
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -76,6 +76,8 @@ class katan64(AbstractCipher):
         em_end_search_num = rounds if switch_start_round == -1 else e0_end_search_num
         e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + 1
         e1_end_search_num = rounds
+        parameters['em_start'] = em_start_search_num
+        parameters['em_end'] = em_end_search_num
 
         with open(stp_filename, 'w') as stp_file:
             header = ("% Input File for STP\n% KATAN64 w={}"

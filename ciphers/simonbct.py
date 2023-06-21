@@ -108,7 +108,7 @@ class SimonCipher(AbstractCipher):
             stpcommands.setupVariables(stp_file, w, wordsize)
 
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
-            
+
             # E0
             for i in range(e0_start_search_num, e0_end_search_num):
                 self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
@@ -117,22 +117,15 @@ class SimonCipher(AbstractCipher):
             for i in range(em_start_search_num, em_end_search_num):
                 self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
                                      and_out[i], w[i], wordsize, True)
-                # self.setupSimonRound(stp_file, xl[i], xr[i], yl[i + 1], yr[i + 1],
-                #                      and_out_t[i], w[i], wordsize, True)
-                variable_arr = self.bct_vari(xr[i+1], yr[i + 1], wordsize)
+                variable_arr = self.bct_vari(xr[i + 1], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
-                # variable_arr = self.bct_vari(xl[i+1], yl[i + 1], wordsize)
-                # command += self.and_bct(variable_arr, self.non_linear_part, 2)
-            for i in range(em_start_search_num+1, em_end_search_num):
-                self.setupSimonRound(stp_file, yl[i], yr[i], yl[i + 1], yr[i + 1],
-                                     and_out[i], w[i], wordsize)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
                 self.setupSimonRound(stp_file, yl[i], yr[i], yl[i + 1], yr[i + 1],
                                      and_out_t[i], w[i], wordsize)
 
-            #No all zero characteristic
+            # No all zero characteristic
             if switch_start_round == -1:
                 stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
             else:
@@ -142,8 +135,8 @@ class SimonCipher(AbstractCipher):
                 # use BCT
                 stpcommands.assertNonZero(stp_file, xl[e0_start_search_num:em_end_search_num], wordsize)
                 stpcommands.assertNonZero(stp_file, xr[e0_start_search_num:em_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, yl[em_start_search_num+1:e1_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, yr[em_start_search_num+1:e1_end_search_num], wordsize)
+                stpcommands.assertNonZero(stp_file, yl[em_start_search_num + 1:e1_end_search_num], wordsize)
+                stpcommands.assertNonZero(stp_file, yr[em_start_search_num + 1:e1_end_search_num], wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -157,7 +150,7 @@ class SimonCipher(AbstractCipher):
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
 
-            command += self.pre_handle(parameters)
+            command += self.pre_handle(parameters, em_start_search_num, em_end_search_num)
             stp_file.write(command)
             stpcommands.setupQuery(stp_file)
 
@@ -202,7 +195,7 @@ class SimonCipher(AbstractCipher):
             x_out, rotl(x_in, self.rot_gamma, wordsize), y_in, and_out)
 
         if not switch:
-        # Weight computation
+            # Weight computation
             command += "ASSERT({0} = (IF {1} = 0x{4} THEN BVSUB({5},0x{4},0x{6}1) \
                         ELSE BVXOR({2}, {3}) ENDIF));\n".format(
                 w, x_in, varibits, doublebits, "f" * (wordsize // 4),
@@ -220,13 +213,13 @@ class SimonCipher(AbstractCipher):
             rotl(x_in, 2 * self.rot_alpha - self.rot_beta, wordsize))
         return command
 
-    def and_bct1(self, variables_arr, non_part, input_size):
+    def and_bct(self, variables_arr, non_part, input_size):
         command = ""
         for varis in variables_arr:
             command += "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(varis[0], varis[3], varis[1], varis[2])
         return command
 
-    def and_bct(self, variables_arr, non_part, input_size):
+    def and_bct_bak(self, variables_arr, non_part, input_size):
         bits = input_size
         size = 2 ** bits
 
@@ -257,36 +250,70 @@ class SimonCipher(AbstractCipher):
                     for i in range(bits - 1, -1, -1):
                         tmp.append((output_diff >> i) & 1)
                     trails.append(tmp)
-        
+
         commands = ""
         for vars in variables_arr:
             command = "ASSERT({}@{}@{}@{}@=".format(vars[0], vars[1], vars[2], vars[3])
-            for trail in  trails:
+            for trail in trails:
                 command += "0bin{}{}{}{}|".format(trail[0], trail[1], trail[2], trail[3])
             command = command[:-1]
             command += ")"
             commands += commands
         return commands
 
-    def pre_handle(self, param):
+    def pre_handle(self, param, em_start, em_end):
         characters = param["bbbb"]
-        if len(characters) == 0:
-            return ""
-        r = param['rounds']
-        command = "ASSERT(NOT("
-        for characteristic in characters:
-            trails_data = characteristic.getData()
-            # input diff
-            input_diff_l = trails_data[0][0]
-            input_diff_r = trails_data[0][1]
+        command = ""
+        if len(characters) > 0:
+            r = param['rounds']
+            command = "ASSERT(NOT("
+            for characteristic in characters:
+                trails_data = characteristic.getData()
+                # input diff
+                input_diff_l = trails_data[0][0]
+                input_diff_r = trails_data[0][1]
 
-            # output diff
-            output_diff_l = trails_data[r][2]
-            output_diff_r = trails_data[r][3]
+                # output diff
+                output_diff_l = trails_data[r][2]
+                output_diff_r = trails_data[r][3]
 
-            str1 = "(BVXOR(XL0,{0})|BVXOR(XR0, {1}) | BVXOR(YL{2}, {3}) | BVXOR(YR{2}, {4}))".format(input_diff_l, input_diff_r, r, output_diff_l, output_diff_r)
-            command += str1
-            command += "&"
-        command = command[:-1]
-        command += "=0x0000));\n"
-        return command        
+                str1 = "(BVXOR(XL0,{0})|BVXOR(XR0, {1}) | BVXOR(YL{2}, {3}) | BVXOR(YR{2}, {4}))".format(input_diff_l,
+                                                                                                         input_diff_r,
+                                                                                                         r,
+                                                                                                         output_diff_l,
+                                                                                                         output_diff_r)
+                command += str1
+                command += "&"
+            command = command[:-1]
+            command += "=0x0000));\n"
+
+        characters = param["cccc"]
+        if len(characters) > 0:
+            command = "ASSERT(NOT("
+            for characteristic in characters:
+                trails_data = characteristic.getData()
+
+                # switch input diff
+                input_diff_l = trails_data[em_start][0]
+                # input_diff_r = trails_data[em_start][1]
+
+                # switch output diff
+                # output_diff_l = trails_data[em_end][2]
+                output_diff_r = trails_data[em_end][3]
+
+                str1 = "(BVXOR(XL{0},{1}) | BVXOR(YR{2}, {3}))".format(em_start,
+                                                                       input_diff_l,
+                                                                       em_end,
+                                                                       output_diff_r)
+
+                # str1 = "(BVXOR(XL{0},{1})|BVXOR(XR{0}, {2}) | BVXOR(YL{3}, {4}) | BVXOR(YR{3}, {5}))".format(em_start,
+                #                                                                                              input_diff_l,
+                #                                                                                              input_diff_r,
+                #                                                                                              em_end,
+                #                                                                                              output_diff_l,
+                #                                                                                              output_diff_r)
+                command += str1
+                command += "&"
+            command = command[:-1]
+            command += "=0x0000));\n"
+        return command

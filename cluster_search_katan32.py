@@ -132,8 +132,10 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         result_file.write(save_str)
         result_file.flush()
 
-        save_str = "{0},{1},{2},{3},{4}\n".format(input_diff, switch_input_diff, switch_output_diff, output_diff, sols)
-
+        save_str = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, switch_input_diff, switch_output_diff,
+                                                          output_diff,
+                                                          params["rounds"],
+                                                          -params['sweight'], rectangle_weight)
         result_list_file.write(save_str)
         result_list_file.flush()
         # params["sweight"] += 1

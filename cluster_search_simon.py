@@ -7,12 +7,12 @@ import util
 from cryptanalysis import search
 from ciphers import simonbct
 
-MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = 4
-TOTAL_ROUNDS = 10
+MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = -1
+TOTAL_ROUNDS = 13
 SWITCH_ROUNDS = 1
 WORDSIZE = 16
-START_WEIGHT = 10
+START_WEIGHT = 0
 
 RESULT_DIC = "simon_result/"
 TEMP_DIC = "tmp/"
@@ -188,6 +188,7 @@ def check_all_solutions(new_parameter, cipher):
 
 
 def check_solutions(new_parameter, cipher, end_weight):
+    new_parameter['bbbb'].clear()
     end_weight += new_parameter['sweight']
     prob = 0
     sol = 0
@@ -225,7 +226,7 @@ def check_solutions(new_parameter, cipher, end_weight):
             # The encoded CNF contains every solution twice
             solutions //= 2
             sol += solutions
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * solutions
+            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions ** 1)
         new_parameter['sweight'] += 1
     return prob, sol
 

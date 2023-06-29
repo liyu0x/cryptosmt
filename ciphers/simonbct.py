@@ -119,6 +119,7 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize, True)
                 variable_arr = self.bct_vari(xr[i + 1], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
+                command += "ASSERT({0}={1});\n".format(xl[i + 1], yl[i + 1])
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):

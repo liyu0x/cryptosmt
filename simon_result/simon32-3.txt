@@ -1,0 +1,228 @@
+inputDiff:0x00000001, outputDiff:0x00110004, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000001, upperOutDiff:0x00010000, weight:0
+	 lowerInDiff:0x00040001, lowerOutDiff:0x00110004, weight:-2
+inputDiff:0x00000002, outputDiff:0x00210008, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000002, upperOutDiff:0x00020000, weight:0
+	 lowerInDiff:0x00080001, lowerOutDiff:0x00210008, weight:-2
+inputDiff:0x00000004, outputDiff:0x00410010, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000004, upperOutDiff:0x00040000, weight:0
+	 lowerInDiff:0x00100001, lowerOutDiff:0x00410010, weight:-2
+inputDiff:0x00000008, outputDiff:0x00810020, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000008, upperOutDiff:0x00080000, weight:0
+	 lowerInDiff:0x00200001, lowerOutDiff:0x00810020, weight:-2
+inputDiff:0x00000010, outputDiff:0x01010040, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000010, upperOutDiff:0x00100000, weight:0
+	 lowerInDiff:0x00400001, lowerOutDiff:0x01010040, weight:-2
+inputDiff:0x00000020, outputDiff:0x02010080, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000020, upperOutDiff:0x00200000, weight:0
+	 lowerInDiff:0x00800001, lowerOutDiff:0x02010080, weight:-2
+inputDiff:0x00000040, outputDiff:0x04010100, boomerang weight:-4, rectangle weight:-2.415037499278844
+	 upperInDiff:0x00000040, upperOutDiff:0x00400000, weight:0
+	 lowerInDiff:0x01000001, lowerOutDiff:0x04010100, weight:-2
+inputDiff:0x00000800, outputDiff:0x80012000, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000800, upperOutDiff:0x08000000, weight:0
+	 lowerInDiff:0x20000001, lowerOutDiff:0x80012000, weight:-2
+inputDiff:0x00001000, outputDiff:0x00004000, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00001000, upperOutDiff:0x10000000, weight:0
+	 lowerInDiff:0x40000001, lowerOutDiff:0x00004000, weight:-2
+inputDiff:0x00000100, outputDiff:0x10010400, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000100, upperOutDiff:0x01000000, weight:0
+	 lowerInDiff:0x04000001, lowerOutDiff:0x10010400, weight:-2
+inputDiff:0x00000020, outputDiff:0x02190080, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000020, upperOutDiff:0x00200000, weight:0
+	 lowerInDiff:0x00800019, lowerOutDiff:0x02190080, weight:-2
+inputDiff:0x00008803, outputDiff:0x80012000, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00008803, upperOutDiff:0x88030000, weight:0
+	 lowerInDiff:0x20000001, lowerOutDiff:0x80012000, weight:-2
+inputDiff:0x00000400, outputDiff:0x40011000, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000400, upperOutDiff:0x04000000, weight:0
+	 lowerInDiff:0x10000001, lowerOutDiff:0x40011000, weight:-2
+inputDiff:0x0000BECE, outputDiff:0x158C0001, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000BECE, upperOutDiff:0xBECE0000, weight:0
+	 lowerInDiff:0x0001148A, lowerOutDiff:0x158C0001, weight:-2
+inputDiff:0x00002000, outputDiff:0x00038000, boomerang weight:-4, rectangle weight:-2.415037499278844
+	 upperInDiff:0x00002000, upperOutDiff:0x20000000, weight:0
+	 lowerInDiff:0x80000001, lowerOutDiff:0x00038000, weight:-2
+inputDiff:0x00004000, outputDiff:0x00050001, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00004000, upperOutDiff:0x40000000, weight:0
+	 lowerInDiff:0x00010001, lowerOutDiff:0x00050001, weight:-2
+inputDiff:0x00008000, outputDiff:0x00090002, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00008000, upperOutDiff:0x80000000, weight:0
+	 lowerInDiff:0x00020001, lowerOutDiff:0x00090002, weight:-2
+inputDiff:0x0000610C, outputDiff:0x210B0001, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x0000610C, upperOutDiff:0x610C0000, weight:0
+	 lowerInDiff:0x0001200D, lowerOutDiff:0x210B0001, weight:-2
+inputDiff:0x00002863, outputDiff:0x00238000, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00002863, upperOutDiff:0x28630000, weight:0
+	 lowerInDiff:0x80000021, lowerOutDiff:0x00238000, weight:-2
+inputDiff:0x00000010, outputDiff:0x01410040, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000010, upperOutDiff:0x00100000, weight:0
+	 lowerInDiff:0x00400041, lowerOutDiff:0x01410040, weight:-2
+inputDiff:0x00007B12, outputDiff:0x09120800, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00007B12, upperOutDiff:0x7B120000, weight:0
+	 lowerInDiff:0x08002912, lowerOutDiff:0x09120800, weight:-2
+inputDiff:0x00000006, outputDiff:0x20410010, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000006, upperOutDiff:0x00060000, weight:0
+	 lowerInDiff:0x00102001, lowerOutDiff:0x20410010, weight:-2
+inputDiff:0x00000007, outputDiff:0x20400010, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000007, upperOutDiff:0x00070000, weight:0
+	 lowerInDiff:0x00102000, lowerOutDiff:0x20400010, weight:-2
+inputDiff:0x00000040, outputDiff:0x04410100, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000040, upperOutDiff:0x00400000, weight:0
+	 lowerInDiff:0x01000041, lowerOutDiff:0x04410100, weight:-2
+inputDiff:0x00000100, outputDiff:0x14010400, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000100, upperOutDiff:0x01000000, weight:0
+	 lowerInDiff:0x04000401, lowerOutDiff:0x14010400, weight:-2
+inputDiff:0x000019C2, outputDiff:0x10400400, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x000019C2, upperOutDiff:0x19C20000, weight:0
+	 lowerInDiff:0x04000040, lowerOutDiff:0x10400400, weight:-2
+inputDiff:0x0000E208, outputDiff:0x12020400, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x0000E208, upperOutDiff:0xE2080000, weight:0
+	 lowerInDiff:0x04000202, lowerOutDiff:0x12020400, weight:-2
+inputDiff:0x00006963, outputDiff:0x50210400, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00006963, upperOutDiff:0x69630000, weight:0
+	 lowerInDiff:0x04004021, lowerOutDiff:0x50210400, weight:-2
+inputDiff:0x00008E63, outputDiff:0x12010400, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00008E63, upperOutDiff:0x8E630000, weight:0
+	 lowerInDiff:0x04000201, lowerOutDiff:0x12010400, weight:-2
+inputDiff:0x00000E63, outputDiff:0x14020400, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00000E63, upperOutDiff:0x0E630000, weight:0
+	 lowerInDiff:0x04000402, lowerOutDiff:0x14020400, weight:-2
+inputDiff:0x00000E63, outputDiff:0x18000400, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x00000E63, upperOutDiff:0x0E630000, weight:0
+	 lowerInDiff:0x04000800, lowerOutDiff:0x18000400, weight:-2
+inputDiff:0x00000100, outputDiff:0x18010400, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000100, upperOutDiff:0x01000000, weight:0
+	 lowerInDiff:0x04000001, lowerOutDiff:0x18010400, weight:-2
+inputDiff:0x00003B8F, outputDiff:0x7B9F1000, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00003B8F, upperOutDiff:0x3B8F0000, weight:0
+	 lowerInDiff:0x10003B8F, lowerOutDiff:0x7B9F1000, weight:-2
+inputDiff:0x00007DEE, outputDiff:0x5D9E0008, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x00007DEE, upperOutDiff:0x7DEE0000, weight:0
+	 lowerInDiff:0x00085DAE, lowerOutDiff:0x5D9E0008, weight:-2
+inputDiff:0x00008F62, outputDiff:0x06000100, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x00008F62, upperOutDiff:0x8F620000, weight:0
+	 lowerInDiff:0x01000200, lowerOutDiff:0x06000100, weight:-2
+inputDiff:0x00000040, outputDiff:0x05010100, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000040, upperOutDiff:0x00400000, weight:0
+	 lowerInDiff:0x01000101, lowerOutDiff:0x05010100, weight:-2
+inputDiff:0x0000DB7F, outputDiff:0xDBFD8000, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000DB7F, upperOutDiff:0xDB7F0000, weight:0
+	 lowerInDiff:0x8000DB7F, lowerOutDiff:0xDBFD8000, weight:-2
+inputDiff:0x00003802, outputDiff:0x80038000, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00003802, upperOutDiff:0x38020000, weight:0
+	 lowerInDiff:0x80008001, lowerOutDiff:0x80038000, weight:-2
+inputDiff:0x0000B7CE, outputDiff:0x42941000, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000B7CE, upperOutDiff:0xB7CE0000, weight:0
+	 lowerInDiff:0x10000284, lowerOutDiff:0x42941000, weight:-2
+inputDiff:0x0000B823, outputDiff:0x00018000, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x0000B823, upperOutDiff:0xB8230000, weight:0
+	 lowerInDiff:0x80000003, lowerOutDiff:0x00018000, weight:-2
+inputDiff:0x00008C21, outputDiff:0x00050001, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x00008C21, upperOutDiff:0x8C210000, weight:0
+	 lowerInDiff:0x00010001, lowerOutDiff:0x00050001, weight:-2
+inputDiff:0x00004411, outputDiff:0x00000001, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00004411, upperOutDiff:0x44110000, weight:0
+	 lowerInDiff:0x00010004, lowerOutDiff:0x00000001, weight:-2
+inputDiff:0x0000FA38, outputDiff:0x787A0010, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000FA38, upperOutDiff:0xFA380000, weight:0
+	 lowerInDiff:0x0010783A, lowerOutDiff:0x787A0010, weight:-2
+inputDiff:0x00000002, outputDiff:0x00290008, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000002, upperOutDiff:0x00020000, weight:0
+	 lowerInDiff:0x00080009, lowerOutDiff:0x00290008, weight:-2
+inputDiff:0x0000228F, outputDiff:0x2A970008, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000228F, upperOutDiff:0x228F0000, weight:0
+	 lowerInDiff:0x000822A7, lowerOutDiff:0x2A970008, weight:-2
+inputDiff:0x00000400, outputDiff:0x50011000, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000400, upperOutDiff:0x04000000, weight:0
+	 lowerInDiff:0x10001001, lowerOutDiff:0x50011000, weight:-2
+inputDiff:0x0000883C, outputDiff:0x88BE0002, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000883C, upperOutDiff:0x883C0000, weight:0
+	 lowerInDiff:0x000288B6, lowerOutDiff:0x88BE0002, weight:-2
+inputDiff:0x00000CA2, outputDiff:0x02400080, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00000CA2, upperOutDiff:0x0CA20000, weight:0
+	 lowerInDiff:0x00800040, lowerOutDiff:0x02400080, weight:-2
+inputDiff:0x00000020, outputDiff:0x02810080, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000020, upperOutDiff:0x00200000, weight:0
+	 lowerInDiff:0x00800081, lowerOutDiff:0x02810080, weight:-2
+inputDiff:0x00000308, outputDiff:0x00A80020, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000308, upperOutDiff:0x03080000, weight:0
+	 lowerInDiff:0x00200028, lowerOutDiff:0x00A80020, weight:-2
+inputDiff:0x00000001, outputDiff:0x00150004, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000001, upperOutDiff:0x00010000, weight:0
+	 lowerInDiff:0x00040005, lowerOutDiff:0x00150004, weight:-2
+inputDiff:0x00000004, outputDiff:0x00510010, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000004, upperOutDiff:0x00040000, weight:0
+	 lowerInDiff:0x00100011, lowerOutDiff:0x00510010, weight:-2
+inputDiff:0x00001C59, outputDiff:0x01010040, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00001C59, upperOutDiff:0x1C590000, weight:0
+	 lowerInDiff:0x00400001, lowerOutDiff:0x01010040, weight:-2
+inputDiff:0x0000208F, outputDiff:0x00140004, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x0000208F, upperOutDiff:0x208F0000, weight:0
+	 lowerInDiff:0x00040004, lowerOutDiff:0x00140004, weight:-2
+inputDiff:0x00008228, outputDiff:0x00880020, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00008228, upperOutDiff:0x82280000, weight:0
+	 lowerInDiff:0x00200008, lowerOutDiff:0x00880020, weight:-2
+inputDiff:0x00001065, outputDiff:0x10310004, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00001065, upperOutDiff:0x10650000, weight:0
+	 lowerInDiff:0x00041021, lowerOutDiff:0x10310004, weight:-2
+inputDiff:0x00000451, outputDiff:0x01410040, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00000451, upperOutDiff:0x04510000, weight:0
+	 lowerInDiff:0x00400041, lowerOutDiff:0x01410040, weight:-2
+inputDiff:0x00001144, outputDiff:0x05010100, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00001144, upperOutDiff:0x11440000, weight:0
+	 lowerInDiff:0x01000101, lowerOutDiff:0x05010100, weight:-2
+inputDiff:0x000010E6, outputDiff:0x02820080, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x000010E6, upperOutDiff:0x10E60000, weight:0
+	 lowerInDiff:0x00800082, lowerOutDiff:0x02820080, weight:-2
+inputDiff:0x00000800, outputDiff:0xA0012000, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00000800, upperOutDiff:0x08000000, weight:0
+	 lowerInDiff:0x20002001, lowerOutDiff:0xA0012000, weight:-2
+inputDiff:0x00003184, outputDiff:0x90002000, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x00003184, upperOutDiff:0x31840000, weight:0
+	 lowerInDiff:0x20001000, lowerOutDiff:0x90002000, weight:-2
+inputDiff:0x00007904, outputDiff:0xA0012000, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00007904, upperOutDiff:0x79040000, weight:0
+	 lowerInDiff:0x20002001, lowerOutDiff:0xA0012000, weight:-2
+inputDiff:0x000083E8, outputDiff:0x00A80020, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x000083E8, upperOutDiff:0x83E80000, weight:0
+	 lowerInDiff:0x00200028, lowerOutDiff:0x00A80020, weight:-2
+inputDiff:0x00000477, outputDiff:0x00410010, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00000477, upperOutDiff:0x04770000, weight:0
+	 lowerInDiff:0x00100001, lowerOutDiff:0x00410010, weight:-2
+inputDiff:0x00001C00, outputDiff:0x40004000, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00001C00, upperOutDiff:0x1C000000, weight:0
+	 lowerInDiff:0x40004001, lowerOutDiff:0x40004000, weight:-2
+inputDiff:0x00001147, outputDiff:0x00090002, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00001147, upperOutDiff:0x11470000, weight:0
+	 lowerInDiff:0x00020001, lowerOutDiff:0x00090002, weight:-2
+inputDiff:0x00001E41, outputDiff:0x22010800, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00001E41, upperOutDiff:0x1E410000, weight:0
+	 lowerInDiff:0x08000201, lowerOutDiff:0x22010800, weight:-2
+inputDiff:0x000000E0, outputDiff:0x08040200, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x000000E0, upperOutDiff:0x00E00000, weight:0
+	 lowerInDiff:0x02000004, lowerOutDiff:0x08040200, weight:-2
+inputDiff:0x0000C3DC, outputDiff:0x00094000, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000C3DC, upperOutDiff:0xC3DC0000, weight:0
+	 lowerInDiff:0x40000008, lowerOutDiff:0x00094000, weight:-2
+inputDiff:0x00005106, outputDiff:0x40004000, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x00005106, upperOutDiff:0x51060000, weight:0
+	 lowerInDiff:0x40004001, lowerOutDiff:0x40004000, weight:-2
+inputDiff:0x0000F16F, outputDiff:0x81420800, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000F16F, upperOutDiff:0xF16F0000, weight:0
+	 lowerInDiff:0x0800A142, lowerOutDiff:0x81420800, weight:-2
+inputDiff:0x0000F228, outputDiff:0x08020800, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x0000F228, upperOutDiff:0xF2280000, weight:0
+	 lowerInDiff:0x08002802, lowerOutDiff:0x08020800, weight:-2
+inputDiff:0x0000E08E, outputDiff:0x000A0002, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x0000E08E, upperOutDiff:0xE08E0000, weight:0
+	 lowerInDiff:0x00020002, lowerOutDiff:0x000A0002, weight:-2
+inputDiff:0x00002080, outputDiff:0x0A020200, boomerang weight:-4, rectangle weight:-2.0
+	 upperInDiff:0x00002080, upperOutDiff:0x20800000, weight:0
+	 lowerInDiff:0x02000202, lowerOutDiff:0x0A020200, weight:-2
+inputDiff:0x00004FE3, outputDiff:0x08400200, boomerang weight:-4, rectangle weight:-4.0
+	 upperInDiff:0x00004FE3, upperOutDiff:0x4FE30000, weight:0
+	 lowerInDiff:0x02000040, lowerOutDiff:0x08400200, weight:-2
+inputDiff:0x0000228C, outputDiff:0x0A040200, boomerang weight:-4, rectangle weight:-3.0
+	 upperInDiff:0x0000228C, upperOutDiff:0x228C0000, weight:0
+	 lowerInDiff:0x02000204, lowerOutDiff:0x0A040200, weight:-2

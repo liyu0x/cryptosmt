@@ -20,21 +20,21 @@ class katan32(AbstractCipher):
     name = "katan32BCT"
 
     IR = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1,
-    0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-    1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0,
-    0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
-    0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
-    1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1,
-    0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0,
-    1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1,
-    0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1,
-    1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
-    1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1,
-    0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
-    1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0,
-    0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1,
-    0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
-    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
+          0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+          1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0,
+          0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+          0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+          1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1,
+          0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0,
+          1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1,
+          0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1,
+          1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
+          1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1,
+          0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
+          1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0,
+          0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1,
+          0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
+          1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
 
     def ax_box(self, x):
         x0 = x >> 3 & 0x1
@@ -48,7 +48,7 @@ class katan32(AbstractCipher):
         x1 = x & 0x1
         return x0 & x1
 
-    def small_vari(self, x_in, x_out, in_index_list:set, out_index_list:set, offset=0):
+    def small_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
         variables = [
             "{0}[{1}:{1}]".format(x_in, 19 + 5 + offset),
             "{0}[{1}:{1}]".format(x_in, 19 + 8 + offset),
@@ -61,7 +61,7 @@ class katan32(AbstractCipher):
         out_index_list.add(19 + 8 + 1 + offset)
         return variables
 
-    def big_vari(self, x_in, x_out, in_index_list:set, out_index_list:set, offset=0):
+    def big_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
         variables = [
             "{0}[{1}:{1}]".format(x_in, 3 + offset),
             "{0}[{1}:{1}]".format(x_in, 8 + offset),
@@ -165,40 +165,17 @@ class katan32(AbstractCipher):
             in_index_list = set()
             out_index_list = set()
             for i in range(switch_rounds):
-                command += and_bct(self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i), self.ax_box_2, 2)
-                command += and_bct(self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i), self.ax_box, 4)
-            
+                command += and_bct(
+                    self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i),
+                    self.ax_box_2, 2)
+                command += and_bct(
+                    self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i),
+                    self.ax_box, 4)
+
             for i in range(31):
                 if i not in in_index_list:
-                    command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(x[em_start_search_num], y[em_end_search_num], i, i+1)
-            # for i in range(em_start_search_num, em_end_search_num):
-            #     self.setupKatanRound(
-            #         stp_file,
-            #         x[i],
-            #         xf[i],
-            #         xa[i],
-            #         x[i + 1],
-            #         w[i],
-            #         wordsize,
-            #         i,
-            #         offset,
-            #         False,
-            #     )
-            #     command += and_bct(self.small_vari(x[i], y[i + 1]), self.ax_box_2, 2)
-            #     command += and_bct(self.big_vari(x[i], y[i + 1]), self.ax_box, 4)
-            # for i in range(em_start_search_num + 1, em_end_search_num):
-            #     self.setupKatanRound(
-            #         stp_file,
-            #         y[i],
-            #         yf[i],
-            #         ya[i],
-            #         y[i + 1],
-            #         w[i],
-            #         wordsize,
-            #         i,
-            #         offset,
-            #         False,
-            #     )
+                    command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(
+                        y[em_end_search_num], x[em_start_search_num], i + 1, i)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
@@ -237,7 +214,7 @@ class katan32(AbstractCipher):
         return
 
     def setupKatanRound(
-        self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset, switch=False
+            self, stp_file, x_in, f, a, x_out, w, wordsize, r, offset, switch=False
     ):
         """
         Model for differential behaviour of one round KATAN32
@@ -340,7 +317,7 @@ def and_bct(variables, non_part, input_size):
 
 def and_bct1(variables, non_part, input_size):
     bits = input_size
-    size = 2**bits
+    size = 2 ** bits
 
     # create ^bct
     bct = [[0] * size for i in range(size)]

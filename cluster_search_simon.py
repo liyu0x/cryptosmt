@@ -7,13 +7,14 @@ import util
 from cryptanalysis import search
 from ciphers import simonbct
 
-MAX_SINGLE_TRAIL_SERACH_LIMIT = 99
+MAX_SINGLE_TRAIL_SERACH_LIMIT = 1
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 99
-TOTAL_ROUNDS = 13
+START_ROUND = 14
+END_ROUND = -1
 SWITCH_ROUNDS = 1
 WORDSIZE = 16
-START_WEIGHT = 0
-THRESHOLD = 6
+START_WEIGHT = {10: 13, 13: 24}
+THRESHOLD = 3
 
 RESULT_DIC = "simon_result/"
 TEMP_DIC = "tmp/"
@@ -125,6 +126,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
         new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
 
+        new_parameters["mode"] = 4
         prob = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
         if prob > 0:
             rectangle_weight = math.log2(prob)
@@ -190,14 +192,12 @@ def check_solutions(new_parameter, cipher, end_weight):
             log_file.write(line)
             if "s SATISFIABLE" in line:
                 solutions += 1
-            # if solutions % 100 == 0:
-            # print("\t Rounds: {1}, Wedight: {2}, Solutions: {0}\r".format(solutions // 2, new_parameter['rounds'],new_parameter['sweight']), end="")
-
         log_file.close()
         if solutions > 0:
-            print("\tSolutions: {}".format(solutions))
+            print("\tSolutions: {}".format(solutions / 2))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions ** 2)
+            # prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions/2)
+            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions * 2) ** 2
             new_weight = int(math.log2(prob))
         new_parameter['sweight'] += 1
         print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
@@ -210,8 +210,16 @@ def check_solutions(new_parameter, cipher, end_weight):
 
 if __name__ == '__main__':
     util.makedirs([RESULT_DIC, TEMP_DIC])
-    c = simonbct.SimonCipher()
-    c.name = "simon32"
-    start_rounds = TOTAL_ROUNDS
-    switch_start_round = int(start_rounds / 2) - int(SWITCH_ROUNDS / 2)
-    find_single_trail(c, start_rounds, 0, switch_start_round, SWITCH_ROUNDS, START_WEIGHT)
+    start_round = START_ROUND
+    end_round = start_round + 1 if END_ROUND == -1 else END_ROUND
+    for r in range(start_round, end_round):
+        start_weight = 0
+        for i in range(r, -1, -1):
+            if i in START_WEIGHT:
+                start_weight = START_WEIGHT[i]
+                break
+        c = simonbct.SimonCipher()
+        c.name = "simon32"
+        start_rounds = r
+        switch_start_round = int(start_rounds / 2) - int(SWITCH_ROUNDS / 2)
+        find_single_trail(c, start_rounds, 0, switch_start_round, SWITCH_ROUNDS, start_weight)

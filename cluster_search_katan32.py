@@ -8,11 +8,13 @@ from cryptanalysis import search
 from ciphers import katan32bct
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = -1
-TOTAL_ROUNDS = 83
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = 99
+START_ROUND = 50
+END_ROUND = -1
 SWITCH_ROUNDS = 4
 WORDSIZE = 32
-START_WEIGHT = 22
+START_WEIGHT = 0
+THRESHOLD = 6
 
 RESULT_DIC = "katan32_result/"
 TEMP_DIC = "tmp/"
@@ -112,7 +114,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         new_parameters["fixedVariables"]["X0"] = input_diff
         new_parameters["fixedVariables"]["Y{}".format(r)] = output_diff
 
-        prob, sols = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
+        prob = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
 
         if prob > 0:
             rectangle_weight = math.log2(prob)
@@ -145,15 +147,18 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
 def check_solutions(new_parameter, cipher, end_weight):
     end_weight += new_parameter['sweight']
     prob = 0
-    sols = 0
     start_time = str(uuid.uuid4())
     stp_file = TEMP_DIC + "{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
     sat_logfile = TEMP_DIC + "satlog-{}-{}.tmp".format(cipher.name, start_time)
+    last_weight = 0
+    count = 0
     while new_parameter['sweight'] <= end_weight:
+        if count > THRESHOLD:
+            break
+        new_weight = last_weight
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
         cipher.createSTP(stp_file, new_parameter)
-
         # Start solver
         sat_process = search.startSATsolver(stp_file)
         log_file = open(sat_logfile, "w")
@@ -168,27 +173,28 @@ def check_solutions(new_parameter, cipher, end_weight):
             log_file.write(line)
             if "s SATISFIABLE" in line:
                 solutions += 1
-            # if solutions % 100 == 0:
-            # print("\t Rounds: {1}, Wedight: {2}, Solutions: {0}\r".format(solutions // 2, new_parameter['rounds'],new_parameter['sweight']), end="")
-
         log_file.close()
         if solutions > 0:
-            print("\tSolutions: {}".format(solutions // 2))
-
+            print("\tSolutions: {}".format(solutions))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
-
-            # The encoded CNF contains every solution twice
-            solutions //= 2
-            sols += solutions
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * solutions
+            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions)
+            new_weight = int(math.log2(prob))
         new_parameter['sweight'] += 1
-    return prob, sols
+        print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
+        if new_weight == last_weight:
+            count += 1
+        else:
+            last_weight = new_weight
+    return prob
 
 
 if __name__ == '__main__':
-    util.makedirs([RESULT_DIC, TEMP_DIC])
-    c = katan32bct.katan32()
-    c.name = "katan32"
-    start_rounds = TOTAL_ROUNDS
-    switch_start_round = int(start_rounds / 2) - int(SWITCH_ROUNDS / 2)
-    find_single_trail(c, start_rounds, 0, switch_start_round, SWITCH_ROUNDS, START_WEIGHT)
+    start_round = START_ROUND
+    end_round = start_round + 1 if END_ROUND == -1 else END_ROUND
+    for r in range(start_round, end_round):
+        util.makedirs([RESULT_DIC, TEMP_DIC])
+        c = katan32bct.katan32()
+        c.name = "katan32"
+        start_rounds = r
+        switch_start_round = int(start_rounds / 2) - int(SWITCH_ROUNDS / 2)
+        find_single_trail(c, start_rounds, 0, switch_start_round, SWITCH_ROUNDS, START_WEIGHT)

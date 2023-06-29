@@ -62,6 +62,7 @@ class SimonCipher(AbstractCipher):
         weight = parameters["sweight"]
         switch_start_round = parameters["switchStartRound"]
         switch_rounds = parameters["switchRounds"]
+        mode = parameters["mode"]
 
         e0_start_search_num = 0
         e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round
@@ -119,7 +120,8 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize, True)
                 variable_arr = self.bct_vari(xr[i + 1], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
-                command += "ASSERT({0}={1});\n".format(xl[i + 1], yl[i + 1])
+                if mode != 4:
+                    command += "ASSERT({0}={1});\n".format(xl[i + 1], yl[i + 1])
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):

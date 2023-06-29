@@ -9,8 +9,8 @@ from ciphers import katan32bct
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 99
-START_ROUND = 50
-END_ROUND = -1
+START_ROUND = 83
+END_ROUND = 88
 SWITCH_ROUNDS = 4
 WORDSIZE = 32
 START_WEIGHT = 0
@@ -175,9 +175,9 @@ def check_solutions(new_parameter, cipher, end_weight):
                 solutions += 1
         log_file.close()
         if solutions > 0:
-            print("\tSolutions: {}".format(solutions))
+            print("\tSolutions: {}".format(solutions / 2))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions)
+            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
             new_weight = int(math.log2(prob))
         new_parameter['sweight'] += 1
         print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))

@@ -6,23 +6,26 @@ import uuid
 import util
 from cryptanalysis import search
 from ciphers import simonbct
+import time
 
 MAX_SINGLE_TRAIL_SERACH_LIMIT = 1
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 99
 START_ROUND = 14
-END_ROUND = -1
+END_ROUND = 19
 SWITCH_ROUNDS = 1
 WORDSIZE = 16
 START_WEIGHT = {10: 13, 13: 24}
-THRESHOLD = 3
+THRESHOLD = 6
+SINGLE_ROUND_MAX_TIME = 60 * 60 * 5
+SINGLE_ROUND_MAX_VALID = 2
 
 RESULT_DIC = "simon_result/"
 TEMP_DIC = "tmp/"
 
 
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
-    max_weight = 999
-    max_weight_setting = False
+    task_start_time = time.time()
+    valid_count = 0
     save_file = RESULT_DIC + "{0}-{1}.txt".format(cipher.name, r)
     save_list_file = RESULT_DIC + "{0}-{1}-LIST.txt".format(cipher.name, r)
     result_file = open(save_file, "w")
@@ -62,8 +65,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
     }
     rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
     stp_file = TEMP_DIC + "{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
-    max_prob = [-99, 0, 0]
-    while params["sweight"] <= max_weight:
+    while valid_count <= SINGLE_ROUND_MAX_VALID and time.time() - task_start_time <= SINGLE_ROUND_MAX_TIME:
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
             result = search.solveBoolector(stp_file)
@@ -81,9 +83,6 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
 
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
 
-        if not max_weight_setting:
-            max_weight = params["sweight"] + MAX_SINGLE_TRAIL_SERACH_LIMIT
-            max_weight_setting = True
         characteristic.printText()
         # Cluster Search
         trails_data = characteristic.getData()
@@ -126,7 +125,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
         new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
 
-        new_parameters["mode"] = 4
+        # new_parameters["mode"] = 4
         prob = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
         if prob > 0:
             rectangle_weight = math.log2(prob)
@@ -152,11 +151,9 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
                                                           -params['sweight'], rectangle_weight)
         result_list_file.write(save_str)
         result_list_file.flush()
+        if rectangle_weight >= -32:
+            valid_count += 1
         # params["sweight"] += 1
-        if rectangle_weight > max_prob[0]:
-            max_prob[0] = rectangle_weight
-            max_prob[1] = input_diff
-            max_prob[2] = output_diff
         print("MAX PROB:{0}, INPUT:{1}, OUTPUT:{2}".format(rectangle_weight, input_diff, output_diff))
         params["bbbb"].append(characteristic)
 
@@ -196,8 +193,10 @@ def check_solutions(new_parameter, cipher, end_weight):
         if solutions > 0:
             print("\tSolutions: {}".format(solutions / 2))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
-            # prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions/2)
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
+            if new_parameter["mode"] == 4:
+                prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
+            else:
+                prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions ** 2)
             new_weight = int(math.log2(prob))
         new_parameter['sweight'] += 1
         print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))

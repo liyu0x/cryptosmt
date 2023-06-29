@@ -197,7 +197,7 @@ def check_solutions(new_parameter, cipher, end_weight):
             print("\tSolutions: {}".format(solutions / 2))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
             # prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions/2)
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions * 2) ** 2
+            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
             new_weight = int(math.log2(prob))
         new_parameter['sweight'] += 1
         print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))

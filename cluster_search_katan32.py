@@ -4,10 +4,10 @@ import os
 import math
 import uuid
 import util
+import time
 from cryptanalysis import search
 from ciphers import katan32bct
 
-MAX_SINGLE_TRAIL_SERACH_LIMIT = 4
 MAX_CLUSTER_TRAIL_SERACH_LIMIT = 99
 START_ROUND = 83
 END_ROUND = 88
@@ -15,14 +15,16 @@ SWITCH_ROUNDS = 4
 WORDSIZE = 32
 START_WEIGHT = 0
 THRESHOLD = 6
+SINGLE_ROUND_MAX_TIME = 60 * 60 * 5
+SINGLE_ROUND_MAX_VALID = 2
 
 RESULT_DIC = "katan32_result/"
 TEMP_DIC = "tmp/"
 
 
 def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, sweight=0):
-    max_weight = 999
-    max_weight_setting = False
+    task_start_time = time.time()
+    valid_count = 0
     save_file = RESULT_DIC + "{0}-{1}.txt".format(cipher.name, r)
     save_list_file = RESULT_DIC + "{0}-{1}-LIST.txt".format(cipher.name, r)
     result_file = open(save_file, "w")
@@ -61,7 +63,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
     }
     rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
     stp_file = TEMP_DIC + "{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
-    while params["sweight"] <= max_weight:
+    while valid_count <= SINGLE_ROUND_MAX_VALID and time.time() - task_start_time <= SINGLE_ROUND_MAX_TIME:
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
             result = search.solveBoolector(stp_file)
@@ -79,9 +81,6 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
 
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
 
-        if not max_weight_setting:
-            max_weight = params["sweight"] + MAX_SINGLE_TRAIL_SERACH_LIMIT
-            max_weight_setting = True
         characteristic.printText()
         # Cluster Search
         trails_data = characteristic.getData()
@@ -138,9 +137,10 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
                                                           output_diff,
                                                           params["rounds"],
                                                           -params['sweight'], rectangle_weight)
+        if rectangle_weight >= -32:
+            valid_count += 1
         result_list_file.write(save_str)
         result_list_file.flush()
-        # params["sweight"] += 1
         params["bbbb"].append(characteristic)
 
 

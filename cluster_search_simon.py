@@ -7,12 +7,13 @@ import util
 from cryptanalysis import search
 from ciphers import simonbct
 
-MAX_SINGLE_TRAIL_SERACH_LIMIT = 0
-MAX_CLUSTER_TRAIL_SERACH_LIMIT = -1
+MAX_SINGLE_TRAIL_SERACH_LIMIT = 99
+MAX_CLUSTER_TRAIL_SERACH_LIMIT = 99
 TOTAL_ROUNDS = 13
 SWITCH_ROUNDS = 1
 WORDSIZE = 16
 START_WEIGHT = 0
+THRESHOLD = 6
 
 RESULT_DIC = "simon_result/"
 TEMP_DIC = "tmp/"
@@ -60,6 +61,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
     }
     rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
     stp_file = TEMP_DIC + "{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
+    max_prob = [-99, 0, 0]
     while params["sweight"] <= max_weight:
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
@@ -123,10 +125,7 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
         new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
 
-        prob, sols = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
-        sols = 0
-        # prob = check_all_solutions(new_parameters, cipher)
-
+        prob = check_solutions(new_parameters, cipher, MAX_CLUSTER_TRAIL_SERACH_LIMIT)
         if prob > 0:
             rectangle_weight = math.log2(prob)
         else:
@@ -152,50 +151,27 @@ def find_single_trail(cipher, r, offset, switch_start_round, switch_rounds, swei
         result_list_file.write(save_str)
         result_list_file.flush()
         # params["sweight"] += 1
+        if rectangle_weight > max_prob[0]:
+            max_prob[0] = rectangle_weight
+            max_prob[1] = input_diff
+            max_prob[2] = output_diff
+        print("MAX PROB:{0}, INPUT:{1}, OUTPUT:{2}".format(rectangle_weight, input_diff, output_diff))
         params["bbbb"].append(characteristic)
-
-
-def check_all_solutions(new_parameter, cipher):
-    new_parameter['bbbb'].clear()
-    prob = 0
-    start_time = str(uuid.uuid4())
-    stp_file = TEMP_DIC + "{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
-    m = 0
-    current_weight = new_parameter['sweight']
-    while True:
-        if new_parameter['sweight'] != current_weight:
-            prob += math.pow(2, -current_weight * 2) * m * m
-            m = 0
-            current_weight = new_parameter['sweight']
-        cipher.createSTP(stp_file, new_parameter)
-        result = search.solveSTP(stp_file)
-
-        # check
-        if not search.foundSolution(result):
-            if new_parameter['sweight'] > 999:
-                break
-            new_parameter['sweight'] += 1
-            continue
-        characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, new_parameter["rounds"])
-        if characteristic.characteristic_data == {}:
-            new_parameter['sweight'] += 1
-            continue
-
-        m += 1
-        # prob += math.pow(2, -new_parameter['sweight'] * 2)
-        new_parameter["cccc"].append(characteristic)
-    return prob
 
 
 def check_solutions(new_parameter, cipher, end_weight):
     new_parameter['bbbb'].clear()
     end_weight += new_parameter['sweight']
     prob = 0
-    sol = 0
     start_time = str(uuid.uuid4())
     stp_file = TEMP_DIC + "{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
     sat_logfile = TEMP_DIC + "satlog-{}-{}.tmp".format(cipher.name, start_time)
+    last_weight = 0
+    count = 0
     while new_parameter['sweight'] <= end_weight:
+        if count > THRESHOLD:
+            break
+        new_weight = last_weight
         if os.path.isfile(sat_logfile):
             os.remove(sat_logfile)
         cipher.createSTP(stp_file, new_parameter)
@@ -219,16 +195,17 @@ def check_solutions(new_parameter, cipher, end_weight):
 
         log_file.close()
         if solutions > 0:
-            print("\tSolutions: {}".format(solutions // 2))
-
+            print("\tSolutions: {}".format(solutions))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
-
-            # The encoded CNF contains every solution twice
-            solutions //= 2
-            sol += solutions
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions ** 1)
+            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions ** 2)
+            new_weight = int(math.log2(prob))
         new_parameter['sweight'] += 1
-    return prob, sol
+        print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
+        if new_weight == last_weight:
+            count += 1
+        else:
+            last_weight = new_weight
+    return prob
 
 
 if __name__ == '__main__':

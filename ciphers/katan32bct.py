@@ -165,12 +165,10 @@ class katan32(AbstractCipher):
             in_index_list = set()
             out_index_list = set()
             for i in range(switch_rounds):
-                command += and_bct(
-                    self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i),
-                    self.ax_box_2, 2)
-                command += and_bct(
-                    self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i),
-                    self.ax_box, 4)
+                command += self.and_bct(
+                    self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
+                command += self.and_bct(
+                    self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
 
             # for i in range(31):
             #     if i not in in_index_list:
@@ -299,62 +297,40 @@ class katan32(AbstractCipher):
         command += "=0x00000000));\n"
         return command
 
+    def and_bct(self, variables):
+        if len(variables) == 4:
+            return "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(
+                variables[0], variables[3], variables[1], variables[2]
+            )
+        else:
+            str1 = "BVXOR({0}&{1}, {2}&{3})".format(
+                variables[0], variables[5], variables[1], variables[4]
+            )
+            str2 = "BVXOR({0}&{1}, {2}&{3})".format(
+                variables[2], variables[7], variables[3], variables[6]
+            )
+            return "ASSERT(BVXOR({0}, {1})=0bin0);\n".format(str1, str2)
 
-def and_bct(variables, non_part, input_size):
-    if len(variables) == 4:
-        return "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(
-            variables[0], variables[3], variables[1], variables[2]
-        )
-    else:
-        str1 = "BVXOR({0}&{1}, {2}&{3})".format(
-            variables[0], variables[5], variables[1], variables[4]
-        )
-        str2 = "BVXOR({0}&{1}, {2}&{3})".format(
-            variables[2], variables[7], variables[3], variables[6]
-        )
-        return "ASSERT(BVXOR({0}, {1})=0bin0);\n".format(str1, str2)
+    def create_cluster_parameters(self, parameters, characteristics):
+        r = parameters['rounds']
+        trails_data = characteristics.getData()
+        input_diff = trails_data[0][0]
+        output_diff = trails_data[r][1]
+        parameters["fixedVariables"]["X0"] = input_diff
+        parameters["fixedVariables"]["Y{}".format(r)] = output_diff
 
+    def get_diff_hex(self, parameters, characteristics):
+        switch_start_round = parameters['switchStartRound']
+        switch_rounds = parameters['switchRounds']
+        r = parameters['rounds']
+        trails_data = characteristics.getData()
+        # input diff
+        input_diff = trails_data[0][0]
 
-def and_bct1(variables, non_part, input_size):
-    bits = input_size
-    size = 2 ** bits
+        # output diff
+        output_diff = trails_data[r][1]
 
-    # create ^bct
-    bct = [[0] * size for i in range(size)]
-    for delta_in in range(size):
-        for delta_out in range(size):
-            for x in range(size):
-                x_delta_in = x ^ delta_in
-                x_delta_out = x ^ delta_out
-                x_delta_in_out = x ^ delta_in ^ delta_out
-                r_x = non_part(x)
-                r_x_delta_in = non_part(x_delta_in)
-                r_x_delta_out = non_part(x_delta_out)
-                r_x_delta_in_out = non_part(x_delta_in_out)
-                if r_x ^ r_x_delta_in ^ r_x_delta_out ^ r_x_delta_in_out == 0:
-                    bct[delta_in][delta_out] += 1
-
-    # Construct DNF of all valid trails
-    trails = []
-    # All zero trail with probability 1
-    for input_diff in range(size):
-        for output_diff in range(size):
-            if bct[input_diff][output_diff] != 0:
-                tmp = []
-                for i in range(bits - 1, -1, -1):
-                    tmp.append((input_diff >> i) & 1)
-                for i in range(bits - 1, -1, -1):
-                    tmp.append((output_diff >> i) & 1)
-                trails.append(tmp)
-
-    commands = "ASSERT({}@{}@{}@{}=".format(
-        variables[0], variables[1], variables[2], variables[3]
-    )
-    command = ""
-    for trail in trails:
-        command += "0bin{}{}{}{}|".format(trail[0], trail[1], trail[2], trail[3])
-    command = command[:-1]
-    command += ")"
-    commands += command
-    commands += ";\n"
-    return commands
+        # switch diff
+        switch_input_diff = trails_data[switch_start_round][0]
+        switch_output_diff = trails_data[switch_start_round + switch_rounds][1]
+        return input_diff, switch_input_diff, switch_output_diff, output_diff

@@ -5,7 +5,6 @@ Created on Mar 28, 2014
 '''
 
 from parser import stpcommands
-import itertools
 from ciphers.cipher import AbstractCipher
 
 from parser.stpcommands import getStringLeftRotate as rotl
@@ -62,7 +61,6 @@ class SimonCipher(AbstractCipher):
         weight = parameters["sweight"]
         switch_start_round = parameters["switchStartRound"]
         switch_rounds = parameters["switchRounds"]
-        mode = parameters["mode"]
 
         e0_start_search_num = 0
         e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round
@@ -120,8 +118,6 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize, True)
                 variable_arr = self.bct_vari(xr[i + 1], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
-                if mode != 4:
-                    command += "ASSERT({0}={1});\n".format(xl[i + 1], yl[i + 1])
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
@@ -132,10 +128,6 @@ class SimonCipher(AbstractCipher):
             if switch_start_round == -1:
                 stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
             else:
-                # for i in range(e0_start_search_num,em_end_search_num+1):
-                #     stpcommands.assertNonZero(stp_file,[xl[i]],wordsize)
-                #     stpcommands.assertNonZero(stp_file,[xr[i]],wordsize)
-                # use BCT
                 stpcommands.assertNonZero(stp_file, xl[e0_start_search_num:em_end_search_num], wordsize)
                 stpcommands.assertNonZero(stp_file, xr[e0_start_search_num:em_end_search_num], wordsize)
                 stpcommands.assertNonZero(stp_file, yl[em_start_search_num + 1:e1_end_search_num], wordsize)
@@ -320,3 +312,48 @@ class SimonCipher(AbstractCipher):
             command = command[:-1]
             command += "=0x0000));\n"
         return command
+
+    def create_cluster_parameters(self, new_parameters, characteristic):
+        r = new_parameters['rounds']
+        # Cluster Search
+        trails_data = characteristic.getData()
+        new_parameters["blockedCharacteristics"].clear()
+        new_parameters["fixedVariables"].clear()
+        # input diff
+        input_diff_l = trails_data[0][0]
+        input_diff_r = trails_data[0][1]
+
+        # output diff
+        output_diff_l = trails_data[r][2]
+        output_diff_r = trails_data[r][3]
+
+        new_parameters["fixedVariables"]["XL0"] = input_diff_l
+        new_parameters["fixedVariables"]["XR0"] = input_diff_r
+
+        new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
+        new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
+
+    def get_diff_hex(self, parameters, characteristics):
+        switch_start_round = parameters['switchStartRound']
+        switch_rounds = parameters['switchRounds']
+        r = parameters['rounds']
+        trails_data = characteristics.getData()
+        # input diff
+        input_diff_l = trails_data[0][0]
+        input_diff_r = trails_data[0][1]
+        input_diff = input_diff_l + input_diff_r.replace("0x", "")
+
+        # output diff
+        output_diff_l = trails_data[r][2]
+        output_diff_r = trails_data[r][3]
+        output_diff = output_diff_l + output_diff_r.replace("0x", "")
+
+        # switch diff
+        switch_input_diff_l = trails_data[switch_start_round][0]
+        switch_input_diff_r = trails_data[switch_start_round][1]
+        switch_output_diff_l = trails_data[switch_start_round + switch_rounds][2]
+        switch_output_diff_r = trails_data[switch_start_round + switch_rounds][3]
+        switch_input = switch_input_diff_l + switch_input_diff_r.replace("0x", "")
+        switch_output = switch_output_diff_l + switch_output_diff_r.replace("0x", "")
+
+        return input_diff, switch_input, switch_output, output_diff

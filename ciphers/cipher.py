@@ -26,3 +26,11 @@ class AbstractCipher(object, metaclass=ABCMeta):
         Each cipher needs to specify the format it should be printed.
         """
         pass
+
+    @abstractmethod
+    def create_cluster_parameters(self, parameters, characteristics):
+        pass
+
+    @abstractmethod
+    def get_diff_hex(self, parameters, characteristics):
+        pass

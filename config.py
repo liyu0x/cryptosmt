@@ -7,4 +7,4 @@ PATH_BOOLECTOR = "../boolector/build/bin/boolector"
 MAX_WEIGHT = 1000
 # Maximum number of characteristics to search for a differential
 MAX_CHARACTERISTICS = 10000000
-MULTI_THREADS = 8
+MULTI_THREADS = 4

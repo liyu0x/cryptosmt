@@ -1,0 +1,2 @@
+inputDiff:0x11004010, outputDiff:0x10110004, boomerang weight:-64, rectangle weight:-36.59936377786238
+inputDiff:0x44000001, outputDiff:0x44001000, boomerang weight:-64, rectangle weight:-35.27300940801831

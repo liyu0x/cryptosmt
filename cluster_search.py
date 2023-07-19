@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 import yaml
-from ciphers import katan32bct, simonbct
+from ciphers import katan32bct, simonbct, katan48bct
 import time
 import util
 import random
@@ -13,9 +13,10 @@ import os
 START_WEIGHT = {"simon32": {10: 13, 13: 24}}
 
 CIPHER_MAPPING = {"katan32BCT": katan32bct.katan32(),
-                  "simon": simonbct.SimonCipher()}
+                  "simon": simonbct.SimonCipher(),
+                  "katan48BCT": katan48bct.katan48()}
 
-RESULT_DIC = {'simon': "simon_result/", "katan32BCT": "katan32_result/"}
+RESULT_DIC = {'simon': "simon_result/", "katan32BCT": "katan32_result/", "katan48BCT": "katan48_result/"}
 TEMP_DIC = "tmp/"
 
 
@@ -51,7 +52,7 @@ def check_solutions(new_parameter, cipher, threshold):
         if solutions > 0:
             print("\tSolutions: {}".format(solutions / 2))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
+            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions ** 2)
             new_weight = int(math.log2(prob))
         new_parameter['sweight'] += 1
         print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
@@ -150,9 +151,10 @@ def find_single_trail(cipher, r, lunch_arg, switch_start_round, start_weight=0):
                                                           -params['sweight'], rectangle_weight)
         result_list_file.write(save_str)
         result_list_file.flush()
-        if rectangle_weight >= -32:
+        if rectangle_weight >= -params['wordsize']:
             valid_count += 1
         print("MAX PROB:{0}, INPUT:{1}, OUTPUT:{2}".format(rectangle_weight, input_diff, output_diff))
+        #params["sweight"] += 1
         params["bbbb"].append(characteristic)
 
 

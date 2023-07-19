@@ -41,14 +41,14 @@ class katan48(AbstractCipher):
         return variables
 
     def big_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
-        variables = ["{0}[{1}:{1}]".format(x_in, 6+offset),
-                     "{0}[{1}:{1}]".format(x_in, 15+offset),
-                     "{0}[{1}:{1}]".format(x_in, 13+offset),
-                     "{0}[{1}:{1}]".format(x_in, 21+offset),
-                     "{0}[{1}:{1}]".format(x_out, 6 + 1+offset),
-                     "{0}[{1}:{1}]".format(x_out, 15 + 1+offset),
-                     "{0}[{1}:{1}]".format(x_out, 13 + 1+offset),
-                     "{0}[{1}:{1}]".format(x_out, 21 + 1+offset)]
+        variables = ["{0}[{1}:{1}]".format(x_in, 6 + offset),
+                     "{0}[{1}:{1}]".format(x_in, 15 + offset),
+                     "{0}[{1}:{1}]".format(x_in, 13 + offset),
+                     "{0}[{1}:{1}]".format(x_in, 21 + offset),
+                     "{0}[{1}:{1}]".format(x_out, 6 + 1 + offset),
+                     "{0}[{1}:{1}]".format(x_out, 15 + 1 + offset),
+                     "{0}[{1}:{1}]".format(x_out, 13 + 1 + offset),
+                     "{0}[{1}:{1}]".format(x_out, 21 + 1 + offset)]
         in_index_list.add(6 + offset)
         in_index_list.add(15 + offset)
         in_index_list.add(13 + offset)
@@ -63,7 +63,7 @@ class katan48(AbstractCipher):
         """
         Returns the print format.
         """
-        #return ['Xa', 'Xb', 'Ya', 'Yb', 'XO', 'XG', 'YO', 'YG', 'w']
+        # return ['Xa', 'Xb', 'Ya', 'Yb', 'XO', 'XG', 'YO', 'YG', 'w']
         return ['Xa', 'Ya', 'w']
 
     def createSTP(self, stp_filename, parameters):
@@ -83,11 +83,14 @@ class katan48(AbstractCipher):
         command = ""
 
         e0_start_search_num = 0
-        e0_end_search_num = rounds if switch_start_round == - \
-            1 else switch_start_round + switch_rounds
+        e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round
         em_start_search_num = rounds if switch_start_round == -1 else switch_start_round
-        em_end_search_num = rounds if switch_start_round == -1 else e0_end_search_num
-        e1_start_search_num = rounds if switch_start_round == -1 else switch_start_round + 1
+        em_end_search_num = (
+            rounds if switch_start_round == -1 else em_start_search_num + switch_rounds
+        )
+        e1_start_search_num = (
+            rounds if switch_start_round == -1 else switch_start_round + switch_rounds
+        )
         e1_end_search_num = rounds
 
         with open(stp_filename, 'w') as stp_file:
@@ -105,7 +108,7 @@ class katan48(AbstractCipher):
             # Intermediate x values, no need output difference
             xb = ["Xb{}".format(i) for i in range(rounds)]
             ya = ["Ya{}".format(i) for i in range(rounds + 1)]
-            yb = ["Yb{}".format(i) for i in range(rounds+1)]
+            yb = ["Yb{}".format(i) for i in range(rounds + 1)]
             x_f_out = ["XO{}".format(i) for i in range(rounds)]
             x_a_out = ["XG{}".format(i) for i in range(rounds)]
             y_f_out = ["YO{}".format(i) for i in range(rounds)]
@@ -134,13 +137,21 @@ class katan48(AbstractCipher):
             in_index_list = set()
             out_index_list = set()
             for i in range(switch_rounds):
-                command += and_bct(self.small_vari(xa[em_start_search_num], ya[em_end_search_num], in_index_list, out_index_list, -i), self.ax_box_2, 2)
-                command += and_bct(self.big_vari(xa[em_start_search_num], ya[em_end_search_num], in_index_list, out_index_list, -i), self.ax_box, 4)
-            
+                command += self.and_bct(
+                    self.small_vari(xa[em_start_search_num], ya[em_end_search_num], in_index_list, out_index_list, -i),
+                    self.ax_box_2, 2)
+                command += self.and_bct(
+                    self.big_vari(xa[em_start_search_num], ya[em_end_search_num], in_index_list, out_index_list, -i),
+                    self.ax_box, 4)
+                in_index_list.add(18 - i)
+                in_index_list.add(18 - i - 1)
+                in_index_list.add(47 - i)
+                in_index_list.add(48 - i - 1)
+
             for i in range(47):
                 if i not in in_index_list:
-                    command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(xa[em_start_search_num], ya[em_end_search_num], i, i+1)
-                
+                    command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(
+                        ya[em_end_search_num], xa[em_start_search_num], i + 1, i)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
@@ -324,7 +335,7 @@ class katan48(AbstractCipher):
 
         stp_file.write(command)
         return
-    
+
     def pre_handle(self, param):
         characters = param["bbbb"]
         if len(characters) == 0:
@@ -348,17 +359,40 @@ class katan48(AbstractCipher):
         command += "=0x000000000000));\n"
         return command
 
+    def and_bct(self, variables, non_part, input_size):
+        if len(variables) == 4:
+            return "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(
+                variables[0], variables[3], variables[1], variables[2]
+            )
+        else:
+            str1 = "BVXOR({0}&{1}, {2}&{3})".format(
+                variables[0], variables[5], variables[1], variables[4]
+            )
+            str2 = "BVXOR({0}&{1}, {2}&{3})".format(
+                variables[2], variables[7], variables[3], variables[6]
+            )
+            return "ASSERT(BVXOR({0}, {1})=0bin0);\n".format(str1, str2)
 
-def and_bct(variables, non_part, input_size):
-    if len(variables) == 4:
-        return "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(
-            variables[0], variables[3], variables[1], variables[2]
-        )
-    else:
-        str1 = "BVXOR({0}&{1}, {2}&{3})".format(
-            variables[0], variables[5], variables[1], variables[4]
-        )
-        str2 = "BVXOR({0}&{1}, {2}&{3})".format(
-            variables[2], variables[7], variables[3], variables[6]
-        )
-        return "ASSERT(BVXOR({0}, {1})=0bin0);\n".format(str1, str2)
+    def create_cluster_parameters(self, parameters, characteristics):
+        r = parameters['rounds']
+        trails_data = characteristics.getData()
+        input_diff = trails_data[0][0]
+        output_diff = trails_data[r][1]
+        parameters["fixedVariables"]["Xa0"] = input_diff
+        parameters["fixedVariables"]["Ya{}".format(r)] = output_diff
+
+    def get_diff_hex(self, parameters, characteristics):
+        switch_start_round = parameters['switchStartRound']
+        switch_rounds = parameters['switchRounds']
+        r = parameters['rounds']
+        trails_data = characteristics.getData()
+        # input diff
+        input_diff = trails_data[0][0]
+
+        # output diff
+        output_diff = trails_data[r][2]
+
+        # switch diff
+        switch_input_diff = trails_data[switch_start_round][0]
+        switch_output_diff = trails_data[switch_start_round + switch_rounds][2]
+        return input_diff, switch_input_diff, switch_output_diff, output_diff

@@ -170,10 +170,10 @@ class katan32(AbstractCipher):
                 command += self.and_bct(
                     self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
 
-            # for i in range(31):
-            #     if i not in in_index_list:
-            #         command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(
-            #             y[em_end_search_num], x[em_start_search_num], i + 1, i)
+            for i in range(31):
+                if i not in in_index_list:
+                    command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(
+                        y[em_end_search_num], x[em_start_search_num], i + 1, i)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
@@ -318,6 +318,12 @@ class katan32(AbstractCipher):
         output_diff = trails_data[r][1]
         parameters["fixedVariables"]["X0"] = input_diff
         parameters["fixedVariables"]["Y{}".format(r)] = output_diff
+
+    def get_cluster_params(self, parameters):
+        r = parameters['rounds']
+        input_diff = parameters["fixedVariables"]["X0"]
+        output_diff = parameters["fixedVariables"]["Y{}".format(r)]
+        return r, input_diff, output_diff
 
     def get_diff_hex(self, parameters, characteristics):
         switch_start_round = parameters['switchStartRound']

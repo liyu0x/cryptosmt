@@ -53,23 +53,25 @@ def check_solutions(new_parameter, cipher, threshold):
         if solutions > 0:
             print("\tSolutions: {}".format(solutions / 2))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
+            solutions /= 2
             prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
             new_weight = int(math.log2(prob))
 
-        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff,
-                                                                                                        output_diff,
-                                                                                                        -new_parameter[
-                                                                                                            'sweight'] * 2,
-                                                                                                        math.log2(prob))
+            save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff,
+                                                                                                            output_diff,
+                                                                                                            -new_parameter[
+                                                                                                                'sweight'] * 2,
+                                                                                                            math.log2(prob))
 
-        save_str_2 = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, '0', '0', output_diff,
-                                                            new_parameter["rounds"],
-                                                            -new_parameter['sweight'], math.log2(prob))
+            save_str_2 = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, '0xF', '0xF', output_diff,
+                                                                new_parameter["rounds"],
+                                                                -new_parameter['sweight'], math.log2(prob))
+
+            print(save_str)
+            print(save_str_2)
 
         new_parameter['sweight'] += 1
         print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
-        print(save_str)
-        print(save_str_2)
         if new_weight == last_weight:
             count += 1
         else:

@@ -170,10 +170,10 @@ class katan32(AbstractCipher):
                 command += self.and_bct(
                     self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
 
-            for i in range(31):
-                if i not in in_index_list:
-                    command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(
-                        y[em_end_search_num], x[em_start_search_num], i + 1, i)
+            # for i in range(31):
+            #     if i not in in_index_list:
+            #         command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(
+            #             y[em_end_search_num], x[em_start_search_num], i + 1, i)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):

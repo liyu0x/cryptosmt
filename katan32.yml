@@ -1,7 +1,7 @@
 cipher: katan32BCT
-startRound: 50
+startRound: 30
 endRound: -1
-switchRounds: 4
+switchRounds: 3
 threshold: 5
 eachRoundMaxTime: 24
 eachRoundMaxValid: 5

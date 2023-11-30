@@ -163,17 +163,9 @@ class katan32(AbstractCipher):
                 )
 
             # Em
-            for i in range(em_start_search_num, em_end_search_num + 1):
-                self.setupKatanRound(
-                    stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset, True
-                )
-            # Em
             in_index_list = set()
             out_index_list = set()
             for i in range(switch_rounds):
-                self.setupKatanRound(
-                    stp_file, x[i], xf[i], xa[i], y[i + 1], w[i], wordsize, i, offset, switch=True
-                )
                 command += self.and_bct(
                     self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
                 command += self.and_bct(
@@ -333,12 +325,11 @@ class katan32(AbstractCipher):
         input_diff = parameters["fixedVariables"]["X0"]
         output_diff = parameters["fixedVariables"]["Y{}".format(r)]
 
-        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}, total:{4}\n".format(
-            input_diff,
-            output_diff,
-            -parameters[
-                'sweight'] * 2,
-            math.log2(prob), total_prob)
+        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}, total:{4}\n".format(input_diff,
+                                                                                                        output_diff,
+                                                                                                        -parameters[
+                                                                                                            'sweight'] * 2,
+                                                                                                        math.log2(prob), total_prob)
 
         save_str_2 = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, '0xF', '0xF', output_diff,
                                                             parameters["rounds"],

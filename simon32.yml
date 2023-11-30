@@ -1,5 +1,5 @@
 cipher: simon
-startRound: 15
+startRound: 10
 endRound: -1
 switchRounds: 1
 threshold: 3

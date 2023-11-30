@@ -8,6 +8,7 @@ from parser import stpcommands
 from ciphers.cipher import AbstractCipher
 
 from parser.stpcommands import getStringLeftRotate as rotl
+import math
 
 
 class SimonCipher(AbstractCipher):
@@ -114,7 +115,7 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
+                self.setupSimonRound(stp_file, xl[i], xr[i], yr[i + 1], yl[i + 1],
                                      and_out[i], w[i], wordsize, True)
                 variable_arr = self.bct_vari(xr[i + 1], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
@@ -332,6 +333,30 @@ class SimonCipher(AbstractCipher):
 
         new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
         new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
+
+    def get_cluster_params(self, parameters, prob, total_prob):
+        r = parameters['rounds']
+        input_diff_l = parameters["fixedVariables"]["XL0"]
+        input_diff_r = parameters["fixedVariables"]["XR0"]
+        output_diff_l = parameters["fixedVariables"]["YL{}".format(r)]
+        output_diff_r = parameters["fixedVariables"]["YR{}".format(r)]
+
+        input_diff = input_diff_l + input_diff_r.replace('0x', '')
+        output_diff = output_diff_l + output_diff_r.replace('0x', '')
+
+        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, current rectangle weight:{3}, total:{4}\n".format(
+            input_diff,
+            output_diff,
+            -parameters[
+                'sweight'] * 2,
+            math.log2(prob), math.log2(total_prob))
+
+        save_str_2 = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, '0xF', '0xF',
+                                                            output_diff, r, -parameters['sweight'],
+                                                            math.log2(total_prob))
+
+        print(save_str)
+        print(save_str_2)
 
     def get_diff_hex(self, parameters, characteristics):
         switch_start_round = parameters['switchStartRound']

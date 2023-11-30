@@ -28,7 +28,6 @@ def check_solutions(new_parameter, cipher, threshold):
     sat_logfile = TEMP_DIC + "satlog-{}-{}.tmp".format(cipher.name, start_time)
     last_weight = 0
     count = 0
-    r, input_diff, output_diff = cipher.get_cluster_params(new_parameter)
     while count < threshold:
         new_weight = last_weight
         if os.path.isfile(sat_logfile):
@@ -54,24 +53,18 @@ def check_solutions(new_parameter, cipher, threshold):
             print("\tSolutions: {}".format(solutions / 2))
             assert solutions == search.countSolutionsLogfile(sat_logfile)
             solutions /= 2
-            prob += math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
+            new_p = math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
+            prob += new_p
             new_weight = int(math.log2(prob))
+            report_str = "boomerang weight: {0}, rectangle weight:{1}".format(-new_parameter['sweight'] * 2,
+                                                                              math.log2(new_p))
+            print(report_str)
+            cipher.get_cluster_params(new_parameter, new_p, prob)
 
-            save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff,
-                                                                                                            output_diff,
-                                                                                                            -new_parameter[
-                                                                                                                'sweight'] * 2,
-                                                                                                            math.log2(prob))
 
-            save_str_2 = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, '0xF', '0xF', output_diff,
-                                                                new_parameter["rounds"],
-                                                                -new_parameter['sweight'], math.log2(prob))
-
-            print(save_str)
-            print(save_str_2)
 
         new_parameter['sweight'] += 1
-        print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
+        #print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
         if new_weight == last_weight:
             count += 1
         else:

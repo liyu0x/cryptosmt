@@ -38,9 +38,9 @@ class SimonCipher(AbstractCipher):
         variables = []
         for i in range(word_size):
             variable = ["{0}[{1}:{1}]".format(x_in, alpha_vari[i]),
+                        "{0}[{1}:{1}]".format(x_out, beta_vari[i]),
                         "{0}[{1}:{1}]".format(x_in, beta_vari[i]),
-                        "{0}[{1}:{1}]".format(x_out, alpha_vari[i]),
-                        "{0}[{1}:{1}]".format(x_out, beta_vari[i])]
+                        "{0}[{1}:{1}]".format(x_out, alpha_vari[i])]
             variables.append(variable)
 
         return variables
@@ -115,9 +115,11 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                self.setupSimonRound(stp_file, xl[i], xr[i], yr[i + 1], yl[i + 1],
-                                     and_out[i], w[i], wordsize, True)
-                variable_arr = self.bct_vari(xr[i + 1], yr[i + 1], wordsize)
+                # self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
+                #                      and_out[i], w[i], wordsize, True)
+                # self.setupSimonRound(stp_file, xl[i], xr[i], yl[i + 1], yr[i + 1],
+                #                      and_out[i], w[i], wordsize, True)
+                variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
 
             # E1
@@ -212,7 +214,7 @@ class SimonCipher(AbstractCipher):
     def and_bct(self, variables_arr, non_part, input_size):
         command = ""
         for varis in variables_arr:
-            command += "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(varis[0], varis[3], varis[1], varis[2])
+            command += "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(varis[0], varis[1], varis[2], varis[3])
         return command
 
     def and_bct_bak(self, variables_arr, non_part, input_size):

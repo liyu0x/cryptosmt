@@ -162,22 +162,24 @@ class katan32(AbstractCipher):
                     stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset
                 )
 
-            # Em
-            for i in range(em_start_search_num, em_end_search_num + 1):
-                self.setupKatanRound(
-                    stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset, True
-                )
-            # Em
             in_index_list = set()
             out_index_list = set()
-            for i in range(switch_rounds):
-                self.setupKatanRound(
-                    stp_file, x[i], xf[i], xa[i], y[i + 1], w[i], wordsize, i, offset, switch=True
-                )
+            # Em
+            for i in range(em_start_search_num, em_end_search_num):
+                # self.setupKatanRound(
+                #     stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset, True
+                # )
                 command += self.and_bct(
-                    self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
+                    self.small_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
                 command += self.and_bct(
-                    self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
+                    self.big_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
+            # Em
+
+            # for i in range(switch_rounds):
+            #     command += self.and_bct(
+            #         self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
+            #     command += self.and_bct(
+            #         self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
 
             # for i in range(31):
             #     if i not in in_index_list:

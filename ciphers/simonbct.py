@@ -115,10 +115,6 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                # self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
-                #                      and_out[i], w[i], wordsize, True)
-                # self.setupSimonRound(stp_file, xl[i], xr[i], yl[i + 1], yr[i + 1],
-                #                      and_out[i], w[i], wordsize, True)
                 variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
 

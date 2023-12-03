@@ -52,26 +52,27 @@ class katan32(AbstractCipher):
     def small_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
         variables = [
             "{0}[{1}:{1}]".format(x_in, 19 + 5 + offset),
+            "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1 + offset),
             "{0}[{1}:{1}]".format(x_in, 19 + 8 + offset),
             "{0}[{1}:{1}]".format(x_out, 19 + 5 + 1 + offset),
-            "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1 + offset),
         ]
         in_index_list.add(19 + 5 + offset)
         in_index_list.add(19 + 8 + offset)
-        out_index_list.add(19 + 5 + 1 + offset)
-        out_index_list.add(19 + 8 + 1 + offset)
+        out_index_list.add(19 + 5 + offset)
+        out_index_list.add(19 + 8 + offset)
         return variables
 
     def big_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
         variables = [
             "{0}[{1}:{1}]".format(x_in, 3 + offset),
-            "{0}[{1}:{1}]".format(x_in, 8 + offset),
-            "{0}[{1}:{1}]".format(x_in, 10 + offset),
-            "{0}[{1}:{1}]".format(x_in, 12 + offset),
-            "{0}[{1}:{1}]".format(x_out, 3 + 1 + offset),
             "{0}[{1}:{1}]".format(x_out, 8 + 1 + offset),
-            "{0}[{1}:{1}]".format(x_out, 10 + 1 + offset),
+            "{0}[{1}:{1}]".format(x_in, 8 + offset),
+            "{0}[{1}:{1}]".format(x_out, 3 + 1 + offset),
+
+            "{0}[{1}:{1}]".format(x_in, 10 + offset),
             "{0}[{1}:{1}]".format(x_out, 12 + 1 + offset),
+            "{0}[{1}:{1}]".format(x_in, 12 + offset),
+            "{0}[{1}:{1}]".format(x_out, 10 + 1 + offset),
         ]
         in_index_list.add(3 + offset)
         in_index_list.add(8 + offset)
@@ -166,13 +167,17 @@ class katan32(AbstractCipher):
             out_index_list = set()
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                # self.setupKatanRound(
-                #     stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset, True
-                # )
+                self.setupKatanRound(
+                    stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset, True
+                )
+                self.setupKatanRound(
+                    stp_file, y[i + 1], yf[i], ya[i], y[i + 2], w[i], wordsize, i, offset, True
+                )
                 command += self.and_bct(
                     self.small_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
                 command += self.and_bct(
                     self.big_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
+
             # Em
 
             # for i in range(switch_rounds):
@@ -311,14 +316,14 @@ class katan32(AbstractCipher):
     def and_bct(self, variables):
         if len(variables) == 4:
             return "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(
-                variables[0], variables[3], variables[1], variables[2]
+                variables[0], variables[1], variables[2], variables[3]
             )
         else:
             str1 = "BVXOR({0}&{1}, {2}&{3})".format(
-                variables[0], variables[5], variables[1], variables[4]
+                variables[0], variables[1], variables[2], variables[3]
             )
             str2 = "BVXOR({0}&{1}, {2}&{3})".format(
-                variables[2], variables[7], variables[3], variables[6]
+                variables[4], variables[5], variables[6], variables[7]
             )
             return "ASSERT(BVXOR({0}, {1})=0bin0);\n".format(str1, str2)
 

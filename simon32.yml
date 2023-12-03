@@ -1,10 +1,10 @@
 cipher: simon
-startRound: 12
+startRound: 6
 endRound: -1
 switchRounds: 1
-threshold: 10
-eachRoundMaxTime: 3
-eachRoundMaxValid: 3
+threshold: 3
+eachRoundMaxTime: 24
+eachRoundMaxValid: 30
 wordsize: 16
 sweight: 0
 endweight: 1000

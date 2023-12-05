@@ -178,25 +178,8 @@ class katan32(AbstractCipher):
                 command += self.and_bct(
                     self.big_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
 
-            pack = [5, 14, 15, 16, 17, 18, 19, 29, 30, 31]
-            pack = [0, 1, 2, 3, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27]
-            for p in pack:
-                command += "ASSERT(Y{0}[{1}:{1}]=0bin0);\n".format(em_end_search_num, p)
-
-            # for i in range(switch_rounds):
-            #     command += self.and_bct(
-            #         self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
-            #     command += self.and_bct(
-            #         self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
-            #
-            # # Em
-            # for i in range(32):
-            #     if i not in out_index_list:
-            #         command += "ASSERT({0}[{1}:{1}]=0bin0);\n".format(
-            #             y[em_end_search_num], i)
-
             # E1
-            for i in range(e1_start_search_num, e1_end_search_num):
+            for i in range(e1_start_search_num-1, e1_end_search_num):
                 self.setupKatanRound(
                     stp_file, y[i], yf[i], ya[i], y[i + 1], w[i], wordsize, i, offset
                 )

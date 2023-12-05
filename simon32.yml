@@ -1,8 +1,8 @@
 cipher: simon
-startRound: 6
+startRound: 8
 endRound: -1
 switchRounds: 1
-threshold: 3
+threshold: 5
 eachRoundMaxTime: 24
 eachRoundMaxValid: 30
 wordsize: 16

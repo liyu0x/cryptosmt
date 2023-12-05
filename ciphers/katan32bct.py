@@ -58,8 +58,8 @@ class katan32(AbstractCipher):
         ]
         in_index_list.add(19 + 5 + offset)
         in_index_list.add(19 + 8 + offset)
-        out_index_list.add(19 + 5 + offset)
-        out_index_list.add(19 + 8 + offset)
+        out_index_list.add(19 + 5 + 1 + offset)
+        out_index_list.add(19 + 8 + 1 + offset)
         return variables
 
     def big_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
@@ -178,18 +178,22 @@ class katan32(AbstractCipher):
                 command += self.and_bct(
                     self.big_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
 
-            # Em
+            pack = [5, 14, 15, 16, 17, 18, 19, 29, 30, 31]
+            pack = [0, 1, 2, 3, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27]
+            for p in pack:
+                command += "ASSERT(Y{0}[{1}:{1}]=0bin0);\n".format(em_end_search_num, p)
 
             # for i in range(switch_rounds):
             #     command += self.and_bct(
             #         self.small_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
             #     command += self.and_bct(
             #         self.big_vari(x[em_start_search_num], y[em_end_search_num], in_index_list, out_index_list, -i))
-
-            # for i in range(31):
-            #     if i not in in_index_list:
-            #         command += "ASSERT({0}[{2}:{2}]={1}[{3}:{3}]);\n".format(
-            #             y[em_end_search_num], x[em_start_search_num], i + 1, i)
+            #
+            # # Em
+            # for i in range(32):
+            #     if i not in out_index_list:
+            #         command += "ASSERT({0}[{1}:{1}]=0bin0);\n".format(
+            #             y[em_end_search_num], i)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):

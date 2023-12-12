@@ -179,7 +179,7 @@ class katan32(AbstractCipher):
                     self.big_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
 
             # E1
-            for i in range(e1_start_search_num-1, e1_end_search_num):
+            for i in range(e1_start_search_num, e1_end_search_num):
                 self.setupKatanRound(
                     stp_file, y[i], yf[i], ya[i], y[i + 1], w[i], wordsize, i, offset
                 )

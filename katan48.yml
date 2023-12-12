@@ -1,6 +1,6 @@
 cipher: katan48BCT
-startRound: 60
-endRound: 80
+startRound: 89
+endRound: -1
 switchRounds: 3
 threshold: 3
 eachRoundMaxTime: 24

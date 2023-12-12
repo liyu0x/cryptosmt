@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 import yaml
-from ciphers import katan32bct, simonbct, katan48bct
+from ciphers import katan32bct, simonbct_v2, katan48bct
 import time
 import util
 import random
@@ -13,7 +13,7 @@ import os
 START_WEIGHT = {"simon32": {10: 13, 13: 24}}
 
 CIPHER_MAPPING = {"katan32BCT": katan32bct.katan32(),
-                  "simon": simonbct.SimonCipher(),
+                  "simon": simonbct_v2.SimonCipher(),
                   "katan48BCT": katan48bct.katan48()}
 
 RESULT_DIC = {'simon': "simon_result/", "katan32BCT": "katan32_result/", "katan48BCT": "katan48_result/"}
@@ -21,6 +21,8 @@ TEMP_DIC = "tmp/"
 
 
 def check_solutions(new_parameter, cipher, threshold, cluster_count):
+    print("Start Cluster:{0}, rounds:{1}, weight:{2}".format(new_parameter["position"], new_parameter["rounds"],
+                                                             new_parameter["sweight"]))
     new_parameter['countered_trails'].clear()
     prob = 0
     start_time = str(uuid.uuid4())
@@ -30,6 +32,7 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
     count = 0
     cluster_counter = 0
     new_parameter['cluster'] = 1
+    new_parameter['sweight'] = 0
     while count < threshold and cluster_counter < cluster_count:
         cluster_counter += 1
         new_weight = last_weight
@@ -62,7 +65,10 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
             report_str = "boomerang weight: {0}, rectangle weight:{1}".format(-new_parameter['sweight'] * 2,
                                                                               math.log2(new_p))
             print(report_str)
-            cipher.get_cluster_params(new_parameter, new_p, prob)
+            # cipher.get_cluster_params(new_parameter, new_p, prob)
+        else:
+            new_parameter['sweight'] += 1
+            continue
 
         new_parameter['sweight'] += 1
         # print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
@@ -70,15 +76,16 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
             count += 1
         else:
             last_weight = new_weight
-    return prob
+            count = 0
+    return math.log2(prob)
 
 
 def find_single_trail(cipher, r, lunch_arg):
     result_dic = RESULT_DIC[cipher.name]
     task_start_time = time.time()
     valid_count = 0
-    save_file = result_dic + "{0}-{1}.txt".format(cipher.name, r)
-    save_list_file = result_dic + "{0}-{1}-LIST.txt".format(cipher.name, r)
+    save_file = result_dic + "{0}-{1}_v2.txt".format(cipher.name, r)
+    save_list_file = result_dic + "{0}-{1}-LIST_v2.txt".format(cipher.name, r)
     result_file = open(save_file, "w")
     result_list_file = open(save_list_file, 'w')
     params = copy.deepcopy(lunch_arg)
@@ -102,15 +109,34 @@ def find_single_trail(cipher, r, lunch_arg):
             continue
 
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
-
         characteristic.printText()
+
+        switch_list = find_all_switch(cipher, stp_file, copy.deepcopy(params), characteristic.getData())
+
         # Cluster Search
         new_parameters = copy.deepcopy(params)
 
         new_parameters["blockedCharacteristics"].clear()
         new_parameters["fixedVariables"].clear()
-        cipher.create_cluster_parameters(new_parameters, characteristic)
-        prob = check_solutions(new_parameters, cipher, lunch_arg['threshold'], lunch_arg['cluster_count'])
+
+        new_parameters['switchStartRound'] = -1
+        top_param = copy.deepcopy(new_parameters)
+        top_param['switch_list'] = switch_list
+        top_param['position'] = 'top'
+        cipher.create_cluster_parameters(top_param, characteristic)
+        w1 = check_solutions(top_param, cipher, lunch_arg['threshold'], lunch_arg['cluster_count'])
+
+        bottom_param = copy.deepcopy(new_parameters)
+        bottom_param['position'] = 'bottom'
+        bottom_param['switch_list'] = switch_list
+        cipher.create_cluster_parameters(bottom_param, characteristic)
+        w2 = check_solutions(bottom_param, cipher, lunch_arg['threshold'], lunch_arg['cluster_count'])
+
+        switch_len = len(switch_list['input'])
+
+        prob = math.pow(2, w1 + w2)
+        # new_parameters["mode"] = 4
+
         if prob > 0:
             rectangle_weight = math.log2(prob)
         else:
@@ -118,17 +144,18 @@ def find_single_trail(cipher, r, lunch_arg):
 
         input_diff, switch_input, switch_output, output_diff = cipher.get_diff_hex(params, characteristic)
 
-        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff,
-                                                                                                        output_diff,
-                                                                                                        -params[
-                                                                                                            'sweight'] * 2,
-                                                                                                        rectangle_weight)
+        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}, switch_len:{4}\n".format(
+            input_diff,
+            output_diff,
+            -params[
+                'sweight'] * 2,
+            rectangle_weight, switch_len)
 
         result_file.write(save_str)
         result_file.flush()
-        save_str = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, switch_input, switch_output, output_diff,
-                                                          params["rounds"],
-                                                          -params['sweight'], rectangle_weight)
+        save_str = "{0},{1},{2},{3},{4},{5},{6},{7}\n".format(input_diff, switch_input, switch_output, output_diff,
+                                                              params["rounds"],
+                                                              -params['sweight'], rectangle_weight, switch_len)
         result_list_file.write(save_str)
         result_list_file.flush()
         if rectangle_weight >= -params['wordsize']:
@@ -136,6 +163,57 @@ def find_single_trail(cipher, r, lunch_arg):
         print("MAX PROB:{0}, INPUT:{1}, OUTPUT:{2}".format(rectangle_weight, input_diff, output_diff))
         # params["sweight"] += 1
         params["countered_trails"].append(characteristic)
+
+
+def find_all_switch(cipher, stp_file, param, trails):
+    print("start search all valid boomerang switches")
+    r = param['rounds']
+    switch_list = {"input": [], "output": []}
+    # input diff
+    input_diff_l = trails[0][0]
+    input_diff_r = trails[0][1]
+
+    # output diff
+    output_diff_l = trails[r][2]
+    output_diff_r = trails[r][3]
+    param['test'] = ''
+    param["fixedVariables"]["XL0"] = input_diff_l
+    param["fixedVariables"]["XR0"] = input_diff_r
+
+    param["fixedVariables"]["YL{}".format(r)] = output_diff_l
+    param["fixedVariables"]["YR{}".format(r)] = output_diff_r
+    while True:
+        cipher.createSTP(stp_file, param)
+        result = search.solveSTP(stp_file)
+        if not search.foundSolution(result):
+            print(
+                "Rounds:{1}, No trails, weight:{0}, switch:{2}\n".format(
+                    param["sweight"], param["rounds"], len(switch_list['input'])
+                )
+            )
+            break
+        characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, param["rounds"])
+        trails = characteristic.getData()
+        input_switch_l = trails[param['em_start_num']][0]
+        input_switch_r = trails[param['em_start_num']][1]
+        output_switch_l = trails[param['em_end_num']][2]
+        output_switch_r = trails[param['em_end_num']][3]
+        switch_list['input'].append([input_switch_l, input_switch_r])
+        switch_list['output'].append([output_switch_l, output_switch_r])
+
+        command = "ASSERT(NOT("
+
+        str1 = "(BVXOR(XL{0},{1})|BVXOR(XR{0}, {2}) | BVXOR(YL{3}, {4}) | BVXOR(YR{3}, {5}))".format(
+            param['em_start_num'], input_switch_l, input_switch_r, param['em_end_num'], output_switch_l,
+            output_switch_r)
+        command += str1
+        command += "&"
+        command = command[:-1]
+        command += "=0x0000));\n"
+        param["test"] += command
+
+    util.switch_validation_checking(switch_list, cipher)
+    return switch_list
 
 
 def start_search(lunch_arg):

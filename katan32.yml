@@ -1,5 +1,5 @@
 cipher: katan32BCT
-startRound: 30
+startRound: 20
 endRound: -1
 switchRounds: 4
 threshold: 10

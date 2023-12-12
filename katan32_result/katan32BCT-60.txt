@@ -1,6 +1,0 @@
-inputDiff:0x0000C010, outputDiff:0x00D01080, boomerang weight:-24, rectangle weight:-18.23502477110138
-inputDiff:0x0000C010, outputDiff:0x00901080, boomerang weight:-24, rectangle weight:-18.23502477110138
-inputDiff:0x00008010, outputDiff:0x00901080, boomerang weight:-24, rectangle weight:-18.23502477110138
-inputDiff:0x0000C010, outputDiff:0x00C01080, boomerang weight:-24, rectangle weight:-18.23502477110138
-inputDiff:0x0000C010, outputDiff:0x08801085, boomerang weight:-26, rectangle weight:-20.23502477110138
-inputDiff:0x00030040, outputDiff:0x08000005, boomerang weight:-26, rectangle weight:-20.471057584935107

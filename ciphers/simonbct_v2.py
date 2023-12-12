@@ -117,7 +117,7 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize)
             # Em
             for i in range(em_start_search_num, em_end_search_num):
-                variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
+                variable_arr = self.bct_vari(xl[i], yl[i + 1], wordsize)
                 command += self.and_bct(variable_arr, self.non_linear_part, 2)
 
             # E1
@@ -145,35 +145,6 @@ class SimonCipher(AbstractCipher):
 
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
-
-            # hamming weight setting
-            # xl_0 = "0000001"
-            # xr_0 = 0
-            # xl_n = 0
-            # xr_n = 1
-            #
-            # temp_1 = "0bin0@0bin0@0bin0@0bin0@0bin0@0bin0@{0}{1}[{2}:{2}]"
-            # if "cluster" not in parameters:
-            #     str_list = []
-            #     # X0
-            #     for i in range(16):
-            #         sub_1 = temp_1.format("XL", 0, i)
-            #         sub_2 = temp_1.format("XR", 0, i)
-            #         str_list.append(sub_1)
-            #         str_list.append(sub_2)
-            #     separator = ","
-            #     ns = separator.join(str_list)
-            #     command += "ASSERT(BVPLUS(7,{0})=0bin{1});\n".format(ns, xl_0)
-            #     str_list = []
-            #     # Y_N
-            #     for i in range(16):
-            #         sub_1 = temp_1.format("YL", rounds, i)
-            #         sub_2 = temp_1.format("YR", rounds, i)
-            #         str_list.append(sub_1)
-            #         str_list.append(sub_2)
-            #     separator = ","
-            #     ns = separator.join(str_list)
-            #     command += "ASSERT(BVPLUS(7,{0})=0bin{1});\n".format(ns, xl_0)
 
             command += self.pre_handle(parameters)
             if 'test' in parameters:
@@ -281,19 +252,57 @@ class SimonCipher(AbstractCipher):
         trails_data = characteristic.getData()
         new_parameters["blockedCharacteristics"].clear()
         new_parameters["fixedVariables"].clear()
+        r = 0
+        w = 0
+        if new_parameters["position"] == "top":
+            rr = new_parameters["em_start_num"]
+            alpha_l = trails_data[r][0]
+            alpha_r = trails_data[r][1]
+            delta_l = trails_data[rr][0]
+            delta_r = trails_data[rr][1]
+            w = 0
+            for i in range(r, rr):
+                t = trails_data[i][4]
+                if t != 'none':
+                    w += int(trails_data[i][4])
+            switch_top_list = new_parameters['switch_list']['input']
+            new_parameters["fixedVariables"]["XL{}".format(r)] = alpha_l
+            new_parameters["fixedVariables"]["XR{}".format(r)] = alpha_r
+            command = ""
+            temp_list = []
+            for switch in switch_top_list:
+                s = "~((BVXOR(XL{},{})&BVXOR(XR{},{})))".format(rr, switch[0], rr, switch[1])
+                temp_list.append(s)
+            join = "|"
+            command += "ASSERT(({})=0xFFFF);\n".format(join.join(temp_list))
+            new_parameters['test'] = command
+        else:
+            ori_r = new_parameters["em_end_num"]
+            ori_rr = new_parameters["rounds"]
+            rr = ori_rr - ori_r
 
-        input_diff_l = trails_data[0][0]
-        input_diff_r = trails_data[0][1]
+            command = ""
+            switch_bottom_list = new_parameters['switch_list']['output']
+            temp_list = []
+            for switch in switch_bottom_list:
+                s = "~((BVXOR(XL{},{})&BVXOR(XR{},{})))".format(r, switch[0], r, switch[1])
+                temp_list.append(s)
+            join = "|"
+            command += "ASSERT(({})=0xFFFF);\n".format(join.join(temp_list))
+            new_parameters['test'] = command
 
-        # output diff
-        output_diff_l = trails_data[r][2]
-        output_diff_r = trails_data[r][3]
+            alpha_l = trails_data[ori_rr][2]
+            alpha_r = trails_data[ori_rr][3]
+            new_parameters["fixedVariables"]["XL{}".format(rr)] = alpha_l
+            new_parameters["fixedVariables"]["XR{}".format(rr)] = alpha_r
 
-        new_parameters["fixedVariables"]["XL0"] = input_diff_l
-        new_parameters["fixedVariables"]["XR0"] = input_diff_r
+            for i in range(ori_r, ori_rr):
+                t = trails_data[i][4]
+                if t is not 'none':
+                    w += int(trails_data[i][4])
 
-        new_parameters["fixedVariables"]["YL{}".format(r)] = output_diff_l
-        new_parameters["fixedVariables"]["YR{}".format(r)] = output_diff_r
+        new_parameters["sweight"] = w * -1
+        new_parameters['rounds'] = rr
 
     def get_cluster_params(self, parameters, prob, total_prob):
         r = parameters['rounds']

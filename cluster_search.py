@@ -39,7 +39,7 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
 
         # Start solver
         sat_process = search.startSATsolver(stp_file)
-        log_file = open(sat_logfile, "w")
+        # log_file = open(sat_logfile, "w")
 
         # Find the number of solutions with the SAT solver
         print("Finding all trails of weight {}".format(new_parameter["sweight"]))
@@ -47,16 +47,21 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
         # Watch the process and count solutions
         solutions = 0
         while sat_process.poll() is None:
-            line = sat_process.stdout.readline().decode("utf-8")
-            log_file.write(line)
-            if "s SATISFIABLE" in line:
-                solutions += 1
-        log_file.close()
+            lines = sat_process.stdout.readlines(5000)
+            # log_file.write(line)
+            for line in lines:
+                if "s SATISFIABLE" in line.decode("utf-8"):
+                    solutions += 1
+            p = prob + math.pow(2, -new_parameter["sweight"] * 2) * (
+                    solutions / 2)
+            w = math.log2(p)
+            print("\r found {} solutions,w:{}, prob: {}".format(solutions, w, p), end="")
+        # log_file.close()
         if solutions > 0:
-            print("\tSolutions: {}".format(solutions / 2))
-            assert solutions == search.countSolutionsLogfile(sat_logfile)
+            print("\n\tSolutions: {}".format(solutions / 2))
+            # assert solutions == search.countSolutionsLogfile(sat_logfile)
             solutions /= 2
-            new_p = math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
+            new_p = math.pow(2, -new_parameter["sweight"] * 2) * solutions
             prob += new_p
             new_weight = int(math.log2(prob))
             report_str = "boomerang weight: {0}, rectangle weight:{1}".format(-new_parameter['sweight'] * 2,

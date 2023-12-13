@@ -126,16 +126,21 @@ class SimonCipher(AbstractCipher):
                                      and_out_t[i], w[i], wordsize)
 
             # No all zero characteristic
-            if switch_start_round == -1:
-                stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
-            else:
-                stpcommands.assertNonZero(stp_file, xl[e0_start_search_num:em_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, xr[e0_start_search_num:em_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, yl[em_start_search_num + 1:e1_end_search_num], wordsize)
-                stpcommands.assertNonZero(stp_file, yr[em_start_search_num + 1:e1_end_search_num], wordsize)
+            if 'cluster' not in parameters:
+                if switch_start_round == -1:
+                    stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
+                else:
+                    # stpcommands.assertNonZero(stp_file, xl[e0_start_search_num], wordsize)
+                    # stpcommands.assertNonZero(stp_file, xr[e0_start_search_num], wordsize)
+                    # stpcommands.assertNonZero(stp_file, yl[em_start_search_num + 1:e1_end_search_num], wordsize)
+                    # stpcommands.assertNonZero(stp_file, yr[em_start_search_num + 1:e1_end_search_num], wordsize)
+                    stpcommands.assertNonZero(stp_file, [xl[e0_start_search_num], xr[e0_start_search_num],
+                                                         ], wordsize)
+                    stpcommands.assertNonZero(stp_file, [yl[e1_end_search_num],
+                                                         yr[e1_end_search_num]], wordsize)
 
-            # Iterative characteristics only
-            # Input difference = Output difference
+                    # Iterative characteristics only
+                    # Input difference = Output difference
             if parameters["iterative"]:
                 stpcommands.assertVariableValue(stp_file, xl[0], xl[rounds])
                 stpcommands.assertVariableValue(stp_file, xr[0], xr[rounds])
@@ -145,35 +150,6 @@ class SimonCipher(AbstractCipher):
 
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
-
-            # hamming weight setting
-            # xl_0 = "0000001"
-            # xr_0 = 0
-            # xl_n = 0
-            # xr_n = 1
-            #
-            # temp_1 = "0bin0@0bin0@0bin0@0bin0@0bin0@0bin0@{0}{1}[{2}:{2}]"
-            # if "cluster" not in parameters:
-            #     str_list = []
-            #     # X0
-            #     for i in range(16):
-            #         sub_1 = temp_1.format("XL", 0, i)
-            #         sub_2 = temp_1.format("XR", 0, i)
-            #         str_list.append(sub_1)
-            #         str_list.append(sub_2)
-            #     separator = ","
-            #     ns = separator.join(str_list)
-            #     command += "ASSERT(BVPLUS(7,{0})=0bin{1});\n".format(ns, xl_0)
-            #     str_list = []
-            #     # Y_N
-            #     for i in range(16):
-            #         sub_1 = temp_1.format("YL", rounds, i)
-            #         sub_2 = temp_1.format("YR", rounds, i)
-            #         str_list.append(sub_1)
-            #         str_list.append(sub_2)
-            #     separator = ","
-            #     ns = separator.join(str_list)
-            #     command += "ASSERT(BVPLUS(7,{0})=0bin{1});\n".format(ns, xl_0)
 
             command += self.pre_handle(parameters)
             if 'test' in parameters:
@@ -224,7 +200,7 @@ class SimonCipher(AbstractCipher):
         if not switch:
             # Weight computation
             command += "ASSERT({0} = (IF {1} = 0x{4} THEN BVSUB({5},0x{4},0x{6}1) \
-                        ELSE BVXOR({2}, {3}) ENDIF));\n".format(
+                ELSE BVXOR({2}, {3}) ENDIF));\n".format(
                 w, x_in, varibits, doublebits, "f" * (wordsize // 4),
                 wordsize, "0" * ((wordsize // 4) - 1))
         else:
@@ -264,11 +240,12 @@ class SimonCipher(AbstractCipher):
                 output_diff_l = trails_data[r][2]
                 output_diff_r = trails_data[r][3]
 
-                str1 = "(BVXOR(XL0,{0})|BVXOR(XR0, {1}) | BVXOR(YL{2}, {3}) | BVXOR(YR{2}, {4}))".format(input_diff_l,
-                                                                                                         input_diff_r,
-                                                                                                         r,
-                                                                                                         output_diff_l,
-                                                                                                         output_diff_r)
+                str1 = "(BVXOR(XL0,{0})|BVXOR(XR0, {1}) | BVXOR(YL{2}, {3}) | BVXOR(YR{2}, {4}))".format(
+                    input_diff_l,
+                    input_diff_r,
+                    r,
+                    output_diff_l,
+                    output_diff_r)
                 command += str1
                 command += "&"
             command = command[:-1]

@@ -2,7 +2,7 @@ cipher: simon
 startRound: 13
 endRound: -1
 switchRounds: 1
-threshold: 6
+threshold: 5
 eachRoundMaxTime: 24
 eachRoundMaxValid: 30
 wordsize: 16
@@ -16,7 +16,7 @@ nummessages: 1
 timelimit: -1
 offset: 0
 cluster_count: 100
-countered_trails: [ ]
+countered_trails: []
 #fixedVariables:
 #  - XL0: "0hex0000"
 #  - XR0: "0bin0000000001000000"

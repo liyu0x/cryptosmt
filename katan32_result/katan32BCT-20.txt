@@ -1,0 +1,6 @@
+inputDiff:0x00002000, outputDiff:0x00200000, boomerang weight:0, rectangle weight:4.0
+inputDiff:0x00004000, outputDiff:0x00200000, boomerang weight:0, rectangle weight:4.0
+inputDiff:0x00008000, outputDiff:0x00200000, boomerang weight:0, rectangle weight:4.0
+inputDiff:0x00010000, outputDiff:0x00200000, boomerang weight:0, rectangle weight:6.0
+inputDiff:0x00002000, outputDiff:0x00400000, boomerang weight:0, rectangle weight:3.0
+inputDiff:0x00002000, outputDiff:0x00800001, boomerang weight:0, rectangle weight:3.0

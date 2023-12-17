@@ -9,6 +9,8 @@ import copy
 import math
 import uuid
 import os
+from config import (USE_SHARP)
+import re
 
 START_WEIGHT = {"simon32": {10: 13, 13: 24}}
 
@@ -21,25 +23,23 @@ TEMP_DIC = "tmp/"
 
 
 def check_solutions(new_parameter, cipher, threshold, cluster_count):
-    new_parameter['countered_trails'].clear()
+    if 'countered_trails' in new_parameter:
+        new_parameter['countered_trails'].clear()
     prob = 0
     start_time = str(uuid.uuid4())
     stp_file = TEMP_DIC + "{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
-    sat_logfile = TEMP_DIC + "satlog-{}-{}.tmp".format(cipher.name, start_time)
     last_weight = 0
-    count = 0
+    count = 1
     cluster_counter = 0
     new_parameter['cluster'] = 1
+    ori_w = new_parameter['sweight']
     while count < threshold and cluster_counter < cluster_count:
         cluster_counter += 1
         new_weight = last_weight
-        if os.path.isfile(sat_logfile):
-            os.remove(sat_logfile)
         cipher.createSTP(stp_file, new_parameter)
 
         # Start solver
         sat_process = search.startSATsolver(stp_file)
-        # log_file = open(sat_logfile, "w")
 
         # Find the number of solutions with the SAT solver
         print("Finding all trails of weight {}".format(new_parameter["sweight"]))
@@ -47,25 +47,31 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
         # Watch the process and count solutions
         solutions = 0
         while sat_process.poll() is None:
-            lines = sat_process.stdout.readlines(5000)
-            # log_file.write(line)
-            for line in lines:
-                if "s SATISFIABLE" in line.decode("utf-8"):
-                    solutions += 1
+            lines = sat_process.stdout.readlines()
+            if USE_SHARP == 1:
+                done = False
+                for line in lines:
+                    if "exact arb" in line.decode("utf-8"):
+                        done = True
+                if not done:
+                    continue
+                line = lines[len(lines) - 1].decode("utf-8")
+                pattern = re.compile('\d+')
+                solutions += int(pattern.search(line).group())
+            else:
+                for line in lines:
+                    if "s SATISFIABLE" in line.decode("utf-8"):
+                        solutions += 1
             p = prob + math.pow(2, -new_parameter["sweight"] * 2) * (
                     solutions / 2)
             w = math.log2(p)
-            print("\r found {} solutions,w:{}, prob: {}".format(solutions, w, p), end="")
-        # log_file.close()
         if solutions > 0:
-            print("\n\tSolutions: {}".format(solutions / 2))
-            # assert solutions == search.countSolutionsLogfile(sat_logfile)
-            solutions /= 2
+            print("\n\tSolutions: {}".format(solutions))
             new_p = math.pow(2, -new_parameter["sweight"] * 2) * solutions
             prob += new_p
             new_weight = int(math.log2(prob))
-            report_str = "boomerang weight: {0}, rectangle weight:{1}".format(-new_parameter['sweight'] * 2,
-                                                                              math.log2(new_p))
+            report_str = "boomerang weight: {0}, rectangle weight:{1}".format(-ori_w * 2,
+                                                                              math.log2(prob))
             print(report_str)
             cipher.get_cluster_params(new_parameter, new_p, prob)
 
@@ -75,6 +81,7 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
             count += 1
         else:
             last_weight = new_weight
+            count = 1
     return prob
 
 

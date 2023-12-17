@@ -28,5 +28,4 @@ def switch_validation_checking(switch_list, cipher: simonbct_v2):
             right_b = int(''.join(right_output_beta), 2)
             if left_a & right_b != left_b & right_a:
                 error += 1
-
-    print()
+    return error / count

@@ -1,8 +1,8 @@
 cipher: katan32BCT
-startRound: 20
-endRound: -1
+startRound: 86
+endRound: 95
 switchRounds: 4
-threshold: 10
+threshold: 5
 eachRoundMaxTime: 24
 eachRoundMaxValid: 5
 wordsize: 32
@@ -15,3 +15,5 @@ latex: None
 nummessages: 1
 timelimit: -1
 offset: 0
+cluster_count: 100
+countered_trails: [ ]

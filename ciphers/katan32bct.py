@@ -278,7 +278,9 @@ class katan32(AbstractCipher):
         return
 
     def pre_handle(self, param):
-        characters = param["bbbb"]
+        if 'countered_trails' not in param:
+            return ""
+        characters = param["countered_trails"]
         if len(characters) == 0:
             return ""
         r = param["rounds"]

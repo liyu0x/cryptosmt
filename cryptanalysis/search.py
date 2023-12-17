@@ -6,7 +6,7 @@ Created on Apr 3, 2014
 
 from parser import parsesolveroutput
 from config import (PATH_STP, PATH_BOOLECTOR, PATH_CRYPTOMINISAT, MAX_WEIGHT,
-                    MAX_CHARACTERISTICS, MULTI_THREADS)
+                    MAX_CHARACTERISTICS, MULTI_THREADS, USE_SHARP, PATH_SHARP)
 
 import subprocess
 import random
@@ -301,17 +301,24 @@ def startSATsolver(stp_file):
                              stp_file, "--CVC", "--disable-simplifications"])
 
     # Find the number of solutions with the SAT solver
-    sat_params = [PATH_CRYPTOMINISAT,
-                  "--maxsol", str(MAX_CHARACTERISTICS),
-                  # "--nobansol"
-                  "--verb", "0",
-                  "-s", "0",
-                  "--threads", str(MULTI_THREADS),
-                  "output_0.cnf"]
-
+    if USE_SHARP == 0:
+        sat_params = [PATH_CRYPTOMINISAT,
+                      "--maxsol", str(MAX_CHARACTERISTICS),
+                      "--verb", "0",
+                      "-s", "0",
+                      "--threads", str(MULTI_THREADS),
+                      "output_0.cnf"]
+    else:
+        sat_params = [PATH_SHARP,
+                      "-decot", "1",
+                      "-decow", "100",
+                      "-tmpdir", "./tmp",
+                      "-cs", "3500",
+                      "output_0.cnf"
+                      ]
+        #subprocess.call(sat_params)
     sat_process = subprocess.Popen(sat_params, stderr=subprocess.PIPE,
                                    stdout=subprocess.PIPE)
-
     return sat_process
 
 

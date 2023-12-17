@@ -9,6 +9,8 @@ import copy
 import math
 import uuid
 import os
+from config import USE_SHARP
+import re
 
 START_WEIGHT = {"simon32": {10: 13, 13: 24}}
 
@@ -27,7 +29,6 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
     prob = 0
     start_time = str(uuid.uuid4())
     stp_file = TEMP_DIC + "{}{}-{}.stp".format(cipher.name, "clutesr", start_time)
-    sat_logfile = TEMP_DIC + "satlog-{}-{}.tmp".format(cipher.name, start_time)
     last_weight = 0
     count = 0
     cluster_counter = 0
@@ -35,14 +36,10 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
     new_parameter['sweight'] = 0
     while count < threshold and cluster_counter < cluster_count:
         cluster_counter += 1
-        new_weight = last_weight
-        if os.path.isfile(sat_logfile):
-            os.remove(sat_logfile)
         cipher.createSTP(stp_file, new_parameter)
 
         # Start solver
         sat_process = search.startSATsolver(stp_file)
-        log_file = open(sat_logfile, "w")
 
         # Find the number of solutions with the SAT solver
         print("Finding all trails of weight {}".format(new_parameter["sweight"]))
@@ -50,19 +47,29 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
         # Watch the process and count solutions
         solutions = 0
         while sat_process.poll() is None:
-            line = sat_process.stdout.readline().decode("utf-8")
-            log_file.write(line)
-            if "s SATISFIABLE" in line:
-                solutions += 1
-        log_file.close()
+            lines = sat_process.stdout.readlines()
+            if USE_SHARP == 1:
+                done = False
+                for line in lines:
+                    if "exact arb" in line.decode("utf-8"):
+                        done = True
+                if not done:
+                    continue
+                line = lines[len(lines) - 1].decode("utf-8")
+                pattern = re.compile('\d+')
+                solutions += int(pattern.search(line).group())
+            else:
+                for line in lines:
+                    if "s SATISFIABLE" in line.decode("utf-8"):
+                        solutions += 1
         if solutions > 0:
             print("\tSolutions: {}".format(solutions / 2))
-            assert solutions == search.countSolutionsLogfile(sat_logfile)
+            # assert solutions == search.countSolutionsLogfile(sat_logfile)
             solutions /= 2
-            new_p = math.pow(2, -new_parameter["sweight"] * 2) * (solutions / 2)
+            new_p = math.pow(2, -new_parameter["sweight"]) * (solutions / 2)
             prob += new_p
             new_weight = int(math.log2(prob))
-            report_str = "boomerang weight: {0}, rectangle weight:{1}".format(-new_parameter['sweight'] * 2,
+            report_str = "boomerang weight: {0}, rectangle weight:{1}".format(-new_parameter['sweight'],
                                                                               math.log2(new_p))
             print(report_str)
             # cipher.get_cluster_params(new_parameter, new_p, prob)
@@ -77,7 +84,7 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
         else:
             last_weight = new_weight
             count = 0
-    return math.log2(prob)
+    return prob
 
 
 def find_single_trail(cipher, r, lunch_arg):
@@ -111,7 +118,7 @@ def find_single_trail(cipher, r, lunch_arg):
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
         characteristic.printText()
 
-        switch_list = find_all_switch(cipher, stp_file, copy.deepcopy(params), characteristic.getData())
+        switch_list, switch_prob = find_all_switch(cipher, stp_file, copy.deepcopy(params), characteristic.getData())
 
         # Cluster Search
         new_parameters = copy.deepcopy(params)
@@ -134,7 +141,7 @@ def find_single_trail(cipher, r, lunch_arg):
 
         switch_len = len(switch_list['input'])
 
-        prob = math.pow(2, w1 + w2)
+        prob = math.pow(w1 + w2, 2) * switch_prob
         # new_parameters["mode"] = 4
 
         if prob > 0:
@@ -212,8 +219,8 @@ def find_all_switch(cipher, stp_file, param, trails):
         command += "=0x0000));\n"
         param["test"] += command
 
-    util.switch_validation_checking(switch_list, cipher)
-    return switch_list
+    prob = util.switch_validation_checking(switch_list, cipher)
+    return switch_list, prob
 
 
 def start_search(lunch_arg):

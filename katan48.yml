@@ -1,12 +1,12 @@
 cipher: katan48BCT
-startRound: 89
+startRound: 82
 endRound: -1
 switchRounds: 3
-threshold: 3
+threshold: 5
 eachRoundMaxTime: 24
-eachRoundMaxValid: 2
+eachRoundMaxValid: 5
 wordsize: 48
-sweight: 0
+sweight: 10
 endweight: 1000
 iterative: False
 boolector: False
@@ -15,3 +15,6 @@ latex: None
 nummessages: 1
 timelimit: -1
 offset: 0
+cluster_count: 100
+countered_trails: [ ]
+validBound: 48

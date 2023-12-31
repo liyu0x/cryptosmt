@@ -49,20 +49,16 @@ class katan32(AbstractCipher):
         x1 = x & 0x1
         return x0 & x1
 
-    def small_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
+    def small_vari(self, x_in, x_out, offset=0):
         variables = [
             "{0}[{1}:{1}]".format(x_in, 19 + 5 + offset),
             "{0}[{1}:{1}]".format(x_out, 19 + 8 + 1 + offset),
             "{0}[{1}:{1}]".format(x_in, 19 + 8 + offset),
             "{0}[{1}:{1}]".format(x_out, 19 + 5 + 1 + offset),
         ]
-        in_index_list.add(19 + 5 + offset)
-        in_index_list.add(19 + 8 + offset)
-        out_index_list.add(19 + 5 + 1 + offset)
-        out_index_list.add(19 + 8 + 1 + offset)
         return variables
 
-    def big_vari(self, x_in, x_out, in_index_list: set, out_index_list: set, offset=0):
+    def big_vari(self, x_in, x_out, offset=0):
         variables = [
             "{0}[{1}:{1}]".format(x_in, 3 + offset),
             "{0}[{1}:{1}]".format(x_out, 8 + 1 + offset),
@@ -74,14 +70,6 @@ class katan32(AbstractCipher):
             "{0}[{1}:{1}]".format(x_in, 12 + offset),
             "{0}[{1}:{1}]".format(x_out, 10 + 1 + offset),
         ]
-        in_index_list.add(3 + offset)
-        in_index_list.add(8 + offset)
-        in_index_list.add(10 + offset)
-        in_index_list.add(12 + offset)
-        out_index_list.add(3 + 1 + offset)
-        out_index_list.add(8 + 1 + offset)
-        out_index_list.add(10 + 1 + offset)
-        out_index_list.add(12 + 1 + offset)
         return variables
 
     def getSbox(self):
@@ -163,20 +151,18 @@ class katan32(AbstractCipher):
                     stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset
                 )
 
-            in_index_list = set()
-            out_index_list = set()
             # Em
             for i in range(em_start_search_num, em_end_search_num):
+                command += self.and_bct(
+                    self.small_vari(x[i], y[i + 1], -0))
+                command += self.and_bct(
+                    self.big_vari(x[i], y[i + 1], -0))
                 self.setupKatanRound(
                     stp_file, x[i], xf[i], xa[i], x[i + 1], w[i], wordsize, i, offset, True
                 )
                 self.setupKatanRound(
-                    stp_file, y[i + 1], yf[i], ya[i], y[i + 2], w[i], wordsize, i, offset, True
+                    stp_file, y[i + 1], yf[i + 1], ya[i + 1], y[i + 2], w[i + 1], wordsize, i, offset, True
                 )
-                command += self.and_bct(
-                    self.small_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
-                command += self.and_bct(
-                    self.big_vari(x[i], y[i + 1], in_index_list, out_index_list, -0))
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
@@ -188,14 +174,21 @@ class katan32(AbstractCipher):
                 stpcommands.assertNonZero(stp_file, x, wordsize)
             else:
                 # use BCT
-                stpcommands.assertNonZero(
-                    stp_file, x[e0_start_search_num:e0_end_search_num], wordsize
-                )
-                stpcommands.assertNonZero(
-                    stp_file, y[e1_start_search_num:e1_end_search_num], wordsize
-                )
-                stpcommands.assertNonZero(stp_file, [x[0]], wordsize)
-                stpcommands.assertNonZero(stp_file, [y[rounds]], wordsize)
+                # stpcommands.assertNonZero(
+                #     stp_file, [x[0]], wordsize
+                # )
+                # stpcommands.assertNonZero(
+                #     stp_file, [y[rounds]], wordsize
+                # )
+                # stpcommands.assertNonZero(
+                #     stp_file, x[e0_start_search_num:e1_start_search_num], wordsize
+                # )
+                # stpcommands.assertNonZero(
+                #     stp_file, y[e1_start_search_num: e1_end_search_num], wordsize
+                # )
+
+                command += "ASSERT(BVGT({0},0bin00000000000000000000000000000000));\n".format(x[0])
+                command += "ASSERT(BVGT({0},0bin00000000000000000000000000000000));\n".format(y[rounds])
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -339,8 +332,6 @@ class katan32(AbstractCipher):
         save_str_2 = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, '0xF', '0xF', output_diff,
                                                             parameters["rounds"],
                                                             -parameters['sweight'], math.log2(prob))
-        print(save_str)
-        print(save_str_2)
 
     def get_diff_hex(self, parameters, characteristics):
         switch_start_round = parameters['switchStartRound']

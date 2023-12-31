@@ -316,7 +316,7 @@ def startSATsolver(stp_file):
                       "-cs", "3500",
                       "output_0.cnf"
                       ]
-        #subprocess.call(sat_params)
+        # subprocess.call(sat_params)
     sat_process = subprocess.Popen(sat_params, stderr=subprocess.PIPE,
                                    stdout=subprocess.PIPE)
     return sat_process
@@ -326,7 +326,7 @@ def solveSTP(stp_file):
     """
     Returns the solution for the given SMT problem using STP.
     """
-    stp_parameters = [PATH_STP, stp_file, "--CVC", "--threads", str(MULTI_THREADS)]
+    stp_parameters = [PATH_STP, "--cryptominisat", "--threads", str(MULTI_THREADS), "--CVC", stp_file, "--disable-simplifications"]
     result = subprocess.check_output(stp_parameters)
 
     return result.decode("utf-8")

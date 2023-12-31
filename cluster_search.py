@@ -62,19 +62,21 @@ def check_solutions(new_parameter, cipher, threshold, cluster_count):
                 for line in lines:
                     if "s SATISFIABLE" in line.decode("utf-8"):
                         solutions += 1
-            p = prob + math.pow(2, -new_parameter["sweight"] * 2) * (
-                    solutions / 2)
-            w = math.log2(p)
         if solutions > 0:
+            solutions /= 2
             print("\n\tSolutions: {}".format(solutions))
             new_p = math.pow(2, -new_parameter["sweight"] * 2) * solutions
             prob += new_p
             new_weight = int(math.log2(prob))
+            # if new_weight < -37:
+            #     break
             report_str = "boomerang weight: {0}, rectangle weight:{1}".format(-ori_w * 2,
                                                                               math.log2(prob))
             print(report_str)
             cipher.get_cluster_params(new_parameter, new_p, prob)
-
+        if prob > 1:
+            prob = 1
+            break
         new_parameter['sweight'] += 1
         # print("Cluster Searching Stage|Current Weight:{0}".format(new_weight))
         if new_weight == last_weight:
@@ -98,7 +100,11 @@ def find_single_trail(cipher, r, lunch_arg):
     each_round_max_time = int(lunch_arg['eachRoundMaxTime']) * 3600
     rnd_string_tmp = "%030x" % random.randrange(16 ** 30)
     stp_file = TEMP_DIC + "{0}-{1}-{2}.stp".format(cipher.name, rnd_string_tmp, r)
-    while valid_count <= each_round_max_valid and time.time() - task_start_time <= each_round_max_time:
+    detail_list = []
+    check_list = []
+    while valid_count < each_round_max_valid and time.time() - task_start_time < each_round_max_time:
+        if params['sweight'] >= lunch_arg['endweight']:
+            break
         cipher.createSTP(stp_file, params)
         if params["boolector"]:
             result = search.solveBoolector(stp_file)
@@ -122,32 +128,45 @@ def find_single_trail(cipher, r, lunch_arg):
         new_parameters["blockedCharacteristics"].clear()
         new_parameters["fixedVariables"].clear()
         cipher.create_cluster_parameters(new_parameters, characteristic)
-        prob = check_solutions(new_parameters, cipher, lunch_arg['threshold'], lunch_arg['cluster_count'])
+        if params['sweight'] == 0:
+            prob = 1
+        else:
+            prob = check_solutions(new_parameters, cipher, lunch_arg['threshold'], lunch_arg['cluster_count'])
         if prob > 0:
             rectangle_weight = math.log2(prob)
         else:
             rectangle_weight = -9999
-
         input_diff, switch_input, switch_output, output_diff = cipher.get_diff_hex(params, characteristic)
+
+        boomerang_weight = -params['sweight'] * 2
 
         save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff,
                                                                                                         output_diff,
-                                                                                                        -params[
-                                                                                                            'sweight'] * 2,
+                                                                                                        boomerang_weight,
                                                                                                         rectangle_weight)
 
-        result_file.write(save_str)
-        result_file.flush()
         save_str = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, switch_input, switch_output, output_diff,
                                                           params["rounds"],
-                                                          -params['sweight'], rectangle_weight)
-        result_list_file.write(save_str)
-        result_list_file.flush()
-        if rectangle_weight >= -params['wordsize']:
+                                                          boomerang_weight, rectangle_weight)
+
+        if rectangle_weight >= -params['validBound']:
             valid_count += 1
+            detail_list.append([rectangle_weight, save_str])
+            check_list.append([rectangle_weight, save_str])
         print("MAX PROB:{0}, INPUT:{1}, OUTPUT:{2}".format(rectangle_weight, input_diff, output_diff))
         # params["sweight"] += 1
         params["countered_trails"].append(characteristic)
+        print("Current trails:")
+        print(detail_list)
+
+    detail_list.sort(key=lambda x: x[0], reverse=True)
+    check_list.sort(key=lambda x: x[0], reverse=True)
+
+    result_file.writelines([i[1] for i in detail_list])
+    result_file.flush()
+
+    result_list_file.writelines([i[1] for i in check_list])
+    result_list_file.flush()
 
 
 def start_search(lunch_arg):

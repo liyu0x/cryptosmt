@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 import yaml
-from ciphers import katan32bct, simonbct, katan48bct
+from ciphers import katan32bct, simonbct, katan48bct, katan64bct
 import time
 import util
 import random
@@ -16,9 +16,11 @@ START_WEIGHT = {"simon32": {10: 13, 13: 24}}
 
 CIPHER_MAPPING = {"katan32BCT": katan32bct.katan32(),
                   "simon": simonbct.SimonCipher(),
-                  "katan48BCT": katan48bct.katan48()}
+                  "katan48BCT": katan48bct.katan48(),
+                  "katan64BCT": katan64bct.katan64()}
 
-RESULT_DIC = {'simon': "simon_result/", "katan32BCT": "katan32_result/", "katan48BCT": "katan48_result/"}
+RESULT_DIC = {'simon': "simon_result/", "katan32BCT": "katan32_result/", "katan48BCT": "katan48_result/",
+              "katan64BCT": "katan64_result/"}
 TEMP_DIC = "tmp/"
 
 

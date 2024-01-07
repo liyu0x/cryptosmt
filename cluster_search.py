@@ -94,8 +94,8 @@ def find_single_trail(cipher, r, lunch_arg):
     result_dic = RESULT_DIC[cipher.name]
     task_start_time = time.time()
     valid_count = 0
-    save_file = result_dic + "{0}-{1}--{2}.txt".format(cipher.name, r, flag)
-    save_list_file = result_dic + "{0}-{1}-{2}-LIST.txt".format(cipher.name, r, flag)
+    save_file = result_dic + "{0}-{1}.txt".format(cipher.name, r, flag)
+    save_list_file = result_dic + "{0}-{1}-LIST.txt".format(cipher.name, r, flag)
     result_file = open(save_file, "w+")
     result_list_file = open(save_list_file, 'w+')
     params = copy.deepcopy(lunch_arg)
@@ -183,10 +183,10 @@ def start_search(lunch_arg):
     params = copy.deepcopy(lunch_arg)
     for r in range(start_round, end_round):
         # SIMON
-        # switch_start_round = int(r / 2)
+        switch_start_round = int(r / 2)+1
 
         # Others
-        switch_start_round = int(r/2) - int(switch_rounds/2)
+        #switch_start_round = int(r/2) - int(switch_rounds/2)
         params['rounds'] = r
         params['switchStartRound'] = switch_start_round
         find_single_trail(cipher, r, params)

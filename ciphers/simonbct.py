@@ -117,13 +117,14 @@ class SimonCipher(AbstractCipher):
                                      and_out[i], w[i], wordsize)
             # Em
             # for i in range(em_start_search_num, em_end_search_num):
-            #     variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
-            #     command += self.and_bct(variable_arr, self.non_linear_part, 2)
+            # variable_arr = self.bct_vari(xl[em_start_search_num], yr[em_end_search_num], wordsize)
+            # command += self.and_bct(variable_arr)
+
             self.setupSimonRound(stp_file, xl[em_start_search_num], xr[em_start_search_num],
-                                 xl[em_start_search_num + 1], xr[em_start_search_num + 1],
+                                 xl[em_end_search_num], xr[em_end_search_num],
                                  and_out[em_start_search_num], w[em_start_search_num], wordsize, True)
-            variable_arr = self.bct_vari(xl[em_end_search_num], yl[em_end_search_num], wordsize)
-            command += self.and_bct(variable_arr, self.non_linear_part, 2)
+            variable_arr = self.bct_vari(xr[em_end_search_num], yr[em_end_search_num], wordsize)
+            command += self.and_bct(variable_arr)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
@@ -135,10 +136,12 @@ class SimonCipher(AbstractCipher):
                 if switch_start_round == -1:
                     stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
                 else:
-                    stpcommands.assertNonZero(stp_file, [xl[e0_start_search_num], xr[e0_start_search_num],
-                                                         ], wordsize)
-                    stpcommands.assertNonZero(stp_file, [yl[e1_end_search_num],
-                                                         yr[e1_end_search_num]], wordsize)
+                    stpcommands.assertNonZero(stp_file, xl[e0_start_search_num:em_start_search_num] + xr[
+                                                                                                      e0_start_search_num:em_start_search_num],
+                                              wordsize)
+                    stpcommands.assertNonZero(stp_file, yl[em_end_search_num:e1_end_search_num] + yr[
+                                                                                                  em_end_search_num:e1_end_search_num],
+                                              wordsize)
 
                     # Iterative characteristics only
                     # Input difference = Output difference
@@ -201,15 +204,11 @@ class SimonCipher(AbstractCipher):
         if not switch:
             # Weight computation
             command += "ASSERT({0} = (IF {1} = 0x{4} THEN BVSUB({5},0x{4},0x{6}1) \
-                ELSE BVXOR({2}, {3}) ENDIF));\n".format(
+                                ELSE BVXOR({2}, {3}) ENDIF));\n".format(
                 w, x_in, varibits, doublebits, "f" * (wordsize // 4),
                 wordsize, "0" * ((wordsize // 4) - 1))
-            # command += "ASSERT({0} = (IF {1} = 0x{4} THEN BVSUB({5},0x{4},0x{6}1) \
-            #                 ELSE BVXOR({2}, {3}) ENDIF));\n".format(
-            #     w, x_in, x_in_rotalpha, x_in_rotbeta, "f" * (wordsize // 4),
-            #     wordsize, "0" * ((wordsize // 4) - 1))
         else:
-            command += 'ASSERT({}=0x0000);\n'.format(w)
+            command += 'ASSERT({0}=0x{1});\n'.format(w, '0' * (wordsize // 4))
 
         stp_file.write(command)
         return
@@ -221,7 +220,7 @@ class SimonCipher(AbstractCipher):
             rotl(x_in, 2 * self.rot_alpha - self.rot_beta, wordsize))
         return command
 
-    def and_bct(self, variables_arr, non_part, input_size):
+    def and_bct(self, variables_arr):
         command = ""
         for varis in variables_arr:
             command += "ASSERT(BVXOR({0}&{1}, {2}&{3})=0bin0);\n".format(varis[0], varis[1], varis[2], varis[3])
@@ -231,6 +230,7 @@ class SimonCipher(AbstractCipher):
         if 'countered_trails' not in param:
             return ""
         characters = param["countered_trails"]
+        word_size = param['wordsize']
         command = ""
         if len(characters) > 0:
             r = param['rounds']
@@ -254,7 +254,7 @@ class SimonCipher(AbstractCipher):
                 command += str1
                 command += "&"
             command = command[:-1]
-            command += "=0x0000));\n"
+            command += "=0x{}));\n".format('0' * (word_size // 4))
         return command
 
     def create_cluster_parameters(self, new_parameters, characteristic):

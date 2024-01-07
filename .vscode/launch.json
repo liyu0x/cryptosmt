@@ -5,62 +5,38 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Katan32_cluster",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/cryptosmt-boomerang.py",
-            "args": ["--input", "./examples/boomerang/katan32_4.yaml"],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
             "name": "Katan32",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/cryptosmt-boomerang.py",
-            "args": ["--input", "./examples/boomerang/katan32.yaml"],
+            "program": "${workspaceFolder}/cluster_search.py",
+            "args": ["--input", "katan32.yml"],
             "console": "integratedTerminal",
             "justMyCode": true
         },
         {
-            "name": "Simon32",
+            "name": "Katan48",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/cryptosmt-boomerang.py",
-            "args": ["--input", "./examples/boomerang/simon.yaml"],
+            "program": "${workspaceFolder}/cluster_search.py",
+            "args": ["--input", "katan48.yml"],
             "console": "integratedTerminal",
             "justMyCode": true
         },
         {
-            "name": "Simon32_CLUSTER",
+            "name": "Katan64",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/cryptosmt-boomerang.py",
-            "args": ["--input", "./examples/boomerang/simon_4.yaml"],
+            "program": "${workspaceFolder}/cluster_search.py",
+            "args": ["--input", "katan64.yml"],
             "console": "integratedTerminal",
             "justMyCode": true
         },
         {
-            "name": "Katan32bct",
+            "name": "Simon",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/cryptosmt-boomerang.py",
-            "args": ["--input", "./examples/boomerang/katan32_bct.yaml"],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Katan32_strategy_A",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/search_mode_a.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },{
-            "name": "Katan32_strategy_B",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/search_mode_b.py",
+            "program": "${workspaceFolder}/cluster_search.py",
+            "args": ["--input", "simon.yml"],
             "console": "integratedTerminal",
             "justMyCode": true
         }

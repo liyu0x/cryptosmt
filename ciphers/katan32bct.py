@@ -174,12 +174,12 @@ class katan32(AbstractCipher):
                 stpcommands.assertNonZero(stp_file, x, wordsize)
             else:
                 # use BCT
-                # stpcommands.assertNonZero(
-                #     stp_file, [x[0]], wordsize
-                # )
-                # stpcommands.assertNonZero(
-                #     stp_file, [y[rounds]], wordsize
-                # )
+                stpcommands.assertNonZero(
+                    stp_file, [x[0]], wordsize
+                )
+                stpcommands.assertNonZero(
+                    stp_file, [y[rounds]], wordsize
+                )
                 # stpcommands.assertNonZero(
                 #     stp_file, x[e0_start_search_num:e1_start_search_num], wordsize
                 # )
@@ -187,8 +187,8 @@ class katan32(AbstractCipher):
                 #     stp_file, y[e1_start_search_num: e1_end_search_num], wordsize
                 # )
 
-                command += "ASSERT(BVGT({0},0bin00000000000000000000000000000000));\n".format(x[0])
-                command += "ASSERT(BVGT({0},0bin00000000000000000000000000000000));\n".format(y[rounds])
+                # command += "ASSERT(BVGT({0},0bin00000000000000000000000000000000));\n".format(x[0])
+                # command += "ASSERT(BVGT({0},0bin00000000000000000000000000000000));\n".format(y[rounds])
 
             # Iterative characteristics only
             # Input difference = Output difference

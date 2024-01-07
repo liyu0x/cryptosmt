@@ -116,9 +116,14 @@ class SimonCipher(AbstractCipher):
                 self.setupSimonRound(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1],
                                      and_out[i], w[i], wordsize)
             # Em
-            for i in range(em_start_search_num, em_end_search_num):
-                variable_arr = self.bct_vari(xl[i], yl[i + 1], wordsize)
-                command += self.and_bct(variable_arr, self.non_linear_part, 2)
+            # for i in range(em_start_search_num, em_end_search_num):
+            #     variable_arr = self.bct_vari(xl[i], yr[i + 1], wordsize)
+            #     command += self.and_bct(variable_arr, self.non_linear_part, 2)
+            self.setupSimonRound(stp_file, xl[em_start_search_num], xr[em_start_search_num],
+                                 xl[em_start_search_num + 1], xr[em_start_search_num + 1],
+                                 and_out[em_start_search_num], w[em_start_search_num], wordsize, True)
+            variable_arr = self.bct_vari(xl[em_end_search_num], yl[em_end_search_num], wordsize)
+            command += self.and_bct(variable_arr, self.non_linear_part, 2)
 
             # E1
             for i in range(e1_start_search_num, e1_end_search_num):
@@ -130,10 +135,6 @@ class SimonCipher(AbstractCipher):
                 if switch_start_round == -1:
                     stpcommands.assertNonZero(stp_file, xl + xr, wordsize)
                 else:
-                    # stpcommands.assertNonZero(stp_file, xl[e0_start_search_num], wordsize)
-                    # stpcommands.assertNonZero(stp_file, xr[e0_start_search_num], wordsize)
-                    # stpcommands.assertNonZero(stp_file, yl[em_start_search_num + 1:e1_end_search_num], wordsize)
-                    # stpcommands.assertNonZero(stp_file, yr[em_start_search_num + 1:e1_end_search_num], wordsize)
                     stpcommands.assertNonZero(stp_file, [xl[e0_start_search_num], xr[e0_start_search_num],
                                                          ], wordsize)
                     stpcommands.assertNonZero(stp_file, [yl[e1_end_search_num],
@@ -203,6 +204,10 @@ class SimonCipher(AbstractCipher):
                 ELSE BVXOR({2}, {3}) ENDIF));\n".format(
                 w, x_in, varibits, doublebits, "f" * (wordsize // 4),
                 wordsize, "0" * ((wordsize // 4) - 1))
+            # command += "ASSERT({0} = (IF {1} = 0x{4} THEN BVSUB({5},0x{4},0x{6}1) \
+            #                 ELSE BVXOR({2}, {3}) ENDIF));\n".format(
+            #     w, x_in, x_in_rotalpha, x_in_rotbeta, "f" * (wordsize // 4),
+            #     wordsize, "0" * ((wordsize // 4) - 1))
         else:
             command += 'ASSERT({}=0x0000);\n'.format(w)
 

@@ -4,10 +4,10 @@ endRound: -1
 switchRounds: 3
 threshold: 5
 eachRoundMaxTime: 24
-eachRoundMaxValid: 5
+eachRoundMaxValid: 1
 wordsize: 48
 sweight: 10
-endweight: 1000
+endweight: 100
 iterative: False
 boolector: False
 dot: None

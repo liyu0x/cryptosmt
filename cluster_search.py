@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 import yaml
-from ciphers import katan32bct, simonbct, katan48bct, katan64bct
+from ciphers import katan32bct, simonbct, katan48bct, katan64bct, sand, sand_diff_pattern
 import time
 import util
 import random
@@ -17,10 +17,13 @@ START_WEIGHT = {"simon32": {10: 13, 13: 24}}
 CIPHER_MAPPING = {"katan32BCT": katan32bct.katan32(),
                   "simon": simonbct.SimonCipher(),
                   "katan48BCT": katan48bct.katan48(),
-                  "katan64BCT": katan64bct.katan64()}
+                  "katan64BCT": katan64bct.katan64(),
+                  "sand": sand.Sand(),
+                  "sand2": sand_diff_pattern.Cipher()}
 
 RESULT_DIC = {'simon': "simon_result/", "katan32BCT": "katan32_result/", "katan48BCT": "katan48_result/",
-              "katan64BCT": "katan64_result/"}
+              "katan64BCT": "katan64_result/", 'sand': "sand_result/", 'sand2': "sand_diff/"}
+
 TEMP_DIC = "tmp/"
 
 
@@ -125,38 +128,39 @@ def find_single_trail(cipher, r, lunch_arg):
         characteristic = search.parsesolveroutput.getCharSTPOutput(result, cipher, params["rounds"])
 
         characteristic.printText()
-        # Cluster Search
-        new_parameters = copy.deepcopy(params)
+        if flag != -1:
+            # Cluster Search
+            new_parameters = copy.deepcopy(params)
 
-        new_parameters["blockedCharacteristics"].clear()
-        new_parameters["fixedVariables"].clear()
-        cipher.create_cluster_parameters(new_parameters, characteristic)
-        if params['sweight'] == 0:
-            prob = 1
-        else:
-            prob = check_solutions(new_parameters, cipher, lunch_arg['threshold'], lunch_arg['cluster_count'])
-        if prob > 0:
-            rectangle_weight = math.log2(prob)
-        else:
-            rectangle_weight = -9999
-        input_diff, switch_input, switch_output, output_diff = cipher.get_diff_hex(params, characteristic)
+            new_parameters["blockedCharacteristics"].clear()
+            new_parameters["fixedVariables"].clear()
+            cipher.create_cluster_parameters(new_parameters, characteristic)
+            if params['sweight'] == 0:
+                prob = 1
+            else:
+                prob = check_solutions(new_parameters, cipher, lunch_arg['threshold'], lunch_arg['cluster_count'])
+            if prob > 0:
+                rectangle_weight = math.log2(prob)
+            else:
+                rectangle_weight = -9999
+            input_diff, switch_input, switch_output, output_diff = cipher.get_diff_hex(params, characteristic)
 
-        boomerang_weight = -params['sweight'] * 2
+            boomerang_weight = -params['sweight'] * 2
 
-        save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff,
-                                                                                                        output_diff,
-                                                                                                        boomerang_weight,
-                                                                                                        rectangle_weight)
+            save_str = "inputDiff:{0}, outputDiff:{1}, boomerang weight:{2}, rectangle weight:{3}\n".format(input_diff,
+                                                                                                            output_diff,
+                                                                                                            boomerang_weight,
+                                                                                                            rectangle_weight)
 
-        save_str = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, switch_input, switch_output, output_diff,
-                                                          params["rounds"],
-                                                          boomerang_weight, rectangle_weight)
+            save_str = "{0},{1},{2},{3},{4},{5},{6}\n".format(input_diff, switch_input, switch_output, output_diff,
+                                                              params["rounds"],
+                                                              boomerang_weight, rectangle_weight)
 
-        if rectangle_weight >= -params['validBound']:
-            valid_count += 1
-            detail_list.append([rectangle_weight, save_str])
+            if rectangle_weight >= -params['validBound']:
+                valid_count += 1
+                detail_list.append([rectangle_weight, save_str])
             check_list.append([rectangle_weight, save_str])
-        print("MAX PROB:{0}, INPUT:{1}, OUTPUT:{2}".format(rectangle_weight, input_diff, output_diff))
+            print("MAX PROB:{0}, INPUT:{1}, OUTPUT:{2}".format(rectangle_weight, input_diff, output_diff))
         # params["sweight"] += 1
         params["countered_trails"].append(characteristic)
         print("Current trails:")
@@ -182,13 +186,17 @@ def start_search(lunch_arg):
     switch_rounds = lunch_arg['switchRounds']
     params = copy.deepcopy(lunch_arg)
     for r in range(start_round, end_round):
-        # SIMON
-        switch_start_round = int(r / 2)+1
+        if switch_rounds == -1:
+            params['switchStartRound'] = -1
+        else:
+            # SIMON
+            switch_start_round = int(r / 2) + 1
 
-        # Others
-        #switch_start_round = int(r/2) - int(switch_rounds/2)
+            # Others
+            # switch_start_round = int(r/2) - int(switch_rounds/2)
+
+            params['switchStartRound'] = switch_start_round
         params['rounds'] = r
-        params['switchStartRound'] = switch_start_round
         find_single_trail(cipher, r, params)
 
 

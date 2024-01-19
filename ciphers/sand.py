@@ -12,7 +12,7 @@ class Sand(AbstractCipher):
 
     def createSTP(self, filename, parameters):
         word_size = parameters["wordsize"]
-        rounds = parameters["rounds"] + 1
+        rounds = parameters["rounds"]
         weight = parameters["sweight"]
         switch_start_round = parameters["switchStartRound"]
         switch_rounds = parameters["switchRounds"]
@@ -31,9 +31,9 @@ class Sand(AbstractCipher):
                 stp_file)
 
             # loading init diff
-            self.pre_round(stp_file, xl[0], xr[0], xl[1], xr[1], block_size)
+            # self.pre_round(stp_file, xl[0], xr[0], xl[1], xr[1], block_size)
 
-            for i in range(1, rounds):
+            for i in range(0, rounds):
                 self.setup_round(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1], g0_rot[i], g0_and_f[i],
                                  g0_and_out[i], g0_xor_out[i], g1_rot[i], g1_and_f[i], g1_and_out[i],
                                  g1_xor_out[i], g12_xor_out[i], perm_out[i],
@@ -193,7 +193,7 @@ class Sand(AbstractCipher):
 
         command += "ASSERT({0} = BVPLUS({1},".format(ww, block_size) + ",".join(a_list) + "));\n"
 
-        command += "ASSERT({0}[{2}:{3}] = {1}[{2}:{3}]);\n".format(w, ww, 15, 0)
+        command += "ASSERT({0}[{2}:{3}] = {1}[{2}:{3}]);\n".format(w, ww, 31, 0)
 
         stp_file.write(command)
 
@@ -241,18 +241,18 @@ class Sand(AbstractCipher):
 def initial_file(rounds, block_size, weight, stp_file):
     xl = ["XL{}".format(i) for i in range(rounds + 1)]
     xr = ["XR{}".format(i) for i in range(rounds + 1)]
-    yl = ["YL{}".format(i) for i in range(rounds + 1)]
-    yr = ["YR{}".format(i) for i in range(rounds + 1)]
-    g0_rot = ["AROT{}".format(i) for i in range(rounds + 1)]
-    g0_and_f = ["AANDF{}".format(i) for i in range(rounds + 1)]
-    g0_and_out = ["AANDOUT{}".format(i) for i in range(rounds + 1)]
-    g0_xor_out = ["AXOROUT{}".format(i) for i in range(rounds + 1)]
-    g1_rot = ["BROT{}".format(i) for i in range(rounds + 1)]
-    g1_and_f = ["BANDF{}".format(i) for i in range(rounds + 1)]
-    g1_and_out = ["BANDOUT{}".format(i) for i in range(rounds + 1)]
-    g1_xor_out = ["BXOROUT{}".format(i) for i in range(rounds + 1)]
-    g12_xor_out = ["ABXOROUT{}".format(i) for i in range(rounds + 1)]
-    perm_out = ["POUT{}".format(i) for i in range(rounds + 1)]
+    yl = ["YL{}".format(i) for i in range(rounds)]
+    yr = ["YR{}".format(i) for i in range(rounds)]
+    g0_rot = ["AROT{}".format(i) for i in range(rounds)]
+    g0_and_f = ["AANDF{}".format(i) for i in range(rounds)]
+    g0_and_out = ["AANDOUT{}".format(i) for i in range(rounds)]
+    g0_xor_out = ["AXOROUT{}".format(i) for i in range(rounds)]
+    g1_rot = ["BROT{}".format(i) for i in range(rounds)]
+    g1_and_f = ["BANDF{}".format(i) for i in range(rounds)]
+    g1_and_out = ["BANDOUT{}".format(i) for i in range(rounds)]
+    g1_xor_out = ["BXOROUT{}".format(i) for i in range(rounds)]
+    g12_xor_out = ["ABXOROUT{}".format(i) for i in range(rounds)]
+    perm_out = ["POUT{}".format(i) for i in range(rounds)]
     w = ["w{}".format(i) for i in range(rounds)]
     ww = ["ww{}".format(i) for i in range(rounds)]
 
@@ -270,9 +270,9 @@ def initial_file(rounds, block_size, weight, stp_file):
     stpcommands.setupVariables(stp_file, g1_xor_out, block_size)
     stpcommands.setupVariables(stp_file, g12_xor_out, block_size)
     stpcommands.setupVariables(stp_file, perm_out, block_size)
-    stpcommands.setupVariables(stp_file, w, block_size // 2)
+    stpcommands.setupVariables(stp_file, w, block_size)
     stpcommands.setupVariables(stp_file, ww, block_size)
 
-    stpcommands.setupWeightComputation(stp_file, weight, w, block_size // 2)
+    stpcommands.setupWeightComputation(stp_file, weight, w, block_size)
 
     return xl, xr, yl, yr, g0_rot, g0_and_f, g0_and_out, g0_xor_out, g1_rot, g1_and_f, g1_and_out, g1_xor_out, g12_xor_out, perm_out, w, ww

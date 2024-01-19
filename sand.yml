@@ -1,7 +1,7 @@
 cipher: sand
 # ciphers' identifier
 
-startRound: 7
+startRound: 12
 # the rounds of starting searching
 endRound: -1
 # the last rounds of searching

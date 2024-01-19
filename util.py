@@ -8,16 +8,24 @@ def makedirs(dirs: list):
             os.makedirs(dir)
 
 
-def sand_t(n, rotation=0):
+def sand_t(n, rotation=0) -> list:
     if n % 4 != 0:
-        return
+        return []
     res = [[], [], [], []]
-    for i in range(n - 1, -1, -1):
+    for i in range(n):
         remainder = i % 4
         res[remainder].append(i)
-    res.reverse()
     res = np.reshape(res, (len(res), len(res[1])))
-
     if rotation > 0:
         res = np.roll(res, rotation, 1)
-    return res
+    return np.reshape(res, (1, len(res) * len(res[1]))).tolist()[0]
+
+
+def sand_rot(n, rotation=0) -> list:
+    if n % 4 != 0:
+        return []
+    res = [i for i in range(n)]
+    res = np.reshape(res, (4, n // 4))
+    if rotation > 0:
+        res = np.roll(res, rotation, 1)
+    return np.reshape(res, (1, len(res) * len(res[1]))).tolist()[0]

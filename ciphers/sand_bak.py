@@ -24,7 +24,7 @@ class Sand(AbstractCipher):
                                                                                    rounds))
             stp_file.write(header)
             command = ""
-            xl, xr, yl, yr, g0_rot, g0_xor_out, g1_rot, g1_xor_out, g12_xor_out, perm_out, w, and_out, and_f = initial_file(
+            xl, xr, yl, yr, g0_rot, g0_and_f, g0_and_out, g0_xor_out, g1_rot, g1_and_f, g1_and_out, g1_xor_out, g12_xor_out, perm_out, w, ww = initial_file(
                 rounds,
                 block_size,
                 weight,
@@ -34,10 +34,10 @@ class Sand(AbstractCipher):
             # self.pre_round(stp_file, xl[0], xr[0], xl[1], xr[1], block_size)
 
             for i in range(0, rounds):
-                self.setup_round(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1], g0_rot[i]
-                                 , g0_xor_out[i], g1_rot[i],
+                self.setup_round(stp_file, xl[i], xr[i], xl[i + 1], xr[i + 1], g0_rot[i], g0_and_f[i],
+                                 g0_and_out[i], g0_xor_out[i], g1_rot[i], g1_and_f[i], g1_and_out[i],
                                  g1_xor_out[i], g12_xor_out[i], perm_out[i],
-                                 w[i], and_out[i], and_f[i], block_size)
+                                 w[i], ww[i], block_size)
 
             command += self.pre_handle(parameters)
             stp_file.write(command)
@@ -55,8 +55,9 @@ class Sand(AbstractCipher):
             command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]);\n".format(out_right, i, in_right, re_sharp[i])
         stp_file.write(command)
 
-    def setup_round(self, stp_file, in_left, in_right, out_left, out_right, g0_rot, g0_xor_out, g1_rot,
-                    g1_xor_out, g12_xor_out, perm_out, w, and_out, and_f,
+    def setup_round(self, stp_file, in_left, in_right, out_left, out_right, g0_rot, g0_and_f, g0_and_out,
+                    g0_xor_out, g1_rot, g1_and_f, g1_and_out,
+                    g1_xor_out, g12_xor_out, perm_out, w, ww,
                     block_size, switch=False):
         """
         out_right = in_left
@@ -86,33 +87,31 @@ class Sand(AbstractCipher):
             command += "ASSERT({0}={1});\n".format(g0_rot, in_left)
 
         for i in range(block_size // 4):
-            # G0 use 0th and 1st of and_out and and_f
-
             # y{0} = x{3} and x{2} xor x{0}
-            command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]|{4}[{5}:{5}]);\n".format(and_f, i, g0_rot,
+            command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]|{4}[{5}:{5}]);\n".format(g0_and_f, i, g0_rot,
                                                                                   3 * group_size + i,
                                                                                   g0_rot, 2 * group_size + i)
 
-            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(and_out, i, and_f,
+            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(g0_and_out, i, g0_and_f,
                                                                             i)
 
             command += ("ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],{4}[{5}:{5}]));\n"
                         .format(g0_xor_out, 0 * group_size + i,
-                                and_out, i,
+                                g0_and_out, i,
                                 g0_rot, 0 * group_size + i))
 
             # y{3} = y{0} and x{1} xor x{3}
-            command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]|{4}[{5}:{5}]);\n".format(and_f, group_size + i,
+            command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]|{4}[{5}:{5}]);\n".format(g0_and_f, group_size + i,
                                                                                   g0_xor_out,
                                                                                   0 * group_size + i,
                                                                                   g0_rot, 1 * group_size + i)
 
-            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(and_out, group_size + i, and_f,
+            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(g0_and_out, group_size + i, g0_and_f,
                                                                             group_size + i)
 
             command += ("ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],{4}[{5}:{5}]));\n"
                         .format(g0_xor_out, 3 * group_size + i,
-                                and_out, group_size + i,
+                                g0_and_out, group_size + i,
                                 g0_rot, 3 * group_size + i))
 
             # y{2} = x{2}
@@ -135,40 +134,31 @@ class Sand(AbstractCipher):
         # G_1
         for i in range(block_size // 4):
             # y{2} = x{3} and x{1} xor x{2}
-            command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]|{4}[{5}:{5}]);\n".format(
-                and_f, 2 * group_size + i,
-                g1_rot, 3 * group_size + i,
-                g1_rot, 1 * group_size + i
-            )
+            command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]|{4}[{5}:{5}]);\n".format(g1_and_f, i, g1_rot,
+                                                                                  3 * group_size + i,
+                                                                                  g1_rot, 1 * group_size + i)
 
-            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(
-                and_out, 2 * group_size + i,
-                and_f, 2 * group_size + i
-            )
+            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(g1_and_out, i, g1_and_f,
+                                                                            i)
 
-            command += "ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],{4}[{5}:{5}]));\n".format(
-                g1_xor_out, 2 * group_size + i,
-                and_out, 2 * group_size + i,
-                g1_rot, 2 * group_size + i
-            )
+            command += ("ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],{4}[{5}:{5}]));\n"
+                        .format(g1_xor_out, 2 * group_size + i,
+                                g1_and_out, i,
+                                g1_rot, 2 * group_size + i))
 
             # y{1} = y{2} and x{0} xor x{1}
-            command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]|{4}[{5}:{5}]);\n".format(
-                and_f, 3 * group_size + i,
-                g1_xor_out, 2 * group_size + i,
-                g1_rot, 0 * group_size + i
-            )
+            command += "ASSERT({0}[{1}:{1}]={2}[{3}:{3}]|{4}[{5}:{5}]);\n".format(g1_and_f, group_size + i,
+                                                                                  g1_xor_out,
+                                                                                  2 * group_size + i,
+                                                                                  g1_rot, 0 * group_size + i)
 
-            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(
-                and_out, 3 * group_size + i,
-                and_f, 3 * group_size + i
-            )
+            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(g1_and_out, group_size + i, g1_and_f,
+                                                                            group_size + i)
 
-            command += "ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],{4}[{5}:{5}]));\n".format(
-                g1_xor_out, 1 * group_size + i,
-                and_out, 3 * group_size + i,
-                g1_rot, 1 * group_size + i
-            )
+            command += ("ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],{4}[{5}:{5}]));\n"
+                        .format(g1_xor_out, 1 * group_size + i,
+                                g1_and_out, group_size + i,
+                                g1_rot, 1 * group_size + i))
 
             # y{3} = x{3}
             command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(g1_xor_out, 3 * group_size + i
@@ -194,11 +184,16 @@ class Sand(AbstractCipher):
         # command += sum_w_i
 
         a_list = []
-        for i in range(block_size):
-            t = '0bin' + '0' * 31 + "@{0}[{1}:{1}]".format(and_f, i)
+        for i in range(block_size // 2):
+            t = '0bin' + '0' * 31 + "@{0}[{1}:{1}]".format(g0_and_f, i)
+            a_list.append(t)
+            t = '0bin' + '0' * 31 + "@{0}[{1}:{1}]".format(g1_and_f, i)
             a_list.append(t)
 
-        command += "ASSERT({0} = BVPLUS({1},".format(w, block_size) + ",".join(a_list) + "));\n"
+        command += "ASSERT({0} = BVPLUS({1},".format(ww, block_size) + ",".join(a_list) + "));\n"
+
+        command += "ASSERT({0} = {1});\n".format(w, ww)
+        command += "ASSERT({0} = {1});\n".format(ww, w)
 
         stp_file.write(command)
 
@@ -240,7 +235,7 @@ class Sand(AbstractCipher):
         return command
 
     def getFormatString(self):
-        return ['XL', 'XR', 'ANDF', 'w']
+        return ['XL', 'XR', 'AXOROUT', 'BXOROUT', 'ABXOROUT', 'POUT', 'AROT', 'BROT', 'AANDF', 'BANDF', 'ww', 'w']
 
 
 def initial_file(rounds, block_size, weight, stp_file):
@@ -249,27 +244,34 @@ def initial_file(rounds, block_size, weight, stp_file):
     yl = ["YL{}".format(i) for i in range(rounds)]
     yr = ["YR{}".format(i) for i in range(rounds)]
     g0_rot = ["AROT{}".format(i) for i in range(rounds)]
+    g0_and_f = ["AANDF{}".format(i) for i in range(rounds)]
+    g0_and_out = ["AANDOUT{}".format(i) for i in range(rounds)]
     g0_xor_out = ["AXOROUT{}".format(i) for i in range(rounds)]
     g1_rot = ["BROT{}".format(i) for i in range(rounds)]
+    g1_and_f = ["BANDF{}".format(i) for i in range(rounds)]
+    g1_and_out = ["BANDOUT{}".format(i) for i in range(rounds)]
     g1_xor_out = ["BXOROUT{}".format(i) for i in range(rounds)]
     g12_xor_out = ["ABXOROUT{}".format(i) for i in range(rounds)]
     perm_out = ["POUT{}".format(i) for i in range(rounds)]
-    and_f = ["ANDF{}".format(i) for i in range(rounds)]
-    and_out = ["ANDOUT{}".format(i) for i in range(rounds)]
     w = ["w{}".format(i) for i in range(rounds)]
+    ww = ["ww{}".format(i) for i in range(rounds)]
 
     stpcommands.setupVariables(stp_file, xl, block_size)
     stpcommands.setupVariables(stp_file, xr, block_size)
     stpcommands.setupVariables(stp_file, yl, block_size)
     stpcommands.setupVariables(stp_file, yr, block_size)
     stpcommands.setupVariables(stp_file, g0_rot, block_size)
+    stpcommands.setupVariables(stp_file, g0_and_out, block_size // 2)
+    stpcommands.setupVariables(stp_file, g0_and_f, block_size // 2)
     stpcommands.setupVariables(stp_file, g0_xor_out, block_size)
     stpcommands.setupVariables(stp_file, g1_rot, block_size)
+    stpcommands.setupVariables(stp_file, g1_and_f, block_size // 2)
+    stpcommands.setupVariables(stp_file, g1_and_out, block_size // 2)
     stpcommands.setupVariables(stp_file, g1_xor_out, block_size)
     stpcommands.setupVariables(stp_file, g12_xor_out, block_size)
     stpcommands.setupVariables(stp_file, perm_out, block_size)
     stpcommands.setupVariables(stp_file, w, block_size)
-    stpcommands.setupVariables(stp_file, and_out, block_size)
-    stpcommands.setupVariables(stp_file, and_f, block_size)
+    stpcommands.setupVariables(stp_file, ww, block_size)
     stpcommands.setupWeightComputation(stp_file, weight, w, block_size)
-    return xl, xr, yl, yr, g0_rot, g0_xor_out, g1_rot, g1_xor_out, g12_xor_out, perm_out, w, and_out, and_f
+    return (xl, xr, yl, yr, g0_rot, g0_and_f, g0_and_out, g0_xor_out, g1_rot, g1_and_f, g1_and_out, g1_xor_out
+            , g12_xor_out, perm_out, w, ww)

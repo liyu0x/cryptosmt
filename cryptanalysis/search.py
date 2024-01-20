@@ -326,7 +326,12 @@ def solveSTP(stp_file):
     """
     Returns the solution for the given SMT problem using STP.
     """
-    stp_parameters = [PATH_STP, "--cryptominisat", "--threads", str(MULTI_THREADS), "--CVC", stp_file, "--disable-simplifications"]
+    stp_parameters = [PATH_STP,
+                      "--cryptominisat",
+                      "--threads", str(MULTI_THREADS),
+                      "--CVC", stp_file,
+                      "--disable-simplifications",
+                      ]
     result = subprocess.check_output(stp_parameters)
 
     return result.decode("utf-8")

@@ -161,6 +161,8 @@ def find_single_trail(cipher, r, lunch_arg):
                 detail_list.append([rectangle_weight, save_str])
             check_list.append([rectangle_weight, save_str])
             print("MAX PROB:{0}, INPUT:{1}, OUTPUT:{2}".format(rectangle_weight, input_diff, output_diff))
+        else:
+            valid_count += 1
         # params["sweight"] += 1
         params["countered_trails"].append(characteristic)
         print("Current trails:")

@@ -93,8 +93,8 @@ class Sand(AbstractCipher):
                                                                                   3 * group_size + i,
                                                                                   g0_rot, 2 * group_size + i)
 
-            # command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(and_out, i, and_f,
-            #                                                                 i)
+            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(and_out, i, and_f,
+                                                                            i)
 
             command += ("ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],{4}[{5}:{5}]));\n"
                         .format(g0_xor_out, 0 * group_size + i,
@@ -107,8 +107,8 @@ class Sand(AbstractCipher):
                                                                                   0 * group_size + i,
                                                                                   g0_rot, 1 * group_size + i)
 
-            # command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(and_out, group_size + i, and_f,
-            #                                                                 group_size + i)
+            command += "ASSERT(BVLE({0}[{1}:{1}], {2}[{3}:{3}]));\n".format(and_out, group_size + i, and_f,
+                                                                            group_size + i)
 
             command += ("ASSERT({0}[{1}:{1}] = BVXOR({2}[{3}:{3}],{4}[{5}:{5}]));\n"
                         .format(g0_xor_out, 3 * group_size + i,
@@ -185,21 +185,10 @@ class Sand(AbstractCipher):
         if block_size == 32:
             for i in range(block_size // 8):
                 for j, k in enumerate([7, 4, 1, 6, 3, 0, 5, 2]):
-                    command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(perm_out, i * 8 + j,
-                                                                               g12_xor_out, i * 8 + k)
+                    command += "ASSERT({0}[{1}:{1}] = {2}[{3}:{3}]);\n".format(perm_out, i * 8 + k,
+                                                                               g12_xor_out, i * 8 + j)
 
-        command += ("ASSERT({0} = BVXOR({1},{2}));\n".format(out_left, in_right, g12_xor_out))
-
-        # sum_w_i = stpcommands.getWeightString([g0_and_f, g1_and_f], block_size, 0, w)
-        # sum_w_i += '\n'
-        # command += sum_w_i
-
-        a_list = []
-        for i in range(block_size):
-            t = '0bin' + '0' * 31 + "@{0}[{1}:{1}]".format(and_f, i)
-            a_list.append(t)
-
-        # command += "ASSERT({0} = BVPLUS({1},".format(w, block_size) + ",".join(a_list) + "));\n"
+        command += ("ASSERT({0} = BVXOR({1},{2}));\n".format(out_left, in_right, perm_out))
 
         command += "ASSERT({0}={1});\n".format(w, and_f)
         stp_file.write(command)
@@ -242,7 +231,7 @@ class Sand(AbstractCipher):
         return command
 
     def getFormatString(self):
-        return ['XL', 'XR', 'AROT', 'AXOROUT', 'BROT', 'BXOROUT', 'POUT', 'ABXOROUT', 'ANDF', 'w']
+        return ['XL', 'XR', 'AROT', 'AXOROUT', 'BROT', 'BXOROUT', 'ABXOROUT', 'POUT', 'ANDF', 'w']
 
 
 def initial_file(rounds, block_size, weight, stp_file):

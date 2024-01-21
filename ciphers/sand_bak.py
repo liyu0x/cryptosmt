@@ -24,7 +24,7 @@ class Sand(AbstractCipher):
                                                                                    rounds))
             stp_file.write(header)
             command = ""
-            xl, xr, yl, yr, g0_rot, g0_and_f, g0_and_out, g0_xor_out, g1_rot, g1_and_f, g1_and_out, g1_xor_out, g12_xor_out, perm_out, w, ww = initial_file(
+            xl, xr, yl, yr, g0_rot, g0_and_f, g0_and_out, g0_xor_out, g1_rot, g1_and_f, g1_and_out, g1_xor_out, g12_xor_out, perm_out, w = initial_file(
                 rounds,
                 block_size,
                 weight,
@@ -254,7 +254,6 @@ def initial_file(rounds, block_size, weight, stp_file):
     g12_xor_out = ["ABXOROUT{}".format(i) for i in range(rounds)]
     perm_out = ["POUT{}".format(i) for i in range(rounds)]
     w = ["w{}".format(i) for i in range(rounds)]
-    ww = ["ww{}".format(i) for i in range(rounds)]
 
     stpcommands.setupVariables(stp_file, xl, block_size)
     stpcommands.setupVariables(stp_file, xr, block_size)
@@ -271,7 +270,7 @@ def initial_file(rounds, block_size, weight, stp_file):
     stpcommands.setupVariables(stp_file, g12_xor_out, block_size)
     stpcommands.setupVariables(stp_file, perm_out, block_size)
     stpcommands.setupVariables(stp_file, w, block_size)
-    stpcommands.setupVariables(stp_file, ww, block_size)
-    stpcommands.setupWeightComputation(stp_file, weight, w, block_size)
+    # stpcommands.setupWeightComputation(stp_file, weight, w, block_size)
+    stpcommands.setupWeightComputationSum(stp_file, weight, w, block_size)
     return (xl, xr, yl, yr, g0_rot, g0_and_f, g0_and_out, g0_xor_out, g1_rot, g1_and_f, g1_and_out, g1_xor_out
-            , g12_xor_out, perm_out, w, ww)
+            , g12_xor_out, perm_out, w)

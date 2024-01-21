@@ -15,7 +15,7 @@ threshold: 10
 eachRoundMaxTime: 24
 # the max searching time in each round with all weights.
 
-eachRoundMaxValid: 5
+eachRoundMaxValid: 1
 # the max results in each round with all weights.
 
 wordsize: 64
@@ -40,7 +40,7 @@ offset: 0
 cluster_count: 10
 countered_trails: [ ]
 #fixedVariables:
-#  - XL0: "0hex09000890"
-#  - XR0: "0hex88880230"
+#  - XL0: "0hex20000000"
+#  - XR0: "0hex20000002"
 #  - XL7: "0hex88890000"
 #  - XR7: "0hex08000880"

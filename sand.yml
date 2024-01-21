@@ -26,7 +26,7 @@ validBound: 64
 sweight: 0
 # start searching weight.
 
-endweight: 100
+endweight: 10000
 # end searching weight.
 
 iterative: False

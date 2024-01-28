@@ -41,7 +41,7 @@ class Sand(AbstractCipher):
 
             command += self.pre_handle(parameters)
             stp_file.write(command)
-            stpcommands.assertNonZero(stp_file, [xl[0]], block_size)
+            stpcommands.assertNonZero(stp_file, xl + xr, block_size)
 
             for key, value in parameters["fixedVariables"].items():
                 stpcommands.assertVariableValue(stp_file, key, value)

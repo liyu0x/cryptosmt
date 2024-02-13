@@ -33,6 +33,16 @@ def sand_rot(n, rotation=0) -> list:
     return np.reshape(res, (1, len(res) * len(res[1]))).tolist()[0]
 
 
+def sand_rot_nibble(n, rotation=0) -> list:
+    if n % 4 != 0:
+        return []
+    res = [i for i in range(n)]
+    res = np.reshape(res, (4, n // 4))
+    if rotation > 0:
+        res = np.roll(res, rotation, 1)
+    return res
+
+
 def reverse_p_box():
     h = 0x84000000
     bins = bin(h)[2:].zfill(32)
@@ -51,4 +61,4 @@ def reverse_p_box():
     r = [str(i) for i in r]
     print(hex(int("".join(r), 2)))
 
-reverse_p_box()
+# reverse_p_box()

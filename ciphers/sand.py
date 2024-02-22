@@ -86,32 +86,45 @@ class Sand(AbstractCipher):
 
         nibble = block_size // 4
         x0_index = util.sand_rot_nibble(block_size, self.alpha)
+        command = ""
         # in G0   x{3} AND x{2}
-
         x0_3 = x0_index[3]
         x0_2 = x0_index[2]
 
-        command = ""
         for i in range(nibble):
-            command += "ASSERT({0}[{1}:{1}]&{2}[{3}:{3}]={4}[{5}:{5}]&{6}[{7}:{7}]);\n".format(
-                xl, x0_2[i],
-                yr, x0_3[i],
-                xl, x0_3[i],
-                yr, x0_2[i]
+            command += "ASSERT({0}[{2}:{2}]&{1}[{3}:{3}]={1}[{2}:{2}]&{0}[{3}:{3}]);\n".format(
+                xl, yr, x0_3[i], x0_2[i]
+            )
+
+        #  (x{3} AND x{2} XOR x{0}) AND x{1}
+        x0_0 = x0_index[0]
+        x0_1 = x0_index[1]
+
+        for i in range(nibble):
+            command += ("ASSERT(BVXOR({0}[{2}:{2}]&{0}[{3}:{3}], {0}[{4}:{4}])&{1}[{5}:{5}]="
+                        "BVXOR({1}[{2}:{2}]&{1}[{3}:{3}], {1}[{4}:{4}])&{0}[{5}:{5}]);\n").format(
+                xl, yr, x0_3[i], x0_2[i], x0_0[i], x0_1[i],
+
             )
 
         # in G1   x{1} AND x{3}
-
         x1_index = util.sand_rot_nibble(block_size, self.beta)
         x1_3 = x1_index[3]
-        x1_1 = x1_index[2]
+        x1_1 = x1_index[1]
 
         for i in range(nibble):
-            command += "ASSERT({0}[{1}:{1}]&{2}[{3}:{3}]={4}[{5}:{5}]&{6}[{7}:{7}]);\n".format(
-                xl, x1_3[i],
-                yr, x1_1[i],
-                xl, x1_1[i],
-                yr, x1_3[i]
+            command += "ASSERT({0}[{2}:{2}]&{1}[{3}:{3}]={1}[{2}:{2}]&{0}[{3}:{3}]);\n".format(
+                xl, yr, x1_3[i], x1_1[i])
+
+        x1_2 = x1_index[2]
+        x1_0 = x1_index[0]
+
+        #  (x{3} AND x{1} XOR x{2}) AND x{0}
+        for i in range(nibble):
+            command += ("ASSERT(BVXOR({0}[{2}:{2}]&{0}[{3}:{3}], {0}[{4}:{4}])&{1}[{5}:{5}]="
+                        "BVXOR({1}[{2}:{2}]&{1}[{3}:{3}], {1}[{4}:{4}])&{0}[{5}:{5}]);\n").format(
+                xl, yr, x1_3[i], x1_1[i], x1_2[i], x1_0[i]
+
             )
 
         stp_file.write(command)

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 import yaml
-from ciphers import katan32bct, simonbct, katan48bct, katan64bct, sand, sand_diff_pattern
+from ciphers import katan32bct, simonbct, katan48bct, katan64bct, sand_sbox
 import time
 import util
 import random
@@ -18,8 +18,7 @@ CIPHER_MAPPING = {"katan32BCT": katan32bct.katan32(),
                   "simon": simonbct.SimonCipher(),
                   "katan48BCT": katan48bct.katan48(),
                   "katan64BCT": katan64bct.katan64(),
-                  "sand": sand.Sand(),
-                  "sand2": sand_diff_pattern.Cipher()}
+                  "sand": sand_sbox.Sand()}
 
 RESULT_DIC = {'simon': "simon_result/", "katan32BCT": "katan32_result/", "katan48BCT": "katan48_result/",
               "katan64BCT": "katan64_result/", 'sand': "sand_result/", 'sand2': "sand_diff/"}

@@ -1,7 +1,7 @@
-cipher: sand
+cipher: sand2
 # ciphers' identifier
 
-startRound: 1
+startRound: 5
 # the rounds of starting searching
 endRound: -1
 # the last rounds of searching
@@ -18,7 +18,7 @@ eachRoundMaxTime: 24
 eachRoundMaxValid: 1
 # the max results in each round with all weights.
 
-wordsize: 64
+wordsize: 32
 # cipher's word size
 
 validBound: 64

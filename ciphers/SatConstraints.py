@@ -3,14 +3,16 @@ Created on Jan 1, 2019
 @author: Shawn
 '''
 
+
 def PatternXorAssert(x, y, z, L):
     command = ""
-    command += "ASSERT(BVXOR({0} & {1} & {2}, BVXOR({0}, BVXOR({1}, {2}))) = 0bin{3});\n".format(
-            x,
-            y,
-            z,
-            "0" * L
-    )
+    # command += "ASSERT(BVXOR({0} & {1} & {2}, BVXOR({0}, BVXOR({1}, {2}))) = 0bin{3});\n".format(
+    #         x,
+    #         y,
+    #         z,
+    #         "0" * L
+    # )
+    command += "ASSERT({0}=BVXOR({1},{2}));\n".format(x, y, z)
     return command
 
 
@@ -53,6 +55,7 @@ def Return_Bin_String(x, x_len):
 
 def XorTwoAssert(x0, x1):
     return "BVXOR({}, {})".format(x0, x1)
+
 
 def ListAssert(k_list):
     L = len(k_list)

@@ -22,6 +22,7 @@ class Sand(AbstractCipher):
         weight = parameters["sweight"]
         switch_start_round = parameters["switchStartRound"]
         switch_rounds = parameters["switchRounds"]
+        block_size = word_size // 2
 
         e0_start_search_num = 0
         e0_end_search_num = rounds if switch_start_round == -1 else switch_start_round
@@ -36,9 +37,9 @@ class Sand(AbstractCipher):
 
         block_size = word_size // 2
 
-        if word_size == 32:
+        if block_size == 32:
             self.PERM = [7, 4, 1, 6, 3, 0, 5, 2]
-        elif word_size == 64:
+        elif block_size == 64:
             self.PERM = [14, 15, 8, 9, 2, 3, 12, 13, 6, 7, 0, 1, 10, 11, 4, 5]
 
         with open(filename, 'w') as stp_file:
@@ -56,7 +57,7 @@ class Sand(AbstractCipher):
                                  variables["in_left"][i + 1], variables["in_right"][i + 1],
                                  variables["g0_rot"][i], variables["g0_box_out"][i],
                                  variables["g1_rot"][i], variables["g1_box_out"][i],
-                                 variables["g01_xor_out"][i], variables["perm_out"][i], variables["w"][i], word_size)
+                                 variables["g01_xor_out"][i], variables["perm_out"][i], variables["w"][i], block_size)
             # BCT
             # for i in range(em_start_search_num, em_end_search_num):
             #     self.bct_operator(stp_file, xl[i], yr[i + 1], g0_rot[i]
@@ -72,7 +73,7 @@ class Sand(AbstractCipher):
 
             command += self.pre_handle(parameters)
             stp_file.write(command)
-            # stpcommands.assertNonZero(stp_file, [variables["in_left"][0], variables["in_right"][0]], block_size)
+            stpcommands.assertNonZero(stp_file, [variables["in_left"][0], variables["in_right"][0]], block_size)
             if switch_rounds > 0:
                 stpcommands.assertNonZero(stp_file, [variables["in_left"][rounds], variables["in_right"][rounds]],
                                           block_size)
@@ -160,9 +161,10 @@ class Sand(AbstractCipher):
 
         for i in range(group_size):
             # consist of 8 s_box
-
-            indexes = [i, group_size + i, 2 * group_size + i, 3 * group_size + i]
-            # command += add4bitSbox(g0_box_trails, g0_rot, g0_box_out, w, indexes)
+            indexes = [i, group_size + i, 2 * group_size + i, 3 * group_size + i,
+                       i, group_size + i, 2 * group_size + i, 3 * group_size + i,
+                       i, group_size + i, 2 * group_size + i, 3 * group_size + i]
+            command += add4bitSbox(g0_box_trails, g0_rot, g0_box_out, w, indexes)
 
         # G_1
         g1_rot_index = util.sand_rot(block_size, self.beta)
@@ -175,8 +177,11 @@ class Sand(AbstractCipher):
 
         # G_1
         for i in range(group_size):
-            indexes = [i, group_size + i, 2 * group_size + i, 3 * group_size + i]
-            # command += add4bitSbox(g1_box_trails, g1_rot, g1_box_out, w, indexes)
+            indexes = [32 + i, 32 + group_size + i, 32 + 2 * group_size + i, 32 + 3 * group_size + i,
+                       i, group_size + i, 2 * group_size + i, 3 * group_size + i,
+                       i, group_size + i, 2 * group_size + i, 3 * group_size + i,
+                       ]
+            command += add4bitSbox(g1_box_trails, g1_rot, g1_box_out, w, indexes)
 
         # G1 xor G2
         command += "ASSERT({0} = BVXOR({1},{2}));\n".format(g01_xor_out, g0_box_out, g1_box_out)
@@ -272,7 +277,7 @@ class Sand(AbstractCipher):
         return command
 
     def getFormatString(self):
-        return ['XL', 'XR', 'YL', 'YR', 'AROT', 'AXOROUT', 'BROT', 'BXOROUT', 'ABXOROUT', 'POUT', 'ANDF', 'w']
+        return ['XL', 'XR', 'YL', 'YR', 'AROT', 'ABOXOUT', 'BROT', 'BBOXOUT', 'ABXOROUT', 'POUT', 'w']
 
 
 def initial_file(rounds, block_size, weight, stp_file):
@@ -298,10 +303,28 @@ def initial_file(rounds, block_size, weight, stp_file):
     stpcommands.setupVariables(stp_file, g1_box_out, block_size)
     stpcommands.setupVariables(stp_file, g01_xor_out, block_size)
     stpcommands.setupVariables(stp_file, perm_out, block_size)
-    stpcommands.setupVariables(stp_file, w, block_size)
-    stpcommands.setupWeightComputation(stp_file, weight, w, block_size)
+    stpcommands.setupVariables(stp_file, w, block_size * 2)
+    stpcommands.setupWeightComputation(stp_file, weight, w, block_size * 2)
+    # setupWeightComputationSum(stp_file, weight, w, block_size)
     return {"in_left": xl, "in_right": xr, "out_left": yl, "out_right": yr, "g0_rot": g0_rot, "g0_box_out": g0_box_out,
             "g1_rot": g1_rot, "g1_box_out": g1_box_out, "perm_out": perm_out, "w": w, "g01_xor_out": g01_xor_out}
+
+
+def setupWeightComputationSum(stpfile, weight, p, wordsize, ignoreMSBs=0):
+    """
+    Assert that weight is equal to the sum of p.
+    """
+    stpfile.write("weight: BITVECTOR(16);\n")
+    round_sum = ""
+    for w in p:
+        round_sum += w + ","
+    if len(p) > 1:
+        stpfile.write("ASSERT(weight = BVPLUS({},{}));\n".format(16, round_sum[:-1]))
+    else:
+        stpfile.write("ASSERT(weight = {});\n".format(round_sum[:-1]))
+
+    stpfile.write("ASSERT(weight = {0:#018b});\n".format(weight))
+    return
 
 
 def get_valid_from_s_box(s_box):
@@ -359,46 +382,46 @@ def add4bitSbox(s_box_trails, left_in, s_out, w, indexes):
     w ... hamming weight from the DDT table
     """
 
-    variables = ["{0}[{1}:{1}]".format(left_in, indexes[3]),
-                 "{0}[{1}:{1}]".format(left_in, indexes[2]),
-                 "{0}[{1}:{1}]".format(left_in, indexes[1]),
-                 "{0}[{1}:{1}]".format(left_in, indexes[0]),
-                 "{0}[{1}:{1}]".format(s_out, indexes[3]),
-                 "{0}[{1}:{1}]".format(s_out, indexes[2]),
-                 "{0}[{1}:{1}]".format(s_out, indexes[1]),
-                 "{0}[{1}:{1}]".format(s_out, indexes[0]),
+    variables = ["{0}[{1}:{1}]".format(left_in, indexes[11]),
+                 "{0}[{1}:{1}]".format(left_in, indexes[10]),
+                 "{0}[{1}:{1}]".format(left_in, indexes[9]),
+                 "{0}[{1}:{1}]".format(left_in, indexes[8]),
+                 "{0}[{1}:{1}]".format(s_out, indexes[7]),
+                 "{0}[{1}:{1}]".format(s_out, indexes[6]),
+                 "{0}[{1}:{1}]".format(s_out, indexes[5]),
+                 "{0}[{1}:{1}]".format(s_out, indexes[4]),
                  "{0}[{1}:{1}]".format(w, indexes[3]),
                  "{0}[{1}:{1}]".format(w, indexes[2]),
                  "{0}[{1}:{1}]".format(w, indexes[1]),
                  "{0}[{1}:{1}]".format(w, indexes[0])]
 
-    cnf = []
-    for valid_trail in s_box_trails:
-        c = []
-        for i in range(len(variables)):
-            # c.append("({}=0bin{})".format(variables[i], valid_trail[i]))
-            c.append("BVXOR({0},0bin{1})".format(variables[i], valid_trail[i]))
-        # cnf.append("(" + "&".join(c) + ")")
-        cnf.append("&".join(c))
-        # cnf.append("(" + "&".join(c) + ")")
-        break
-
-    conditions = "|".join(cnf)
-
-    command = "ASSERT({0}=0bin1);\n".format(conditions)
-
-    return command
-
-    # # Build CNF from invalid trails
-    # cnf = ""
-    # for prod in itertools.product([0, 1], repeat=len(s_box_trails[0])):
-    #     # Trail is not valid
-    #     if list(prod) not in s_box_trails:
-    #         expr = ["~" if x == 1 else "" for x in list(prod)]
-    #         clause = ""
-    #         for literal in range(12):
-    #             clause += "{0}{1} | ".format(expr[literal], variables[literal])
+    # cnf = []
+    # for valid_trail in s_box_trails:
+    #     c = []
+    #     for i in range(len(variables)):
+    #         # c.append("({}=0bin{})".format(variables[i], valid_trail[i]))
+    #         c.append("BVXOR({0},0bin{1})".format(variables[i], valid_trail[i]))
+    #     # cnf.append("(" + "&".join(c) + ")")
+    #     cnf.append("&".join(c))
+    #     # cnf.append("(" + "&".join(c) + ")")
+    #     break
     #
-    #         cnf += "({}) &".format(clause[:-2])
+    # conditions = "|".join(cnf)
     #
-    # return "ASSERT({} = 0bin1);\n".format(cnf[:-2])
+    # command = "ASSERT({0}=0bin1);\n".format(conditions)
+    #
+    # return command
+
+    # Build CNF from invalid trails
+    cnf = ""
+    for prod in itertools.product([0, 1], repeat=len(s_box_trails[0])):
+        # Trail is not valid
+        if list(prod) not in s_box_trails:
+            expr = ["~" if x == 1 else "" for x in list(prod)]
+            clause = ""
+            for literal in range(12):
+                clause += "{0}{1} | ".format(expr[literal], variables[literal])
+
+            cnf += "({}) &".format(clause[:-2])
+
+    return "ASSERT({} = 0bin1);\n".format(cnf[:-2])
